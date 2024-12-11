@@ -73,10 +73,250 @@ plot_graph = function(beta_matrix, arrow_size, node_size){
 
 
 
+# 4a. Simulate data with normal f ------------------------------------------
+
+Simulate_data_add_norm = function(p, N, beta, beta_0, cut_off, mu, sigma, const){
+  
+  #' Simualte binary time series according to BAPLA model with f as a normal.
+  #'
+  #' @param p Number of dimensions
+  #' @param N Number of time points
+  #' @param beta p x p linear coefficient matrix  
+  #' @param beta_0 1 x p vector of intercept terms
+  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
+  #' @param mu (scalar) mean for normal f
+  #' @param sigma (scalar) sd for normal f
+  #' @param const scalaing for normal f
+  #' @export  
+  
+  # Set up empty matrix to store data in
+  y = matrix(data=NA, nrow=p, ncol=N)
+  # Each column represents data from each "unit" at a given time point
+  for(i in 1:p){
+    # generate y_0 for each unit using independent bernoullis'
+    # store output in first columns of Y matrix
+    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
+  }
+  # simulate data based on model parameters
+  # Loop over time points
+  for(j in 2:N){
+    # Loop over dimensions
+    for(i in 1:p){
+      # extract vector of previous values (i.e. y_{t-1} values)
+      y_minus = as.matrix(y[,j-1])
+      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + const*dnorm(j, mean = mu, sd=sigma))) 
+      #y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(y_minus) %*%(beta[i,]) + const*dnorm(j, mean = mu, sd=sigma)))
+    }
+  }
+  
+  # get rid of first 100 samples => "burn in"
+  new_y = y[, -(1:500)]
+  return(new_y)
+}
 
 
 
+# 4b. Simulate data with gamma f -------------------------------------------
 
+Simulate_data_add_gamma = function(p, N, beta, beta_0, cut_off, shape, scale, const){
+  
+  #' Simulate binary time series according to BAPLA model with f as a gamma
+  #'
+  #' @param p Number of dimensions
+  #' @param N Number of time points
+  #' @param beta p x p linear coefficient matrix  
+  #' @param beta_0 1 x p vector of intercept terms
+  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
+  #' @param shape (scalar) shape parameter for gamma f
+  #' @param scale (scalar) scale parameter for gamma f
+  #' @param const scalaing for normal f
+  #' @export  
+  
+  # Set up empty matrix to store data in
+  y = matrix(data=NA, nrow=p, ncol=N)
+  # Each column represents data from each "unit" at a given time point
+  for(i in 1:p){
+    # generate y_0 for each unit using independent bernoullis'
+    # store output in first columns of Y matrix
+    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
+  }
+  # simulate data based on model parameters
+  # Loop over time points
+  for(j in 2:N){
+    # Loop over dimensions
+    for(i in 1:p){
+      # extract vector of previous values (i.e. y_{t-1} values)
+      y_minus = as.matrix(y[,j-1])
+      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + const*dgamma(j, shape = shape, scale = scale))) 
+    }
+  }
+  
+  # get rid of first 100 samples => "burn in"
+  new_y = y[, -(1:500)]
+  return(new_y)
+}
+# 5. Estimation for all units --------------------------------------
+
+Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
+  #'  Function to estimate coefficients of the BAPLA model for all dimensions and regularization parameter
+  #'
+  #' @param data_source data
+  #' @param p dimension
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  p = dim(data_source)[1]
+  #print(p)
+  beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
+  c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL;
+  for (i in 1:p){
+    print(i)
+    res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m)
+    beta0_hat[i] = res$beta0
+    beta_hat[i,] = res$beta
+    f_hat[[i]] = res$f
+    c_hat[[i]] = res$c
+    iter[i] = res$iter
+  }
+  
+  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter))
+}
+# 6. Estimation for single unit ---------------------------------------------
+Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
+  #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+  #'
+  #' @param data data source 
+  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  
+  # obtain data
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  # standardize the data
+  x_bar = colMeans(X1) # get mean of each column
+  # X = X1
+  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+  for (i in 1:p){
+    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+  }
+  
+  # set regularisation parameter
+  lambda = lams[idx]
+  
+  # # set initial parameters 
+  beta_0 = 0
+  beta = rep(0,p)
+  
+  c <- rep(0, m)
+  
+  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+  phi_bar = NULL;
+  for(i in 1:ncol(phi)){
+    phi2[,i] = phi[,i] - mean(phi[,i])
+    phi_bar[i] = mean(phi[,i])
+  }
+  
+  f <- phi2%*%as.matrix(c)
+  
+  
+  # Perform cyclical coordinate descent
+  for(iter in 1:max_iter) {
+    #print(iter)
+    # current parameter estimates
+    beta_tilde <- beta
+    beta0_tilde <- beta_0
+    f_tilde <- f
+    c_tilde <- c
+    
+    # Get working response and weights for IRLS
+    # i.e. ~ Equations (16) and (17) of glmnet paper
+    
+    # compute p_tilde
+    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+    # compute w
+    w = p_tilde * (1-p_tilde)
+    
+    # compute z
+    z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+    
+    # Beta matrix update
+    for(j in 1:p) {
+      
+      # Compute partial residual
+      # i.e. fitted value excluding contribution from x_{ij}
+      
+      y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
+      
+      # compute least-squares coefficient when fitting this partial residual to x_{ij}
+      # remember to use z instead of y as the "working response"
+      
+      ls_coef <- crossprod(w*X[,j], z - (y_tilde))
+      
+      # Update beta coefficient
+      beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+      
+      
+    }
+    
+    # Intercept update - 
+    beta_0 <- crossprod(w, z- (X%*%beta) - f ) / sum(w)
+    beta_0 <- as.numeric(beta_0)
+    
+    
+    
+    # Update spline coefficients assuming known form for f
+    
+    # step 1: calculate the c_k*phi_k(t)
+    t = list(); t = rep(list(t), length(c));
+    for(k in 1:length(c)){
+      t[[k]] <- c[k]*phi2[,k]
+    }
+    
+    
+    # # step 2: update each c_k in turn
+    for(k in 1:length(c)){
+      cj_sum <- Reduce("+", t[-k])
+      c[k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
+      t[[k]] <- c[k]*phi2[,k] #update with new c_k
+    }
+    
+    f = phi2 %*% as.matrix(c)
+    
+    f = as.vector(f)
+    
+    # Checks for convergence
+    #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
+    if( max((beta_tilde-beta)^2)<tol^2) break
+  }
+  
+  #DE-STANDARDISE THE COEFFICIENTS
+  sum_term = NULL;
+  for(j in 1:p){
+    beta[j] = beta[j]/sd(X1[,j])
+    sum_term[j] = (x_bar[j]*beta[j])
+  }
+  beta_0 = beta_0 - sum(sum_term)
+  
+  # Account for centered basis functions
+  beta_0 = beta_0 - sum(c*phi_bar)
+  
+  # estimate original f
+  f_orig = phi %*% as.matrix(c)
+  
+  # Print final coefficients
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
+}
 # Old functions -----------------------------------------------------------
 
 
@@ -117,45 +357,6 @@ Simulate_data = function(p, N, beta, beta_0, cut_off){
   return(new_y)
 }
 
-
-
-# 2. Simulate data with normal f ------------------------------------------
-
-Simulate_data_add_norm = function(p, N, beta, beta_0, cut_off, mu, sigma, const){
-  
-  #' binary time series simulation Function.
-  #'
-  #' @param p Number of dimensions
-  #' @param N Number of time points
-  #' @param beta p x p linear coefficient matrix  
-  #' @param beta_0 1 x p vector of intercept terms
-  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
-  #' @export  
-  
-  # Set up empty matrix to store data in
-  y = matrix(data=NA, nrow=p, ncol=N)
-  # Each column represents data from each "unit" at a given time point
-  for(i in 1:p){
-    # generate y_0 for each unit using independent bernoullis'
-    # store output in first columns of Y matrix
-    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
-  }
-  # simulate data based on model parameters
-  # Loop over time points
-  for(j in 2:N){
-    # Loop over dimensions
-    for(i in 1:p){
-      # extract vector of previous values (i.e. y_{t-1} values)
-      y_minus = as.matrix(y[,j-1])
-      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + const*dnorm(j, mean = mu, sd=sigma))) 
-      #y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(y_minus) %*%(beta[i,]) + const*dnorm(j, mean = mu, sd=sigma)))
-      }
-  }
-  
-  # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:500)]
-  return(new_y)
-}
 
 
 
@@ -375,176 +576,10 @@ performance_measures = function(estim, truth){
 
 
 
-# 8. New estimation procedure (for single unit) ---------------------------------------------
-Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
-  #Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m, beta_0, beta, c)
-  #'  Function to estimate coefficients of the GLM for a given dimension and regularization parameter
-  #'
-  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
-  #' @param max_iter Maximum number of iterations
-  #' @param tol tolereance level for the coordinate descent algorithm
-  #' @param lams Regularisation parameter
-  #' @param m number of basis coefficients for splines
-  #' @param beta_0 (scalar) estimate obtained via c.d. algorithm for previous lambda - can be set to 0 if not employing warm starts
-  #' @param beta (1 x p vector) estimate obtained via c.d. algorithm for previous lambda - can be set to rep(0,p) if no warm starts
-  #' @param c (1 x m vector) estimate obtained via c.d. algorithm for previous lambda - can be set to rep(0,m) if no warm starts
-  #' @export  
-  
-  # obtain data
-  
-  #y = data[idx,][2:9000] # use  8999 values
-  #X1 = data[,(1:8999)] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
-  y = data[idx,][2:length(data[idx,])] # use
-  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
-  X1 = t(X1)
-  p = dim(data)[1]
-  
-  # standardize the data
-  x_bar = colMeans(X1) # get mean of each column
- # X = X1
-  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
-  for (i in 1:p){
-    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
-  }
-  
-  # set regularisation parameter
-  lambda = lams[idx]
-  
-  # # set initial parameters 
-  beta_0 = 0
-  beta = rep(0,p)
-
-  c <- rep(0, m)
-  
-  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
-  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-  phi_bar = NULL;
-  for(i in 1:ncol(phi)){
-    phi2[,i] = phi[,i] - mean(phi[,i])
-    phi_bar[i] = mean(phi[,i])
-  }
-  
-  f <- phi2%*%as.matrix(c)
-  
-  
-  # Perform cyclical coordinate descent
-  for(iter in 1:max_iter) {
-    #print(iter)
-    # current parameter estimates
-    beta_tilde <- beta
-    beta0_tilde <- beta_0
-    f_tilde <- f
-    c_tilde <- c
-    
-    # Get working response and weights for IRLS
-    # i.e. ~ Equations (16) and (17) of glmnet paper
-    
-    # compute p_tilde
-    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
-    # compute w
-    w = p_tilde * (1-p_tilde)
-    
-    # compute z
-    z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
-    
-    # Beta matrix update
-    for(j in 1:p) {
-      
-      # Compute partial residual
-      # i.e. fitted value excluding contribution from x_{ij}
-      
-      y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
-      
-      # compute least-squares coefficient when fitting this partial residual to x_{ij}
-      # remember to use z instead of y as the "working response"
-      
-      ls_coef <- crossprod(w*X[,j], z - (y_tilde))
-      
-      # Update beta coefficient
-      beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
-      
-      
-    }
-    
-    # Intercept update - 
-    beta_0 <- crossprod(w, z- (X%*%beta) - f ) / sum(w)
-    beta_0 <- as.numeric(beta_0)
-    
-   
-    
-    # Update spline coefficients assuming known form for f
-    
-    # step 1: calculate the c_k*phi_k(t)
-    t = list(); t = rep(list(t), length(c));
-    for(k in 1:length(c)){
-      t[[k]] <- c[k]*phi2[,k]
-    }
-    
-
-    # # step 2: update each c_k in turn
-    for(k in 1:length(c)){
-      cj_sum <- Reduce("+", t[-k])
-      c[k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
-      t[[k]] <- c[k]*phi2[,k] #update with new c_k
-    }
-     
-    f = phi2 %*% as.matrix(c)
-    
-    f = as.vector(f)
-    
-    # Checks for convergence
-    #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
-    if( max((beta_tilde-beta)^2)<tol^2) break
-    }
-  
-  #DE-STANDARDISE THE COEFFICIENTS
-  sum_term = NULL;
-  for(j in 1:p){
-    beta[j] = beta[j]/sd(X1[,j])
-    sum_term[j] = (x_bar[j]*beta[j])
-  }
-  beta_0 = beta_0 - sum(sum_term)
-  
-  # Account for centered basis functions
-  beta_0 = beta_0 - sum(c*phi_bar)
-  
-  # estimate original f
-  f_orig = phi %*% as.matrix(c)
-  
-  # Print final coefficients
-  return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
-}
 
 
-# 9. Estimation with f for all units --------------------------------------
 
-Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
-  #Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m, beta_0, beta, c)
-  #'  Function to estimate coefficients of the GLM for all dimensions and regularization parameter
-  #'
-  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
-  #' @param max_iter Maximum number of iterations
-  #' @param tol tolereance level for the coordinate descent algorithm
-  #' @param lams Regularisation parameter
-  #' @param m number of basis coefficients for splines
-  #' @export  
-  p = dim(data_source)[1]
-  #print(p)
-  beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
-  c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL;
-  for (i in 1:p){
-    print(i)
-    res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m)
-    #res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m,  beta_0[i], beta[i,], c[[i]])
-    beta0_hat[i] = res$beta0
-    beta_hat[i,] = res$beta
-    f_hat[[i]] = res$f
-    c_hat[[i]] = res$c
-    iter[i] = res$iter
-  }
-  
-  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter))
-}
+
 
 
 # 10. plot boxplots of intercept estimates --------------------------------
@@ -1714,42 +1749,7 @@ Ad_lasso_all <- function(data_source, p, max_iter, tol, lams, m, weight_matrix){
 
 
 
-# 31. Simulate data with gamma --------------------------------------------
 
-Simulate_data_add_gamma = function(p, N, beta, beta_0, cut_off, shape, scale, const){
-  
-  #' binary time series simulation Function.
-  #'
-  #' @param p Number of dimensions
-  #' @param N Number of time points
-  #' @param beta p x p linear coefficient matrix  
-  #' @param beta_0 1 x p vector of intercept terms
-  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
-  #' @export  
-  
-  # Set up empty matrix to store data in
-  y = matrix(data=NA, nrow=p, ncol=N)
-  # Each column represents data from each "unit" at a given time point
-  for(i in 1:p){
-    # generate y_0 for each unit using independent bernoullis'
-    # store output in first columns of Y matrix
-    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
-  }
-  # simulate data based on model parameters
-  # Loop over time points
-  for(j in 2:N){
-    # Loop over dimensions
-    for(i in 1:p){
-      # extract vector of previous values (i.e. y_{t-1} values)
-      y_minus = as.matrix(y[,j-1])
-      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + const*dgamma(j, shape = shape, scale = scale))) 
-    }
-  }
-  
-  # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:500)]
-  return(new_y)
-}
 
 
 # 32. Simulate data with normal and gamma ---------------------------------
