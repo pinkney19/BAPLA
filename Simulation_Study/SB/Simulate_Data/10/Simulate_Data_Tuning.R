@@ -13,7 +13,7 @@ N_reps = seq(1, 10)
 # p = 10 ------------------------------------------------------------------
 
 
-# Zero-Inflated Model (beta_0 = -4.6) -----------------------------------------------------
+# Zero-Inflated Model (beta_0 = -3.6) -----------------------------------------------------
 
 # n = 1000 time points
 
@@ -30,7 +30,7 @@ data_zero_1000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=1500;
   
   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_10.RDS")
-  beta_0 = rep(-4.6,p)
+  beta_0 = rep(-3.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma_norm(p, N, beta, beta_0, cut_off=500, shape = 3 , scale=(N+500)/10, const=(N-500),  mu=(N+500)/2, sigma=(N+500)/10)
@@ -59,7 +59,7 @@ data_zero_2000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=2500;
   
    beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_10.RDS")
-  beta_0 = rep(-4.6,p)
+  beta_0 = rep(-3.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma_norm(p, N, beta, beta_0, cut_off=500, shape = 3 , scale=(N+500)/10, const=(N-500),  mu=(N+500)/2, sigma=(N+500)/10)
@@ -89,7 +89,7 @@ data_zero_5000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
                                                        p = 10; N=5500;
                                                        
                                                         beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_10.RDS")
-                                                       beta_0 = rep(-4.6,p)
+                                                       beta_0 = rep(-3.6,p)
                                                        
                                                        # Simulate the data
                                                        data = Simulate_data_add_gamma_norm(p, N, beta, beta_0, cut_off=500, shape = 3 , scale=(N+500)/10, const=(N-500),  mu=(N+500)/2, sigma=(N+500)/10)
@@ -118,7 +118,7 @@ data_zero_10000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=10500;
   
    beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_10.RDS")
-  beta_0 = rep(-4.6,p)
+  beta_0 = rep(-3.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma_norm(p, N, beta, beta_0, cut_off=500, shape = 3 , scale=(N+500)/10, const=(N-500),  mu=(N+500)/2, sigma=(N+500)/10)

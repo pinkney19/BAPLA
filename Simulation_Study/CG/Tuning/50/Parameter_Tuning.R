@@ -30,7 +30,7 @@ if (l==1){
     
     # Initialize parameters
     
-    p = 10; N=1000;
+    p = 50; N=1000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -83,7 +83,7 @@ if (l==2){
     
     # Initialize parameters
     
-    p = 10; N=2000;
+    p = 50; N=2000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -138,7 +138,7 @@ if (l==3){
          
           # Initialize parameters
           
-          p = 10; N=5000;
+          p = 50; N=5000;
           max_iter = 1000; tol=1e-5; 
           l = as.numeric(k[2])
           lams = rep(l,p)
@@ -192,7 +192,7 @@ if (l==4){
     
     # Initialize parameters
     
-    p = 10; N=10000;
+    p = 50; N=10000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -248,7 +248,7 @@ if (l==5){
     
     # Initialize parameters
     
-    p = 10; N=1000;
+    p = 50; N=1000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -300,7 +300,7 @@ if (l==6){
     
     # Initialize parameters
     
-    p = 10; N=2000;
+    p = 50; N=2000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -353,7 +353,7 @@ if (l==7){
     
     # Initialize parameters
     
-    p = 10; N=5000;
+    p = 50; N=5000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)
@@ -405,7 +405,7 @@ if (l==8){
     
     # Initialize parameters
     
-    p = 10; N=10000;
+    p = 50; N=10000;
     max_iter = 1000; tol=1e-5; 
     l = as.numeric(k[2])
     lams = rep(l,p)

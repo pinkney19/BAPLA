@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J SB_tuning_10
+#SBATCH -J CG_tuning_50
 #SBATCH -c 41
 #SBATCH --array=1-8%2
 #SBATCH -e mb%.e
@@ -11,4 +11,4 @@
 
 x=$SLURM_ARRAY_TASK_ID
 
-srun Rscript ~/BAPLA/SB/10/tuning/Parameter_Tuning.R $x
+srun Rscript ~/BAPLA/CG/50/tuning/Parameter_Tuning.R $x
