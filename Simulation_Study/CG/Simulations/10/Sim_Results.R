@@ -131,7 +131,7 @@ list_to_matrix = function(f){
 
 # get F estimates  --------------------------------------------------------------
 library(splines)
-get_f = function(out,m, t_end, unit_id){
+get_f = function(out,m, t_end, unit_id, true_beta_0){
   #' Function to obtain f estimate with non-centred basis functions but estimated coefficients
   #'
   #' @param out RDS file from STORM
@@ -142,16 +142,26 @@ get_f = function(out,m, t_end, unit_id){
   phi <- bs(seq(1, t_end), df=m, intercept = F) 
   c_hats = map(out, 4)
   c_hats_id = map(c_hats, unit_id)
+  
+  
+  beta_0s = map(out, 2)
+  beta_0s_id = map(beta_0s, unit_id)
+  
+  bias_beta_0 = mean(unlist(beta_0s_id)) - true_beta_0
+  
   f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
+  for(i in 1:length(f)){
+    f[[i]] = f[[i]] + bias_beta_0
+  }
   
   return(f)
 }
 
 
-f_hat_50_1000 = get_f(out_50_1000, 10, 999, unit_id = 1)
-f_hat_50_2000 = get_f(out_50_2000, 10, 1999, unit_id = 1)
-f_hat_50_5000 = get_f(out_50_5000, 10, 4999, unit_id = 1)
-f_hat_50_10000 = get_f(out_50_10000, 10, 9999, unit_id = 1)
+f_hat_50_1000 = get_f(out_50_1000, 10, 999, unit_id = 1, -2.6)
+f_hat_50_2000 = get_f(out_50_2000, 10, 1999, unit_id = 1, -2.6)
+f_hat_50_5000 = get_f(out_50_5000, 10, 4999, unit_id = 1, -2.6)
+f_hat_50_10000 = get_f(out_50_10000, 10, 9999, unit_id = 1, -2.6)
 
 
 
@@ -165,8 +175,10 @@ plot_f_cis = function(f, unit_id, title,N, const){
   lines(colQuantiles(check, probs =0.975), col="red")
   lines( colQuantiles(check, probs=0.025), col="red")
   
+  xs = const*dnorm(seq(1,(N-1)), mean = (N)/2, sd=(N+1000)/10)
+  #xs = xs - mean(xs)
   
-  lines(const*dnorm(seq(1,(N-1)), mean = N/2, sd=(N+500)/10), col="blue", lwd =2, lty = "dashed")
+  lines(xs, col="blue", lwd =2, lty = "dashed")
   legend("topright", c("truth", "95% CIs", "Avg"), col=c("blue", "red", "black"), 
          lty = c(2,1,1), lwd = c(2,1,1), cex = 0.6)
   

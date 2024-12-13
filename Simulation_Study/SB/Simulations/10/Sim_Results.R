@@ -9,21 +9,21 @@ source("Functions_BAPLA.R")
 
 # Parameter values --------------------------------------------------------
 
-p = 10; 
-beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_10.RDS")
+p = 50; 
+beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/beta_50.RDS")
 
 
 
 # load simulation results -------------------------------------------------
-out_50_1000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_50_1000.RDS")
-out_50_2000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_50_2000.RDS")
-out_50_5000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_50_5000.RDS")
-out_50_10000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_50_10000.RDS")
+out_50_1000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_50_1000.RDS")
+out_50_2000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_50_2000.RDS")
+out_50_5000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_50_5000.RDS")
+out_50_10000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_50_10000.RDS")
 
-out_zero_1000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_zero_1000.RDS")
-out_zero_2000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_zero_2000.RDS")
-out_zero_5000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_zero_5000.RDS")
-out_zero_10000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10/out_zero_10000.RDS")
+out_zero_1000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_zero_1000.RDS")
+out_zero_2000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_zero_2000.RDS")
+out_zero_5000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_zero_5000.RDS")
+out_zero_10000 <- readRDS("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50/out_zero_10000.RDS")
 
 
 
@@ -51,7 +51,7 @@ aurocs_zero = c(res_zero_1000$av_AUC, res_zero_2000$av_AUC,res_zero_5000$av_AUC,
 aurocs_se_zero = c(res_zero_1000$auc_se, res_zero_2000$auc_se,res_zero_5000$auc_se, res_zero_10000$auc_se)
 
 
-setwd("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/10")
+setwd("~/Downloads/BAPLA/Simulation_Study/SB/Simulations/50")
 
 saveRDS(RMSEs_50, "rmse_50.RDS")
 saveRDS(ses_50,"ses_50.RDS")
