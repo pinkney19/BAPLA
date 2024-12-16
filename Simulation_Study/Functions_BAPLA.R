@@ -317,6 +317,109 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   # Print final coefficients
   return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
 }
+
+# 7. Coverage for confidence intervals ------------------------------------
+
+coverage = function(active, true_beta, out_storm, n_samp, unit_id){
+  
+  # select results of interest
+  b = length(n_samp)*unit_id #i.e. for unit_id = 1 b = 100
+  if(unit_id==1){
+    res = out_storm[1:b] #i.e. samples 1-100 for unit 1
+  }
+  if(unit_id!=1){
+    res = out_storm[((b-length(n_samp))+1):b]
+  }
+  
+  true_beta = beta[unit_id,]
+  if(active==T){
+    s = which(true_beta!=0) # active set#
+  }
+  if(active==F){
+    s_c = which(true_beta==0)
+    s = s_c
+  }
+  
+  lower = map(res, 3)
+  upper = map(res, 4)  
+  
+  if(sum(s)!=0){
+    truth = true_beta[s]
+    s_count = rep(0,length(truth)); s_count = rep(list(s_count), length(n_samp))
+    length_ci = rep(0, length(truth)); length_ci = rep(list(length_ci), length(n_samp))
+    for(i in 1:length(n_samp)){
+      lower_vals = lower[[i]][s]
+      upper_vals = upper[[i]][s]
+      for(j in 1:length(truth)){
+        if(truth[j]>lower_vals[j] & truth[j]<upper_vals[j]){s_count[[i]][j] = s_count[[i]][j] + 1}
+      }
+      # get lengths of CI
+      length_ci[[i]] = upper_vals-lower_vals
+    }
+    totals = unlist(lapply(s_count, sum))
+    avg_cov = sum(totals)/(length(n_samp)*length(s))
+    
+    # lengths
+    t_length = unlist(lapply(length_ci, sum))
+    av_length = sum(t_length)/ (length(n_samp)*length(s))
+  }
+  # if no values in the active set
+  if(sum(s)==0){
+    avg_cov = av_length = NA
+  }
+  
+  return(list(cov = avg_cov, len = av_length))
+}
+
+# 8. Average coverage function --------------------------------------------
+
+get_avg_cov = function(true_beta, out, n_samp, p){
+  s_cov = NULL; sc_cov = NULL;
+  s_len = NULL; sc_len = NULL;
+  for(i in 1:p){
+    s_cov[i] = coverage(T, true_beta, out, n_samp, i)$cov                
+    sc_cov[i] = coverage(F, true_beta, out, n_samp, i)$cov
+    s_len[i] = coverage(T, true_beta, out, n_samp, i)$len  
+    sc_len[i] = coverage(F, true_beta, out, n_samp, i)$len  
+  }
+  
+  return(list(s_cov_mean = mean(s_cov, na.rm=T), sc_cov_mean = mean(sc_cov, na.rm=T), s_all = s_cov, sc_all = sc_cov, av_len_s = mean(s_len, na.rm=T), av_len_sc = mean(sc_len, na.rm=T)))
+}
+
+
+
+# 10. Format inference results --------------------------------------------
+
+Format_results = function(true_beta, out, n_samp, p,model_type){
+  
+  res_50_1000 = get_avg_cov(true_beta, out[[1]], n_samp, p)
+  res_50_2000 = get_avg_cov(true_beta, out[[2]], n_samp, p)
+  res_50_5000 = get_avg_cov(true_beta, out[[3]], n_samp, p)
+  res_50_10000 = get_avg_cov(true_beta, out[[4]], n_samp, p)
+  
+  
+  df_50_1000 = data.frame(s = res_50_1000$s_all, sc=res_50_1000$sc_all)
+  df_50_2000 = data.frame(s = res_50_2000$s_all, sc=res_50_2000$sc_all)
+  df_50_5000 = data.frame(s = res_50_5000$s_all, sc=res_50_5000$sc_all)
+  df_50_10000 = data.frame(s = res_50_10000$s_all, sc=res_50_10000$sc_all)
+  
+  
+  par(mfrow=c(1,4))
+  boxplot(df_50_1000, main = paste0(model_type, " - 1000"), ylim =c(0.85, 0.99))
+  boxplot(df_50_2000, main = paste0(model_type, " - 2000"), ylim =c(0.85, 0.99))
+  boxplot(df_50_5000, main = paste0(model_type, " - 5000"), ylim =c(0.85, 0.99))
+  boxplot(df_50_10000, main = paste0(model_type, " - 10000"), ylim =c(0.85, 0.99))
+  
+  
+  out_1000 = c(res_50_1000$s_cov_mean, res_50_1000$sc_cov_mean, res_50_1000$av_len_s, res_50_1000$av_len_sc)
+  out_2000 = c(res_50_2000$s_cov_mean, res_50_2000$sc_cov_mean, res_50_2000$av_len_s, res_50_2000$av_len_sc)
+  out_5000 = c(res_50_5000$s_cov_mean, res_50_5000$sc_cov_mean, res_50_5000$av_len_s, res_50_5000$av_len_sc)
+  out_10000 = c(res_50_10000$s_cov_mean, res_50_10000$sc_cov_mean, res_50_10000$av_len_s, res_50_10000$av_len_sc)
+  
+  out2 = rbind(out_1000, out_2000, out_5000, out_10000)
+  colnames(out2) = c("Avcov_s", "Avcov_sc", "Avlen_s", "Avlen_sc")
+  return(out2)
+}
 # Old functions -----------------------------------------------------------
 
 

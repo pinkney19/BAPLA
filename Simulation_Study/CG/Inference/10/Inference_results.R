@@ -1,0 +1,41 @@
+# Libraries 
+
+library(purrr) # map
+setwd("~/Downloads/BAPLA/Simulation_Study")
+source("Functions_BAPLA.R")
+
+
+# Ground truth and structure of data --------------------------------------
+
+n_samp = seq(1,100)
+p = 10; 
+
+beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/CG/beta_10.RDS")
+
+# Stage 1 Results ---------------------------------------------------------
+
+# Read 50/50 data from STORM 
+out_50_1000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_50_1000_desparsified.RDS")
+out_50_2000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_50_2000_desparsified.RDS")
+out_50_5000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_50_5000_desparsified.RDS")
+out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_50_10000_desparsified.RDS")
+
+
+# Results for 50/50 data
+out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_desparsified, out_50_10000_desparsified)
+res_50_s1 = Format_results(true_beta, out50, n_samp, p, "50")
+
+# zero results 
+out_zero_1000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_zero_1000_desparsified.RDS")
+out_zero_2000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_zero_2000_desparsified.RDS")
+out_zero_5000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_zero_5000_desparsified.RDS")
+out_zero_10000_desparsified <- readRDS("~/luna/BAPLA/Simulation_study/10/Inference/s1/CG/out_zero_10000_desparsified.RDS")
+
+
+outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_5000_desparsified, out_zero_10000_desparsified)
+
+res_zero_s1 = Format_results(true_beta, outzero, n_samp, p, "zero")
+
+setwd("~/Downloads/BAPLA/Simulation_Study/CG/Inference/10")
+saveRDS(res_50_s1, "res_50_s1.RDS")
+saveRDS(res_zero_s1, "res_zero_s1.RDS")
