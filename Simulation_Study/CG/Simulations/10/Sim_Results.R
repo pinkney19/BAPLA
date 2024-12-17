@@ -92,9 +92,9 @@ beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
   
   # Plot using ggplot2
   ggplot(df_long, aes(x = as.factor(Variable), y = Value)) +
-    geom_boxplot(fill = "skyblue") +
-    geom_hline(yintercept = true_beta_0, color = "navy", linetype = "dashed", size = 1) +
-    labs(title = title, x = expression(p), y = expression(hat(beta[0]))) +
+    geom_boxplot(fill = "white") +
+    geom_hline(yintercept = true_beta_0, color = "blue", linetype = "dashed", size = 1) +
+    labs(title = title, x = expression(d), y = expression(hat(beta[0]))) +
     ylim(a, b) +
     theme_minimal()
   
@@ -107,11 +107,11 @@ plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
 }
 
 library(ggplot2)
-
-p1 = plot_intercept_estimates2(out_50_1000, -10, 0, "50 - 1000", -2.6)
-p2 = plot_intercept_estimates2(out_50_2000, -10, 0, "50 - 2000", -2.6)
-p3 = plot_intercept_estimates2(out_50_5000, -10, 0, "50 - 5000", -2.6)
-p4 = plot_intercept_estimates2(out_50_10000, -10, 0, "50 - 10000", -2.6)
+# plots for High-firing model 
+p1 = plot_intercept_estimates2(out_50_1000, -10, 0, "n = 1000", -2.6)
+p2 = plot_intercept_estimates2(out_50_2000, -10, 0, "n =  2000", -2.6)
+p3 = plot_intercept_estimates2(out_50_5000, -10, 0, "n = 5000", -2.6)
+p4 = plot_intercept_estimates2(out_50_10000, -10, 0, "n = 10000", -2.6)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
@@ -185,6 +185,51 @@ plot_f_cis = function(f, unit_id, title,N, const){
   #return(check)
   
 }
+
+library(ggplot2)
+library(matrixStats)
+
+plot_f_cis <- function(f, unit_id, title, N, const) {
+  check <- list_to_matrix(f)
+  median_vals <- colQuantiles(check, probs = 0.5)
+  upper_vals <- colQuantiles(check, probs = 0.975)
+  lower_vals <- colQuantiles(check, probs = 0.025)
+  
+  xs <- const * dnorm(seq(1, (N-1)), mean = (N)/2, sd = (N+1000)/10)
+  
+  data <- data.frame(
+    t = 1:length(median_vals),
+    median = median_vals,
+    upper = upper_vals,
+    lower = lower_vals,
+    xs = xs
+  )
+  
+  ggplot(data, aes(x = t)) +
+    geom_line(aes(y = median), color = "black") +
+    geom_line(aes(y = upper), color = "red") +
+    geom_line(aes(y = lower), color = "red") +
+    geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    labs(x = "t", y = expression(hat(f)(t)), title = title) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(limits = c(-2, 6)) +
+    theme(legend.position = "topright") +
+    guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
+}
+
+f1 = plot_f_cis(f_hat_50_1000, 1, "n = 1000",1000, 1000)
+f2 = plot_f_cis(f_hat_50_2000, 1, "n = 2000",2000, 2000)
+f3 = plot_f_cis(f_hat_50_5000, 1, "n = 5000",5000, 5000)
+f4 = plot_f_cis(f_hat_50_10000, 1, "n = 10000",10000, 10000)
+
+ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
+
+
+# Example usage:
+# plot_f_cis(f, unit_id, "Title", N, const)
+
+
 par(mfrow=c(1,4), mar = c(5.5, 4.5, 4.5, 2.5))
 plot_f_cis(f_hat_50_1000, 1, "50 - 1000",1000, 1000)
 plot_f_cis(f_hat_50_2000, 1, "50 - 2000",2000, 2000)
