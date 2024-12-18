@@ -123,6 +123,9 @@ plot_right_left_psth <- function(right_times, left_times, bin_size, pre_time, po
   return(plot)
 }
 
+# 4. Plot multiple PSTH plots for left and right examples -----------------
+
+
 plot_lr_examples = function(right_trial_spikes, left_trial_spikes, bin_size){
   #'  Function to plot examples of normalised PSTH for left and right trials
   #'
@@ -147,4 +150,170 @@ plot_lr_examples = function(right_trial_spikes, left_trial_spikes, bin_size){
     
   }
   return(plot_list)
+}
+# 5. Bin spikes for single unit -------------------------------------------
+
+bin_data = function(data, xs){
+  # Function to binarise the spike counts 
+  
+  # Initialize binarized data vector with zeros
+  binarized_data <- rep(0, length(xs))
+  # Iterate through each data point
+  for (spike in data) {
+    # Find the interval in the xs sequence where the spike happens
+    for (i in 1:(length(xs) - 1)) {
+      if (xs[i] <= spike && spike < xs[i + 1]) {
+        binarized_data[i] <- 1
+      }
+    }
+  }
+  return(binarized_data)
+}
+
+# 6. bin all spikes -------------------------------------------------------
+
+bin_all = function(spike_data){
+  binned  = spike_data;
+  for(i in 1:length(spike_data)){
+    for(j in 1:length(spike_data[[i]])){
+      binned[[i]][[j]] = lapply(spike_data[[i]][[j]], function(x) bin_data(x, xs))
+    }
+  }
+  return(binned)
+}
+
+# 7. BAPLA single unit ----------------------------------------------------
+
+bapla_single_unit = function(data, idx, max_iter, tol, lams, m){
+  #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+  #'
+  #' @param data data source 
+  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  
+  # obtain data
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  # standardize the data
+  x_bar = colMeans(X1) # get mean of each column
+  # X = X1
+  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+  for (i in 1:p){
+    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+  }
+  
+  # set regularisation parameter
+  lambda = lams[idx]
+  
+  # # set initial parameters 
+  beta_0 = 0
+  beta = rep(0,p)
+  
+  c <- rep(0, m)
+  
+  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+  phi_bar = NULL;
+  for(i in 1:ncol(phi)){
+    phi2[,i] = phi[,i] - mean(phi[,i])
+    phi_bar[i] = mean(phi[,i])
+  }
+  
+  f <- phi2%*%as.matrix(c)
+  
+  
+  # Perform cyclical coordinate descent
+  for(iter in 1:max_iter) {
+    #print(iter)
+    # current parameter estimates
+    beta_tilde <- beta
+    beta0_tilde <- beta_0
+    f_tilde <- f
+    c_tilde <- c
+    
+    # Get working response and weights for IRLS
+    # i.e. ~ Equations (16) and (17) of glmnet paper
+    
+    # compute p_tilde
+    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+    # compute w
+    w = p_tilde * (1-p_tilde)
+    
+    # compute z
+    z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+    
+    # Beta matrix update
+    for(j in 1:p) {
+      
+      # Compute partial residual
+      # i.e. fitted value excluding contribution from x_{ij}
+      
+      y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
+      
+      # compute least-squares coefficient when fitting this partial residual to x_{ij}
+      # remember to use z instead of y as the "working response"
+      
+      ls_coef <- crossprod(w*X[,j], z - (y_tilde))
+      
+      # Update beta coefficient
+      beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+      
+      
+    }
+    
+    # Intercept update - 
+    beta_0 <- crossprod(w, z- (X%*%beta) - f ) / sum(w)
+    beta_0 <- as.numeric(beta_0)
+    
+    
+    
+    # Update spline coefficients assuming known form for f
+    
+    # step 1: calculate the c_k*phi_k(t)
+    t = list(); t = rep(list(t), length(c));
+    for(k in 1:length(c)){
+      t[[k]] <- c[k]*phi2[,k]
+    }
+    
+    
+    # # step 2: update each c_k in turn
+    for(k in 1:length(c)){
+      cj_sum <- Reduce("+", t[-k])
+      c[k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
+      t[[k]] <- c[k]*phi2[,k] #update with new c_k
+    }
+    
+    f = phi2 %*% as.matrix(c)
+    
+    f = as.vector(f)
+    
+    # Checks for convergence
+    #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
+    if( max((beta_tilde-beta)^2)<tol^2) break
+  }
+  
+  #DE-STANDARDISE THE COEFFICIENTS
+  sum_term = NULL;
+  for(j in 1:p){
+    beta[j] = beta[j]/sd(X1[,j])
+    sum_term[j] = (x_bar[j]*beta[j])
+  }
+  beta_0 = beta_0 - sum(sum_term)
+  
+  # Account for centered basis functions
+  beta_0 = beta_0 - sum(c*phi_bar)
+  
+  # estimate original f
+  f_orig = phi %*% as.matrix(c)
+  
+  # Print final coefficients
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
 }
