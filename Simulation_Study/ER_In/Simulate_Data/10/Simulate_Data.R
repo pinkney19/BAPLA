@@ -247,7 +247,7 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 
-setwd("~/Downloads/BAPLA/Simulation_Study/ER_Ins/Simulate_Data/10/Sims_data")
+setwd("~/Downloads/BAPLA/Simulation_Study/ER_In/Simulate_Data/10/Sims_data")
 saveRDS(data_zero_1000, "data_zero_1000.RDS")
 saveRDS(data_zero_2000, "data_zero_2000.RDS")
 saveRDS(data_zero_5000, "data_zero_5000.RDS")

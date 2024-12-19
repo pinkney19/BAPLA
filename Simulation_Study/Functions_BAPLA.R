@@ -728,54 +728,54 @@ metrics_new = function(res, gt, threshold){
   
   # split results for excitatory neurons and inhibitory neurons
   # ground truth
-  true_beta = as.vector(gt)
-  beta2 = true_beta
-  beta2[beta2<0]=-1 # change negative entries to -1
-  beta2[beta2>0] = 1 # change positive entries to +1
-  
-  idx_ex = which(beta2>=0) #indices of excitatory and zero edges
-  idx_ind = which(beta2<=0) #indices of excitatory and zero edges
-  
-  # estimated 
-  est_beta_vec = lapply(beta_list, as.vector)
-  est_beta2 = est_beta_vec
-  est_inhibitory_interactions = list(); est_inhibitory_interactions = rep(list(est_inhibitory_interactions), length(est_beta2));
-  est_excitatory_interactions = est_inhibitory_interactions;
-  for(i in 1:length(est_beta2)){
-    est_beta2[[i]][est_beta2[[i]]<0]=-1 # change negative entries to -1
-    est_beta2[[i]][est_beta2[[i]]>0]=1 # change positive entries to +1
-    
-    est_inhibitory_interactions[[i]] = est_beta2[[i]][idx_ind]
-    est_excitatory_interactions[[i]] = est_beta2[[i]][idx_ex]
-    
-    est_inhibitory_interactions[[i]][est_inhibitory_interactions[[i]]>0] = 0 # set falsely detected excitatory edges to 0
-    est_excitatory_interactions[[i]][est_excitatory_interactions[[i]]<0] = 0 # set falsely detected inhibitory edges to 0
-    
-  }
-  
-  
-  true_inhibitory_interactions = beta2[beta2<=0]
-  true_excitatory_interactions = beta2[beta2>=0]
-  
-  if(length(unique(true_inhibitory_interactions))>1){
-    # only check if inhibitory interactions are present
-    # auroc for excit/inhib interactions
-    roc_obj_in = lapply(est_inhibitory_interactions, function(x){roc(true_inhibitory_interactions, x, direction="<")})
-    auc_list_in = lapply(roc_obj_in, auc)
-    auc_obj_in = mean(unlist(auc_list_in))
-    se_auc_in = std_err(unlist(auc_list_in))
-  }
-  
-  if(length(unique(true_inhibitory_interactions))==1){
-    auc_obj_in = NA
-    se_auc_in = NA
-  }
-  
-  roc_obj_ex = lapply(est_excitatory_interactions, function(x){roc(true_excitatory_interactions, x, direction="<")})
-  auc_list_ex = lapply(roc_obj_ex, auc)
-  
-  auc_obj_ex = mean(unlist(auc_list_ex))
-  se_auc_ex = std_err(unlist(auc_list_ex))
+  # true_beta = as.vector(gt)
+  # beta2 = true_beta
+  # beta2[beta2<0]=-1 # change negative entries to -1
+  # beta2[beta2>0] = 1 # change positive entries to +1
+  # 
+  # idx_ex = which(beta2>=0) #indices of excitatory and zero edges
+  # idx_ind = which(beta2<=0) #indices of excitatory and zero edges
+  # 
+  # # estimated 
+  # est_beta_vec = lapply(beta_list, as.vector)
+  # est_beta2 = est_beta_vec
+  # est_inhibitory_interactions = list(); est_inhibitory_interactions = rep(list(est_inhibitory_interactions), length(est_beta2));
+  # est_excitatory_interactions = est_inhibitory_interactions;
+  # for(i in 1:length(est_beta2)){
+  #   est_beta2[[i]][est_beta2[[i]]<0]=-1 # change negative entries to -1
+  #   est_beta2[[i]][est_beta2[[i]]>0]=1 # change positive entries to +1
+  #   
+  #   est_inhibitory_interactions[[i]] = est_beta2[[i]][idx_ind]
+  #   est_excitatory_interactions[[i]] = est_beta2[[i]][idx_ex]
+  #   
+  #   est_inhibitory_interactions[[i]][est_inhibitory_interactions[[i]]>0] = 0 # set falsely detected excitatory edges to 0
+  #   est_excitatory_interactions[[i]][est_excitatory_interactions[[i]]<0] = 0 # set falsely detected inhibitory edges to 0
+  #   
+  # }
+  # 
+  # 
+  # true_inhibitory_interactions = beta2[beta2<=0]
+  # true_excitatory_interactions = beta2[beta2>=0]
+  # 
+  # if(length(unique(true_inhibitory_interactions))>1){
+  #   # only check if inhibitory interactions are present
+  #   # auroc for excit/inhib interactions
+  #   roc_obj_in = lapply(est_inhibitory_interactions, function(x){roc(true_inhibitory_interactions, x, direction="<")})
+  #   auc_list_in = lapply(roc_obj_in, auc)
+  #   auc_obj_in = mean(unlist(auc_list_in))
+  #   se_auc_in = std_err(unlist(auc_list_in))
+  # }
+  # 
+  # if(length(unique(true_inhibitory_interactions))==1){
+  #   auc_obj_in = NA
+  #   se_auc_in = NA
+  # }
+  # 
+  # roc_obj_ex = lapply(est_excitatory_interactions, function(x){roc(true_excitatory_interactions, x, direction="<")})
+  # auc_list_ex = lapply(roc_obj_ex, auc)
+  # 
+  # auc_obj_ex = mean(unlist(auc_list_ex))
+  # se_auc_ex = std_err(unlist(auc_list_ex))
   
   
   # vectorise matrices for AUROC
@@ -803,7 +803,7 @@ metrics_new = function(res, gt, threshold){
   auc_obj = mean(unlist(auc_list))
   se_auc = std_err(unlist(auc_list))
   
-  return(list(F1 = F1, av_mse = av_mse, av_AUC = auc_obj, se = se, f1_se = F1_se, auc_se = se_auc, auc_in = auc_obj_in, auc_ex = auc_obj_ex))
+  return(list(F1 = F1, av_mse = av_mse, av_AUC = auc_obj, se = se, f1_se = F1_se, auc_se = se_auc)) #, auc_in = auc_obj_in, auc_ex = auc_obj_ex))
 }
 
 
