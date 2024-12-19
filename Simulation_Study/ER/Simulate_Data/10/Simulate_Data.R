@@ -30,6 +30,7 @@ data_zero_1000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=1500;
   
   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-3.6,p)
   
   # Simulate the data
@@ -58,7 +59,8 @@ data_zero_2000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=2500;
   
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-3.6,p)
   
   # Simulate the data
@@ -88,7 +90,8 @@ data_zero_5000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
                                                        # Initialize parameters
                                                        p = 10; N=5500;
                                                        
-                                                        beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+                                                       beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+                                                       beta = abs(beta)
                                                        beta_0 = rep(-3.6,p)
                                                        
                                                        # Simulate the data
@@ -117,7 +120,8 @@ data_zero_10000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=10500;
   
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-3.6,p)
   
   # Simulate the data
@@ -146,7 +150,8 @@ data_50_1000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   
   # Initialize parameters
   p = 10; N=1500
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-2.6,p)
   
   # Simulate the data
@@ -172,7 +177,8 @@ data_50_2000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   
   # Initialize parameters
   p = 10; N=2500
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-2.6,p)
   
   # Simulate the data
@@ -197,7 +203,8 @@ data_50_5000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   
   # Initialize parameters
   p = 10; N=5500
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-2.6,p)
   
   # Simulate the data
@@ -225,7 +232,8 @@ data_50_10000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   
   # Initialize parameters
   p = 10; N=10500
-   beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta <- readRDS("~/Downloads/BAPLA/Simulation_Study/ER/beta_10.RDS")
+  beta = abs(beta)
   beta_0 = rep(-2.6,p)
   
   # Simulate the data
@@ -239,7 +247,7 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 
-setwd("~/Downloads/BAPLA/Simulation_Study/ER/Simulate_Data/10/Sims_data")
+setwd("~/Downloads/BAPLA/Simulation_Study/ER_Ex/Simulate_Data/10/Sims_data")
 saveRDS(data_zero_1000, "data_zero_1000.RDS")
 saveRDS(data_zero_2000, "data_zero_2000.RDS")
 saveRDS(data_zero_5000, "data_zero_5000.RDS")
