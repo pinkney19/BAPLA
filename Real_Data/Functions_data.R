@@ -182,9 +182,46 @@ bin_all = function(spike_data){
   return(binned)
 }
 
+
+# 7. Format data to same as simulation studies ----------------------------
+
+format_data = function(data_binned){ 
+  #' Function to put data in same format as simulated data
+  #' @param data_binned binned data .RDS file
+  all = unlist(data_binned, recursive = F)
+  neuron_id = names(all)
+  all_data = unname(all)
+  
+  
+  data_mat_list = matrix(NA, nrow = length(neuron_id), ncol = lengths(all_data[[1]])[1]); 
+  data_mat_list = rep(list(data_mat_list), length(all_data[[1]]))
+  
+  for(i in 1:length(all_data[[1]])){ # for i in 1: # trials
+    dummy_var =  map(all_data,i) # extract first trial data for each neuron
+    data_mat_list[[i]] = do.call(rbind, dummy_var) # put into matrix format so same as simulated data
+  }
+  
+  
+  # check if any units have zero spikes in some of the trials
+  spike_count = lapply(data_mat_list, rowSums)
+  zero_idx = lapply(spike_count, function(x) which(x==0))
+  zero_units = unique(unlist(zero_idx))
+  
+  
+  new_data = all_data[-zero_units]
+  
+  for(i in 1:length(new_data[[1]])){
+    dummy_var =  map(new_data,i) # extract first trial data for each neuron
+    data_mat_list[[i]] = do.call(rbind, dummy_var) # put into matrix format so same as simulated data
+  }
+  
+  
+  return(list(data = data_mat_list, ids = neuron_id[-zero_units]))
+}
+
 # 7. BAPLA single unit ----------------------------------------------------
 
-bapla_single_unit = function(data, idx, max_iter, tol, lams, m){
+bapla_single_unit_trial = function(trial_data, idx, max_iter, tol, lams, m){
   #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
   #'
   #' @param data data source 
@@ -195,21 +232,27 @@ bapla_single_unit = function(data, idx, max_iter, tol, lams, m){
   #' @param m number of basis coefficients for splines
   #' @export  
   
-  # obtain data
-  
-  y = data[idx,][2:length(data[idx,])] # use
-  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
-  X1 = t(X1)
-  p = dim(data)[1]
-  
-  # standardize the data
-  x_bar = colMeans(X1) # get mean of each column
-  # X = X1
-  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
-  for (i in 1:p){
-    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+  ######################### obtain data for each trial ######################## 
+  trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+  for(l in 1:length(trial_data)){
+    data = trial_data[[l]]
+    y = data[idx,][2:length(data[idx,])] # use
+    X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    # standardize the data
+    x_bar = colMeans(X1) # get mean of each column
+    # X = X1
+    X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+    for (i in 1:p){
+      X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+    }
+    
+    trial_X[[l]] = X
+    
   }
-  
+  ############## Initialisations #################
   # set regularisation parameter
   lambda = lams[idx]
   
@@ -229,67 +272,112 @@ bapla_single_unit = function(data, idx, max_iter, tol, lams, m){
   
   f <- phi2%*%as.matrix(c)
   
+  ############## Cyclical coordinate descent #############
   
-  # Perform cyclical coordinate descent
   for(iter in 1:max_iter) {
-    #print(iter)
+    print(iter)
     # current parameter estimates
     beta_tilde <- beta
     beta0_tilde <- beta_0
     f_tilde <- f
     c_tilde <- c
     
-    # Get working response and weights for IRLS
-    # i.e. ~ Equations (16) and (17) of glmnet paper
-    
-    # compute p_tilde
-    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
-    # compute w
-    w = p_tilde * (1-p_tilde)
-    
-    # compute z
-    z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
-    
-    # Beta matrix update
-    for(j in 1:p) {
+    ls_coef = list(); ls_coef = rep(list(ls_coef), length(trial_data))
+    denom = ls_coef;
+    for(l in 1:length(trial_data)){
       
-      # Compute partial residual
-      # i.e. fitted value excluding contribution from x_{ij}
+      X = trial_X[[l]]
       
-      y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
+      # compute p_tilde
+      p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+      # compute w
+      w = p_tilde * (1-p_tilde)
       
-      # compute least-squares coefficient when fitting this partial residual to x_{ij}
-      # remember to use z instead of y as the "working response"
+      # compute z
+      z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
       
-      ls_coef <- crossprod(w*X[,j], z - (y_tilde))
-      
-      # Update beta coefficient
-      beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+      # Beta matrix update
+      for(j in 1:p) {
+        
+        # Compute partial residual
+        # i.e. fitted value excluding contribution from x_{ij}
+        
+        y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
+        
+        # compute least-squares coefficient when fitting this partial residual to x_{ij}
+        # remember to use z instead of y as the "working response"
+        
+        ls_coef[[l]][j] <- crossprod(w*X[,j], z - (y_tilde))
+        
+        denom[[l]][j] <- sum(w*(X[,j]^2))
+        
+        # Update beta coefficient
+        #beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+        
+        
+      }
       
       
     }
     
-    # Intercept update - 
-    beta_0 <- crossprod(w, z- (X%*%beta) - f ) / sum(w)
-    beta_0 <- as.numeric(beta_0)
-    
-    
+    # update beta coefficient
+    for(j in 1:p){
+      ls_coef_trial = sum(unlist(map(ls_coef,j)))
+      denom_trial = sum(unlist(denom,j))
+      beta[j] = ( sign(ls_coef_trial) * pmax(0, abs(ls_coef_trial ) - lambda) / denom_trial ) 
+    }
+  
+    # Intercept update 
+    num = NULL; denom = NULL;
+    for (l in 1:length(trial_data)){
+      X = trial_X[[l]]
+      
+      # compute p_tilde
+      p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+      # compute w
+      w = p_tilde * (1-p_tilde)
+      # compute z
+      z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+      
+      num[l] <-as.numeric(crossprod(w, z- (X%*%beta) - f ))
+      denom[l] <- sum(w)
+    }
+      
+    beta_0 <- sum(num)/sum(denom)
     
     # Update spline coefficients assuming known form for f
     
-    # step 1: calculate the c_k*phi_k(t)
-    t = list(); t = rep(list(t), length(c));
-    for(k in 1:length(c)){
-      t[[k]] <- c[k]*phi2[,k]
+    
+    # spline coefficients update 
+    c2 = list(); c2 = rep(list(c2), length(trial_data));
+    for (l in 1:length(trial_data)){
+      X = trial_X[[l]]
+      
+      # compute p_tilde
+      p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+      # compute w
+      w = p_tilde * (1-p_tilde)
+      # compute z
+      z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+      
+      # step 1: calculate the c_k*phi_k(t)
+      t = list(); t = rep(list(t), length(c));
+      for(k in 1:length(c)){
+        t[[k]] <- c[k]*phi2[,k]
+      }
+      
+      # # step 2: update each c_k in turn
+      for(k in 1:length(c)){
+        cj_sum <- Reduce("+", t[-k])
+        c2[[l]][k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
+        t[[k]] <- as.numeric(c2[[l]][k])*phi2[,k] #update with new c_k
+      }
     }
     
-    
-    # # step 2: update each c_k in turn
-    for(k in 1:length(c)){
-      cj_sum <- Reduce("+", t[-k])
-      c[k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
-      t[[k]] <- c[k]*phi2[,k] #update with new c_k
+    for(i in 1:length(trial_data)){
+      c2[[i]] = unlist(c2[[i]])
     }
+    c = Reduce("+",c2)
     
     f = phi2 %*% as.matrix(c)
     
@@ -297,7 +385,7 @@ bapla_single_unit = function(data, idx, max_iter, tol, lams, m){
     
     # Checks for convergence
     #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
-    if( max((beta_tilde-beta)^2)<tol^2) break
+    #if( max((beta_tilde-beta)^2)<tol^2) break
   }
   
   #DE-STANDARDISE THE COEFFICIENTS

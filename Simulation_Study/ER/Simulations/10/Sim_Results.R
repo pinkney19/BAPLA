@@ -156,11 +156,12 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   bias_beta_0 = mean(unlist(beta_0s_id)) - true_beta_0
   
   f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
+  fb = f;
   for(i in 1:length(f)){
-    f[[i]] = f[[i]] + bias_beta_0
+    fb[[i]] = f[[i]] + bias_beta_0
   }
   
-  return(f)
+  return(list(f=f, fb=fb))
 }
 
 #' library(splines)
@@ -207,8 +208,14 @@ plot_f_cis = function(f, unit_id, title,N, const){
   
 }
 par(mfrow=c(1,4), mar = c(5.5, 4.5, 4.5, 2.5))
-plot_f_cis(f_hat_50_1000, 1, "50 - 1000",1000, 1000)
-plot_f_cis(f_hat_50_2000, 1, "50 - 2000",2000, 2000)
-plot_f_cis(f_hat_50_5000, 1, "50 - 5000",5000, 5000)
-plot_f_cis(f_hat_50_10000, 1, "50 - 10000",10000, 10000)
+plot_f_cis(f_hat_50_1000$fb, 1, "50 - 1000",1000, 1000)
+plot_f_cis(f_hat_50_2000$fb, 1, "50 - 2000",2000, 2000)
+plot_f_cis(f_hat_50_5000$fb, 1, "50 - 5000",5000, 5000)
+plot_f_cis(f_hat_50_10000$fb, 1, "50 - 10000",10000, 10000)
+
+
+plot_f_cis(f_hat_50_1000$f, 1, "50 - 1000",1000, 1000)
+plot_f_cis(f_hat_50_2000$f, 1, "50 - 2000",2000, 2000)
+plot_f_cis(f_hat_50_5000$f, 1, "50 - 5000",5000, 5000)
+plot_f_cis(f_hat_50_10000$f, 1, "50 - 10000",10000, 10000)
 
