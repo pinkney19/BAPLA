@@ -143,12 +143,12 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   phi <- bs(seq(1, t_end), df=m, intercept = F) 
   c_hats = map(out, 4)
   c_hats_id = map(c_hats, unit_id)
-  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-  phi_bar = NULL;
-  for(i in 1:ncol(phi)){
-    phi2[,i] = phi[,i] - mean(phi[,i])
-    phi_bar[i] = mean(phi[,i])
-  }
+  # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+  # phi_bar = NULL;
+  # for(i in 1:ncol(phi)){
+  #   phi2[,i] = phi[,i] - mean(phi[,i])
+  #   phi_bar[i] = mean(phi[,i])
+  # }
   
   beta_0s = map(out, 2)
   beta_0s_id = map(beta_0s, unit_id)

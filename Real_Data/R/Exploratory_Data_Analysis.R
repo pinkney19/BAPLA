@@ -13,7 +13,7 @@ source("Functions_data.R")
 
 
 # Plots -------------------------------------------------------------------
-
+library(ggplot2)
 plot_list_all = plot_examples(all_spikes, 0.01)
 plot_list_right = plot_examples(right_trial_spikes, 0.01)
 plot_list_left = plot_examples(left_trial_spikes, 0.01)

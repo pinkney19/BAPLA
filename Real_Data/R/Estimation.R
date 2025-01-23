@@ -29,6 +29,7 @@ out_right = format_data(right_binned)
 data_right = out_right$data # 73 trials
 id_right = out_right$ids
 
+library(splines)
 res = bapla_single_unit_trial(data_left, 1, 50, 1e-5, rep(10,36), 10)
 
 #sim_data <- readRDS("~/Downloads/BAPLA/Simulation_Study/CG/Simulate_Data/10/Tuning_data/data_50_tuning_1000.RDS")

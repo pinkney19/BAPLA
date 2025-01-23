@@ -2,8 +2,8 @@
 # Libraries  --------------------------------------------------------------
 
 library(igraph)
-setwd("~/Downloads/BAPLA/Simulation_Study")
-source("Functions_BAPLA.R")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments")
+source("BAPLA_Functions.R")
 # p = 10 ------------------------------------------------------------------
 
 
@@ -109,14 +109,14 @@ image(as.matrix(ER_50), main= "Erdos Renyi")
 
 # Save interaction matrices -----------------------------------------------
 
-setwd("~/Downloads/BAPLA/Simulation_Study/CG")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG")
 saveRDS(CG_10, "beta_10.RDS")
 saveRDS(CG_50, "beta_50.RDS")
 
-setwd("~/Downloads/BAPLA/Simulation_Study/ER")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER")
 saveRDS(as.matrix(ER_10), "beta_10.RDS")
 saveRDS(as.matrix(ER_50), "beta_50.RDS")
 
-setwd("~/Downloads/BAPLA/Simulation_Study/SB")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB")
 saveRDS(as.matrix(SB_10), "beta_10.RDS")
 saveRDS(as.matrix(SB_50), "beta_50.RDS")
