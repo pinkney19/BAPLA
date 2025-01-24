@@ -108,7 +108,7 @@ Simulate_data_add_norm = function(p, N, beta, beta_0, cut_off, mu, sigma){
   }
   
   # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:500)]
+  new_y = y[, -(1:cut_off)]
   return(new_y)
 }
 
@@ -150,7 +150,7 @@ Simulate_data_add_gamma = function(p, N, beta, beta_0, cut_off, shape, scale){
   }
   
   # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:500)]
+  new_y = y[, -(1:cut_off)]
   return(new_y)
 }
 # 5. Estimation for all units --------------------------------------
