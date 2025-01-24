@@ -103,13 +103,13 @@ Simulate_data_add_norm = function(p, N, beta, beta_0, cut_off, mu, sigma){
     for(i in 1:p){
       # extract vector of previous values (i.e. y_{t-1} values)
       y_minus = as.matrix(y[,j-1])
-      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + dnorm(j/N, mean = mu, sd=sigma))) 
+      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + (dnorm(j/N, mean = mu, sd=sigma)-1))) 
     }
   }
   
   # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:cut_off)]
-  return(new_y)
+  #new_y = y[, -(1:cut_off)]
+  return(y)
 }
 
 
@@ -145,13 +145,13 @@ Simulate_data_add_gamma = function(p, N, beta, beta_0, cut_off, shape, scale){
     for(i in 1:p){
       # extract vector of previous values (i.e. y_{t-1} values)
       y_minus = as.matrix(y[,j-1])
-      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + dgamma(j/N, shape = shape, scale = scale))) 
+      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + (dgamma(j/N, shape = shape, scale = scale)-1))) 
     }
   }
   
   # get rid of first 100 samples => "burn in"
-  new_y = y[, -(1:cut_off)]
-  return(new_y)
+  #new_y = y[, -(1:cut_off)]
+  return(y)
 }
 # 5. Estimation for all units --------------------------------------
 

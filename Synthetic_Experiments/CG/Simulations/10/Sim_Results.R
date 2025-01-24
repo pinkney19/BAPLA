@@ -108,19 +108,19 @@ plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
 
 library(ggplot2)
 # plots for High-firing model 
-p1 = plot_intercept_estimates2(out_50_1000, -10, 0, "n = 1000", -2.6)
-p2 = plot_intercept_estimates2(out_50_2000, -10, 0, "n =  2000", -2.6)
-p3 = plot_intercept_estimates2(out_50_5000, -10, 0, "n = 5000", -2.6)
-p4 = plot_intercept_estimates2(out_50_10000, -10, 0, "n = 10000", -2.6)
+p1 = plot_intercept_estimates2(out_50_1000, -20, 0, "n = 1000", -2.6)
+p2 = plot_intercept_estimates2(out_50_2000, -20, 0, "n =  2000", -2.6)
+p3 = plot_intercept_estimates2(out_50_5000, -20, 0, "n = 5000", -2.6)
+p4 = plot_intercept_estimates2(out_50_10000, -20, 0, "n = 10000", -2.6)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
 # -3.6 
 
-p1 = plot_intercept_estimates2(out_zero_1000, -10, 0, "n = 1000", -3.6)
-p2 = plot_intercept_estimates2(out_zero_2000, -10, 0, "n =  2000", -3.6)
-p3 = plot_intercept_estimates2(out_zero_5000, -10, 0, "n = 5000", -3.6)
-p4 = plot_intercept_estimates2(out_zero_10000, -10, 0, "n = 10000", -3.6)
+p1 = plot_intercept_estimates2(out_zero_1000, -20, 0, "n = 1000", -3.6)
+p2 = plot_intercept_estimates2(out_zero_2000, -20, 0, "n =  2000", -3.6)
+p3 = plot_intercept_estimates2(out_zero_5000, -20, 0, "n = 5000", -3.6)
+p4 = plot_intercept_estimates2(out_zero_10000, -20, 0, "n = 10000", -3.6)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
@@ -234,7 +234,7 @@ plot_f_cis <- function(f, unit_id, title, N) {
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_y_continuous(limits = c(-3, 15)) +
+    scale_y_continuous(limits = c(-5, 15)) +
     theme(legend.position = "topright") +
     guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
 }
