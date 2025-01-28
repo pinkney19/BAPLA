@@ -13,7 +13,7 @@ N_reps = seq(1, 10)
 # p = 10 ------------------------------------------------------------------
 
 
-# Zero-Inflated Model (beta_0 = -3.6) -----------------------------------------------------
+# Zero-Inflated Model (beta_0 = -2.6) -----------------------------------------------------
 
 # n = 1000 time points
 
@@ -30,7 +30,7 @@ data_zero_1000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=1000;
   
   beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-3.6,p)
+  beta_0 = rep(-2.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -59,7 +59,7 @@ data_zero_2000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=2000;
   
    beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-3.6,p)
+  beta_0 = rep(-2.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -89,7 +89,7 @@ data_zero_5000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
                                                        p = 10; N=5000;
                                                        
                                                         beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-                                                       beta_0 = rep(-3.6,p)
+                                                       beta_0 = rep(-2.6,p)
                                                        
                                                        # Simulate the data
                                                        data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -117,7 +117,7 @@ data_zero_10000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   p = 10; N=10000;
   
    beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-3.6,p)
+  beta_0 = rep(-2.6,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -146,7 +146,7 @@ data_50_1000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=1000
    beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-2.6,p)
+  beta_0 = rep(0.1,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -171,7 +171,7 @@ data_50_2000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=2000
    beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-2.6,p)
+  beta_0 = rep(0.1,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -196,7 +196,7 @@ data_50_5000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=5000
    beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-2.6,p)
+  beta_0 = rep(0.1,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
@@ -224,7 +224,7 @@ data_50_10000 <- foreach(k=N_reps, .packages = c("LaplacesDemon")) %dopar%{
   # Initialize parameters
   p = 10; N=10000
   beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
-  beta_0 = rep(-2.6,p)
+  beta_0 = rep(0.1,p)
   
   # Simulate the data
   data = Simulate_data_add_gamma(p, N, beta, beta_0, cut_off=0, shape=2, scale=0.05)
