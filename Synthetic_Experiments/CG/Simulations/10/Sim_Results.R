@@ -25,6 +25,7 @@ out_zero_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations
 out_zero_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/out_zero_5000.RDS")
 out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/out_zero_10000.RDS")
 
+
 # new way -----------------------------------------------------------------
 library(pROC)
 res_50_1000 =metrics_new(out_50_1000, beta, 1e-5)
@@ -162,11 +163,12 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   beta_0s = map(out, 2)
   beta_0s_id = map(beta_0s, unit_id)
   
-  #bias_beta_0 = 0 #mean(unlist(beta_0s_id)) - true_beta_0
+  #bias_beta_0 = mean(unlist(beta_0s_id)) - true_beta_0
   
   f = lapply(c_hats_id, function(x) phi2%*%as.matrix(x))
+  #f =  lapply(c_hats_id, function(x) phi_bar*(x))
   for(i in 1:length(f)){
-    f[[i]] = f[[i]] + abs(beta_0s_id[[i]])
+    f[[i]] = f[[i]] #+ bias_beta_0
   }
   
   return(f)
@@ -234,7 +236,7 @@ plot_f_cis <- function(f, unit_id, title, N) {
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_y_continuous(limits = c(-5, 8)) +
+    scale_y_continuous(limits = c(-5, 15)) +
     theme(legend.position = "topright") +
     guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
 }

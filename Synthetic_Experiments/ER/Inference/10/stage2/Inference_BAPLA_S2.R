@@ -28,7 +28,7 @@ if (l==1){
     
     # load data
     data_50 <- readRDS("data_50_1000.RDS")
-    out_50 <- readRDS("out_50_1000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_1000.RDS") #use first stage estimates)
    
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -45,13 +45,7 @@ if (l==1){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
   
@@ -89,7 +83,7 @@ if (l==2){
     
     # load data
     data_50 <- readRDS("data_50_2000.RDS")
-    out_50 <- readRDS("out_50_2000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_2000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -107,13 +101,7 @@ if (l==2){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F)
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -153,7 +141,7 @@ if (l==3){
     
     # load data
     data_50 <- readRDS("data_50_5000.RDS")
-    out_50 <- readRDS("out_50_5000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_5000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -171,13 +159,7 @@ if (l==3){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -217,7 +199,7 @@ if (l==4){
     
     # load data
     data_50 <- readRDS("data_50_10000.RDS")
-    out_50 <- readRDS("out_50_10000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_10000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -235,13 +217,7 @@ if (l==4){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -282,7 +258,7 @@ if (l==5){
     
     # load data
     data_zero <- readRDS("data_zero_1000.RDS")
-    out_zero <- readRDS("out_zero_1000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_1000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -299,13 +275,7 @@ if (l==5){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -344,7 +314,7 @@ if (l==6){
     
     # load data
     data_zero <- readRDS("data_zero_2000.RDS")
-    out_zero <- readRDS("out_zero_2000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_2000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -361,13 +331,7 @@ if (l==6){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -406,7 +370,7 @@ if (l==7){
     
     # load data
     data_zero <- readRDS("data_zero_5000.RDS")
-    out_zero <- readRDS("out_zero_5000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_5000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -423,13 +387,7 @@ if (l==7){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -468,7 +426,7 @@ if (l==8){
     
     # load data
     data_zero <- readRDS("data_zero_10000.RDS")
-    out_zero <- readRDS("out_zero_10000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_10000.RDS") #use first stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -485,13 +443,7 @@ if (l==8){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    phi_bar = NULL;
-    for(i in 1:ncol(phi)){
-      phi2[,i] = phi[,i] - mean(phi[,i])
-      phi_bar[i] = mean(phi[,i])
-    }
-    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
+    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
