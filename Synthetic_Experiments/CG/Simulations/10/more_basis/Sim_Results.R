@@ -175,10 +175,10 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
 }
 
 
-f_hat_50_1000 = get_f(out_50_1000, 10, 999, unit_id = 1, 0.1)
-f_hat_50_2000 = get_f(out_50_2000, 10, 1999, unit_id = 1, 0.1)
-f_hat_50_5000 = get_f(out_50_5000, 10, 4999, unit_id = 1, 0.1)
-f_hat_50_10000 = get_f(out_50_10000, 10, 9999, unit_id = 1, 0.1)
+f_hat_50_1000 = get_f(out_50_1000, 15, 999, unit_id = 1, 0.1)
+f_hat_50_2000 = get_f(out_50_2000, 15, 1999, unit_id = 1, 0.1)
+f_hat_50_5000 = get_f(out_50_5000, 15, 4999, unit_id = 1, 0.1)
+f_hat_50_10000 = get_f(out_50_10000, 15, 9999, unit_id = 1, 0.1)
 
 
 
@@ -248,10 +248,10 @@ f4 = plot_f_cis(f_hat_50_10000, 1, "n = 10000",10000)
 
 ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
 
-f_hat_zero_1000 = get_f(out_zero_1000, 10, 999, unit_id = 1, -2.6)
-f_hat_zero_2000 = get_f(out_zero_2000, 10, 1999, unit_id = 1, -2.6)
-f_hat_zero_5000 = get_f(out_zero_5000, 10, 4999, unit_id = 1, -2.6)
-f_hat_zero_10000 = get_f(out_zero_10000, 10, 9999, unit_id = 1, -2.6)
+f_hat_zero_1000 = get_f(out_zero_1000, 15, 999, unit_id = 1, -2.6)
+f_hat_zero_2000 = get_f(out_zero_2000, 15, 1999, unit_id = 1, -2.6)
+f_hat_zero_5000 = get_f(out_zero_5000, 15, 4999, unit_id = 1, -2.6)
+f_hat_zero_10000 = get_f(out_zero_10000, 15, 9999, unit_id = 1, -2.6)
 
 f1 = plot_f_cis(f_hat_zero_1000, 1, "n = 1000",1000)
 f2 = plot_f_cis(f_hat_zero_2000, 1, "n = 2000",2000)

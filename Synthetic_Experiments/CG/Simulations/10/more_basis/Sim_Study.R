@@ -22,7 +22,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_50_1000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -63,7 +63,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_50_2000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -105,7 +105,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_50_5000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -148,7 +148,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_50_10000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -192,7 +192,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_zero_1000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -232,7 +232,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_zero_2000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -272,7 +272,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_zero_5000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
@@ -312,7 +312,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_zero_10000.RDS")
-                                            m = 15
+                                            m = 25
                                             
                                             # Estimate coefficients with own function
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)

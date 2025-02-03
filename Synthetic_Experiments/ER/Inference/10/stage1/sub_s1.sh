@@ -11,4 +11,4 @@
 
 x=$SLURM_ARRAY_TASK_ID
 
-srun Rscript ~/BAPLA/ER/10/inference/Inference_BAPLA_S1.R $x
+srun Rscript ~/BAPLA2/ER/10/inference/Inference_BAPLA_S1.R $x

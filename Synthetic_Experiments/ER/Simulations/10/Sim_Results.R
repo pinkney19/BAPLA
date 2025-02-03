@@ -27,6 +27,7 @@ out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulation
 
 # new way -----------------------------------------------------------------
 library(pROC)
+library(pracma)
 res_50_1000 =metrics_new(out_50_1000, beta, 1e-5)
 res_50_2000 =metrics_new(out_50_2000, beta,1e-5)
 res_50_5000 =metrics_new(out_50_5000, beta,1e-5)
@@ -164,7 +165,7 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   
   bias_beta_0 = mean(unlist(beta_0s_id)) - true_beta_0
   
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
+  f = lapply(c_hats_id, function(x) phi2%*%as.matrix(x))
   for(i in 1:length(f)){
     f[[i]] = f[[i]] #+ beta_0s_id[[i]]
   }
@@ -216,14 +217,14 @@ plot_f_cis <- function(f, unit_id, title, N) {
   #if(N==5000){mu = 0.45}
   #if(N==10000){mu = 0.475}
   
-  xs <- dgamma(seq(0, 1, length.out=N-1), shape = 2, scale=  0.05)-1
+  xs <- dgamma(seq(0, 1, length.out=N), shape = 2, scale=  0.05)-1
   
   data <- data.frame(
     t = 1:length(median_vals),
     median = median_vals,
     upper = upper_vals,
     lower = lower_vals,
-    xs = xs
+    xs = xs[-1]
   )
   
   ggplot(data, aes(x = t/N)) +

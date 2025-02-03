@@ -27,7 +27,9 @@ if (l==1){
     source("BAPLA_Functions.R")
     
     # load data
+    #setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulate_Data/10/Sims_data")
     data_50 <- readRDS("data_50_1000.RDS")
+    #setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10")
     out_50 <- readRDS("out_50_1000.RDS") #use first stage estimates)
    
     # Initialize parameters
@@ -45,13 +47,13 @@ if (l==1){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
   
@@ -107,13 +109,13 @@ if (l==2){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F)
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -171,13 +173,13 @@ if (l==3){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -236,12 +238,12 @@ if (l==4){
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
     phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -299,13 +301,13 @@ if (l==5){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -361,13 +363,13 @@ if (l==6){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -423,13 +425,13 @@ if (l==7){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -485,13 +487,13 @@ if (l==8){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    # phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
-    # phi_bar = NULL;
-    # for(i in 1:ncol(phi)){
-    #   phi2[,i] = phi[,i] - mean(phi[,i])
-    #   phi_bar[i] = mean(phi[,i])
-    # }
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
