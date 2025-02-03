@@ -1,5 +1,5 @@
 
-# beta_0=-2.6 / old naming of 50/50 ----------------------------------------
+# beta_0=0.1 / old naming of 50/50 ----------------------------------------
 
 # n = 1000 ----------------------------------------------------------------
 
@@ -39,7 +39,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
 end <-Sys.time() 
 stopCluster(cl) 
 print(end-start) 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check")
 saveRDS(out, "out_50_1000.RDS")
 
 

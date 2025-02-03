@@ -935,7 +935,7 @@ get_f = function(out,m, t_end, unit_id){
 
 # 17. Function for debiased lasso -----------------------------------------
 
-debiased_lasso = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
+despars_lasso = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
   #' Function to obtain debiased lasso estimates and confidence intervals
   #'
   #' @param idx index of unit of interest, i.e., idx in 1,dots,p

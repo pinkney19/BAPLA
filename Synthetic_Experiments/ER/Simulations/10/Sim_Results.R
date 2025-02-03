@@ -164,9 +164,9 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   
   #bias_beta_0 = 0 #mean(unlist(beta_0s_id)) - true_beta_0
   
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
+  f = lapply(c_hats_id, function(x) phi2%*%as.matrix(x))
   for(i in 1:length(f)){
-    f[[i]] = f[[i]] 
+    f[[i]] = f[[i]] #+ beta_0s_id[[i]]
   }
   
   return(f)
