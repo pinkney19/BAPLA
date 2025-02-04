@@ -30,9 +30,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat, beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -71,9 +71,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -113,9 +113,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -156,9 +156,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -200,9 +200,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -240,9 +240,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -280,9 +280,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 
@@ -320,9 +320,9 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_0_hat = res$beta0
                                             f_hat = res$f_hat
                                             c_hat = res$c_hat
+                                            beta_alt = res$beta_alt
                                             
-                                            
-                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
+                                            return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat,beta_alt = beta_alt)) 
                                             
                                           }
 

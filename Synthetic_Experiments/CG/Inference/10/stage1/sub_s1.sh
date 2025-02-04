@@ -5,7 +5,7 @@
 #SBATCH --array=1-8%2
 #SBATCH -e inf%.e
 #SBATCH -o inf%.out
-#SBATCH --mem-per-cpu=4G
+#SBATCH --mem-per-cpu=3G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=c.pinkney@lancaster.ac.uk
 

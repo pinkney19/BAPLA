@@ -118,10 +118,10 @@ ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
 # -2.6 
 
-p1 = plot_intercept_estimates2(out_zero_1000, -5, 0, "n = 1000", -2.6)
-p2 = plot_intercept_estimates2(out_zero_2000, -5, 0, "n =  2000", -2.6)
-p3 = plot_intercept_estimates2(out_zero_5000, -5, 0, "n = 5000", -2.6)
-p4 = plot_intercept_estimates2(out_zero_10000, -5, 0, "n = 10000", -2.6)
+p1 = plot_intercept_estimates2(out_zero_1000, -5, -2, "n = 1000", -2.6)
+p2 = plot_intercept_estimates2(out_zero_2000, -5, -2, "n =  2000", -2.6)
+p3 = plot_intercept_estimates2(out_zero_5000, -5, -2, "n = 5000", -2.6)
+p4 = plot_intercept_estimates2(out_zero_10000, -5, -2, "n = 10000", -2.6)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 

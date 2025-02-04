@@ -1,6 +1,8 @@
 # Load libraries ----------------------------------------------------------
 
 library(purrr)
+library(pROC)
+library(pracma)
 setwd("~/Downloads/BAPLA/Synthetic_Experiments")
 source("BAPLA_Functions.R")
 
@@ -15,61 +17,13 @@ beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/beta_10.RDS")
 
 
 # load simulation results -------------------------------------------------
-out_50_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_50_1000.RDS")
-out_50_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_50_2000.RDS")
-out_50_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_50_5000.RDS")
+
 out_50_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_50_10000.RDS")
 
-out_zero_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_zero_1000.RDS")
-out_zero_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_zero_2000.RDS")
-out_zero_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_zero_5000.RDS")
-out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/out_zero_10000.RDS")
+new_100_basis_out_50_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/more_basis/100_basis_out_50_10000.RDS")
 
-
-# new way -----------------------------------------------------------------
-library(pROC)
-res_50_1000 =metrics_new(out_50_1000, beta, 1e-5)
-res_50_2000 =metrics_new(out_50_2000, beta,1e-5)
-res_50_5000 =metrics_new(out_50_5000, beta,1e-5)
-res_50_10000 =metrics_new(out_50_10000, beta,1e-5)
-
-res_zero_1000 =metrics_new(out_zero_1000, beta, 1e-5)
-res_zero_2000 =metrics_new(out_zero_2000, beta,1e-5)
-res_zero_5000 =metrics_new(out_zero_5000, beta,1e-5)
-res_zero_10000 =metrics_new(out_zero_10000, beta,1e-5)
-
-RMSEs_50 = c(res_50_1000$av_mse, res_50_2000$av_mse,res_50_5000$av_mse, res_50_10000$av_mse)
-ses_50 = c(res_50_1000$se, res_50_2000$se,res_50_5000$se, res_50_10000$se)
-aurocs_50 = c(res_50_1000$av_AUC, res_50_2000$av_AUC,res_50_5000$av_AUC, res_50_10000$av_AUC)
-aurocs_se_50 = c(res_50_1000$auc_se, res_50_2000$auc_se,res_50_5000$auc_se, res_50_10000$auc_se)
-
-RMSEs_zero = c(res_zero_1000$av_mse, res_zero_2000$av_mse,res_zero_5000$av_mse, res_zero_10000$av_mse)
-ses_zero = c(res_zero_1000$se, res_zero_2000$se,res_zero_5000$se, res_zero_10000$se)
-aurocs_zero = c(res_zero_1000$av_AUC, res_zero_2000$av_AUC,res_zero_5000$av_AUC, res_zero_10000$av_AUC)
-aurocs_se_zero = c(res_zero_1000$auc_se, res_zero_2000$auc_se,res_zero_5000$auc_se, res_zero_10000$auc_se)
-
-
-
-#setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10")
-#saveRDS(RMSEs_50, "rmse_50.RDS")
-#saveRDS(ses_50,"ses_50.RDS")
-#saveRDS(aurocs_50, "AUC_50.RDS")
-#saveRDS(aurocs_se_50, "AUC_se_50.RDS")
-
-#saveRDS(RMSEs_zero, "rmse_zero.RDS")
-#saveRDS(ses_zero,"ses_zero.RDS")
-#saveRDS(aurocs_zero, "AUC_zero.RDS")
-#saveRDS(aurocs_se_zero, "AUC_se_zero.RDS")
-
-
-
-
-# old way -----------------------------------------------------------------
-
-
-# Intercept estimates -----------------------------------------------------
-
-
+res = metrics_new(out_50_10000, beta,1e-5)
+res2 = metrics_new(new_100_basis_out_50_10000, beta,1e-5)
 
 beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
   #'  Function to plot intercept estimates for each unit across monte carlo samples
@@ -108,24 +62,11 @@ plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
 }
 
 library(ggplot2)
-# plots for High-firing model 
-p1 = plot_intercept_estimates2(out_50_1000, -5, 1, "n = 1000", 0.1)
-p2 = plot_intercept_estimates2(out_50_2000, -5, 1, "n =  2000", 0.1)
-p3 = plot_intercept_estimates2(out_50_5000, -5, 1, "n = 5000", 0.1)
-p4 = plot_intercept_estimates2(out_50_10000, -5, 1, "n = 10000", 0.1)
 library(ggpubr)
-ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
-
-# -3.6 
-
-p1 = plot_intercept_estimates2(out_zero_1000, -10, 0, "n = 1000", -2.6)
-p2 = plot_intercept_estimates2(out_zero_2000, -10, 0, "n =  2000", -2.6)
-p3 = plot_intercept_estimates2(out_zero_5000, -10, 0, "n = 5000", -2.6)
-p4 = plot_intercept_estimates2(out_zero_10000, -10, 0, "n = 10000", -2.6)
-library(ggpubr)
-ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
+plot_intercept_estimates2(out_50_10000, -2, 0.5, "n = 10000", 0.1)
 
 
+plot_intercept_estimates2(new_100_basis_out_50_10000, -2, 0.5, "100 basis - n = 10,000", 0.1)
 # F estimates -------------------------------------------------------------
 
 
@@ -175,12 +116,12 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
 }
 
 
-f_hat_50_1000 = get_f(out_50_1000, 15, 999, unit_id = 1, 0.1)
-f_hat_50_2000 = get_f(out_50_2000, 15, 1999, unit_id = 1, 0.1)
-f_hat_50_5000 = get_f(out_50_5000, 15, 4999, unit_id = 1, 0.1)
-f_hat_50_10000 = get_f(out_50_10000, 15, 9999, unit_id = 1, 0.1)
+f_hats = map(out_50_10000, 3)
+check = map(f_hats, 1)
 
+f_hat_50_10000 = get_f(out_50_10000, 50, 9999, unit_id = 1, 0.1)
 
+f_hat2 = get_f(new_100_basis_out_50_10000, 100, 9999, 1, 0.1)
 
 # plot_f_cis = function(f, unit_id, title,N, const){
 #   
@@ -245,8 +186,11 @@ f1 = plot_f_cis(f_hat_50_1000, 1, "n = 1000",1000)
 f2 = plot_f_cis(f_hat_50_2000, 1, "n = 2000",2000)
 f3 = plot_f_cis(f_hat_50_5000, 1, "n = 5000",5000)
 f4 = plot_f_cis(f_hat_50_10000, 1, "n = 10000",10000)
-
+f4
 ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
+
+
+plot_f_cis(f_hat2,1 , "", 10000)
 
 f_hat_zero_1000 = get_f(out_zero_1000, 15, 999, unit_id = 1, -2.6)
 f_hat_zero_2000 = get_f(out_zero_2000, 15, 1999, unit_id = 1, -2.6)
@@ -270,3 +214,19 @@ plot_f_cis(f_hat_50_2000, 1, "50 - 2000",2000, 2000)
 plot_f_cis(f_hat_50_5000, 1, "50 - 5000",5000, 5000)
 plot_f_cis(f_hat_50_10000, 1, "50 - 10000",10000, 10000)
 
+# checks
+c_hats = map(out_50_10000, 4)
+t_end = 9999; m=25
+phi <- bs(seq(0,1, length.out = t_end), df=m, intercept = F) 
+phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+phi_bar = NULL;
+for(i in 1:ncol(phi)){
+  phi2[,i] = phi[,i] - mean(phi[,i])
+  phi_bar[i] = mean(phi[,i])
+}
+xs = seq(0,1,length.out=9999)
+x = matrix(xs, ncol=10, nrow = 9999)
+matplot(x, phi2, type='l', ylim = c(-2,10))
+#dgamma(seq(0, 1, length.out=N), shape = 2, scale=  0.05)-1
+lines(xs, (dnorm(xs, 0.5, 0.05)-1), col="red")
+lines(xs, (dgamma(xs,shape=2, scale =0.05) -1), col="blue")

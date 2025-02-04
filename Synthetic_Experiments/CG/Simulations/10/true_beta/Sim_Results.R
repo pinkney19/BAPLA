@@ -10,22 +10,23 @@ source("BAPLA_Functions.R")
 # Parameter values --------------------------------------------------------
 
 p = 10; 
-beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_10.RDS")
+beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/beta_10.RDS")
 
 
 
 # load simulation results -------------------------------------------------
-out_50_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_50_1000.RDS")
-out_50_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_50_2000.RDS")
-out_50_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_50_5000.RDS")
-out_50_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_50_10000.RDS")
+out_50_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_50_1000.RDS")
+out_50_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_50_2000.RDS")
+out_50_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_50_5000.RDS")
+out_50_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_50_10000.RDS")
 
-out_zero_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_zero_1000.RDS")
-out_zero_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_zero_2000.RDS")
-out_zero_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_zero_5000.RDS")
-out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10/check/out_zero_10000.RDS")
+out_zero_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_zero_1000.RDS")
+out_zero_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_zero_2000.RDS")
+out_zero_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_zero_5000.RDS")
+out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10/true_beta/out_zero_10000.RDS")
 
-# new way -----------------------------------------------------------------
+
+# Interaction Matrix -----------------------------------------------------------
 library(pROC)
 res_50_1000 =metrics_new(out_50_1000, beta, 1e-5)
 res_50_2000 =metrics_new(out_50_2000, beta,1e-5)
@@ -46,20 +47,6 @@ RMSEs_zero = c(res_zero_1000$av_mse, res_zero_2000$av_mse,res_zero_5000$av_mse, 
 ses_zero = c(res_zero_1000$se, res_zero_2000$se,res_zero_5000$se, res_zero_10000$se)
 aurocs_zero = c(res_zero_1000$av_AUC, res_zero_2000$av_AUC,res_zero_5000$av_AUC, res_zero_10000$av_AUC)
 aurocs_se_zero = c(res_zero_1000$auc_se, res_zero_2000$auc_se,res_zero_5000$auc_se, res_zero_10000$auc_se)
-
-
-
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10")
-saveRDS(RMSEs_50, "rmse_50.RDS")
-saveRDS(ses_50,"ses_50.RDS")
-saveRDS(aurocs_50, "AUC_50.RDS")
-saveRDS(aurocs_se_50, "AUC_se_50.RDS")
-
-saveRDS(RMSEs_zero, "rmse_zero.RDS")
-saveRDS(ses_zero,"ses_zero.RDS")
-saveRDS(aurocs_zero, "AUC_zero.RDS")
-saveRDS(aurocs_se_zero, "AUC_se_zero.RDS")
-
 
 
 
@@ -102,7 +89,7 @@ beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
 
 
 plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
-  beta_0_hats = map(out, 2)
+  beta_0_hats = map(out, 5)
   beta_0_boxplots2(beta_0_hats, 10, title, true_beta_0, a, b)
 }
 
@@ -115,12 +102,12 @@ p4 = plot_intercept_estimates2(out_50_10000, -1, 1, "n = 10000", 0.1)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
-# -2.6 
+# -3.6 
 
 p1 = plot_intercept_estimates2(out_zero_1000, -5, -2, "n = 1000", -2.6)
 p2 = plot_intercept_estimates2(out_zero_2000, -5, -2, "n =  2000", -2.6)
-p3 = plot_intercept_estimates2(out_zero_5000, -3, -2.5, "n = 5000", -2.6)
-p4 = plot_intercept_estimates2(out_zero_10000, -3, -2.5, "n = 10000", -2.6)
+p3 = plot_intercept_estimates2(out_zero_5000, -5, -2, "n = 5000", -2.6)
+p4 = plot_intercept_estimates2(out_zero_10000, -5, -2, "n = 10000", -2.6)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
@@ -162,11 +149,12 @@ get_f = function(out,m, t_end, unit_id, true_beta_0){
   beta_0s = map(out, 2)
   beta_0s_id = map(beta_0s, unit_id)
   
-  #bias_beta_0 = 0 #mean(unlist(beta_0s_id)) - true_beta_0
+  #bias_beta_0 = mean(unlist(beta_0s_id)) - true_beta_0
   
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
+  f = lapply(c_hats_id, function(x) phi2%*%as.matrix(x))
+  #f =  lapply(c_hats_id, function(x) phi_bar*(x))
   for(i in 1:length(f)){
-    f[[i]] = f[[i]] 
+    f[[i]] = f[[i]] #+ bias_beta_0
   }
   
   return(f)
@@ -216,7 +204,7 @@ plot_f_cis <- function(f, unit_id, title, N) {
   #if(N==5000){mu = 0.45}
   #if(N==10000){mu = 0.475}
   
-  xs <- dgamma(seq(0, 1, length.out=N-1), shape = 2, scale=  0.05)-1
+  xs <- dnorm(seq(0, 1, length.out=N-1), mean = 0.5, sd =  0.05)-1
   
   data <- data.frame(
     t = 1:length(median_vals),
@@ -234,7 +222,7 @@ plot_f_cis <- function(f, unit_id, title, N) {
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_y_continuous(limits = c(-5, 12)) +
+    scale_y_continuous(limits = c(-5, 15)) +
     theme(legend.position = "topright") +
     guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
 }
@@ -262,5 +250,9 @@ ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
 # plot_f_cis(f, unit_id, "Title", N, const)
 
 
-
+par(mfrow=c(1,4), mar = c(5.5, 4.5, 4.5, 2.5))
+plot_f_cis(f_hat_50_1000, 1, "50 - 1000",1000, 1000)
+plot_f_cis(f_hat_50_2000, 1, "50 - 2000",2000, 2000)
+plot_f_cis(f_hat_50_5000, 1, "50 - 5000",5000, 5000)
+plot_f_cis(f_hat_50_10000, 1, "50 - 10000",10000, 10000)
 

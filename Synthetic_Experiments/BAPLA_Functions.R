@@ -168,7 +168,7 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
   p = dim(data_source)[1]
   #print(p)
   beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
-  c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL;
+  c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL; beta0_alt = NULL;
   for (i in 1:p){
     print(i)
     res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m)
@@ -177,9 +177,10 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
     f_hat[[i]] = res$f
     c_hat[[i]] = res$c
     iter[i] = res$iter
+    beta0_alt[i] = res$beta_alt
   }
   
-  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter))
+  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter, beta_alt = beta0_alt))
 }
 # 6. Estimation for single unit ---------------------------------------------
 Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
@@ -217,7 +218,7 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   
   c <- rep(0, m)
   
-  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+  phi <- bs(seq(0,1, length.out=length(y)), df=m, intercept = F) # to check?
   phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
   phi_bar = NULL;
   for(i in 1:ncol(phi)){
@@ -294,7 +295,7 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
     f = as.vector(f)
     
     # Checks for convergence
-    #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
+    
     if( max((beta_tilde-beta)^2)<tol^2) break
   }
   
@@ -307,13 +308,11 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   beta_0 = beta_0 - sum(sum_term)
   
   # Account for centered basis functions
-  beta_0 = beta_0 - sum(c*phi_bar)
+  beta_0_alt = beta_0 - sum(c*phi_bar)
   
-  # estimate original f
-  f_orig = phi %*% as.matrix(c)
   
   # Print final coefficients
-  return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_0_alt))
 }
 
 # 7. Coverage for confidence intervals ------------------------------------
@@ -418,6 +417,374 @@ Format_results = function(true_beta, out, n_samp, p,model_type){
   colnames(out2) = c("Avcov_s", "Avcov_sc", "Avlen_s", "Avlen_sc")
   return(out2)
 }
+# 11. Function to obtain performance measures for interaction matr --------
+
+metrics_new = function(res, gt, threshold){
+  
+  beta_list = map(res, 1)
+  # put entries less than threshold to zero
+  lapply(beta_list, function(x) ifelse(abs(x) < threshold, 0, x))
+  av_mse = mean( unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2)) )
+  # standard errors
+  se = std_err(unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2)) )
+  
+  F1 = mean(unlist(lapply(beta_list, function(x) performance_measures(x, gt)$F1)))
+  F1_se = std_err(unlist(lapply(beta_list, function(x) performance_measures(x, gt)$F1)))
+  
+  # vectorise matrices for AUROC
+  true_beta = as.vector(gt)
+  est_beta_vec = lapply(beta_list, as.vector)
+  
+  # make into 0 1 vectors
+  true_beta[true_beta!=0]=1
+  for(i in 1:length(est_beta_vec)){
+    est_beta_vec[[i]][est_beta_vec[[i]]!=0]=1
+    
+  }
+  
+  # Check if the response has more than two levels
+  if (length(unique(true_beta)) > 2) {
+    
+    roc_obj = lapply(est_beta_vec, function(x){multiclass.roc(true_beta, x, direction="<")})
+    auc_list = lapply(roc_obj, auc)
+  } else {
+    # Use roc for binary classification
+    roc_obj = lapply(est_beta_vec, function(x){roc(true_beta, x, direction="<")})
+    auc_list = lapply(roc_obj, auc)
+  }
+  
+  auc_obj = mean(unlist(auc_list))
+  se_auc = std_err(unlist(auc_list))
+  
+  return(list(F1 = F1, av_mse = av_mse, av_AUC = auc_obj, se = se, f1_se = F1_se, auc_se = se_auc)) 
+}
+
+
+
+# 12. Performance metrics -------------------------------------------------
+
+performance_measures = function(estim, truth){
+  
+  # Usage - Function to obtain performance measures for Monte carlo estimates
+  #        
+  #
+  # Input Parameters:
+  #
+  # estim - p x p matrix containing ISDM estimates
+  # truth - true ISDM matrix (Hawkes)
+  # ind   - indicator for PC or theta matrix. If true => PC matrix so get TPR and FPR
+  #
+  # Output:
+  # TPR   - True positive rate
+  # FPR   - False positive rate
+  # l2    - l2 norm
+  
+  
+  l2= NULL; d= list()
+  
+  d = estim - truth
+  
+  
+  #l2 = sqrt(sum(abs(d)^2))
+  l2 = ( sum(abs(d)^2) )/ (sum(abs(truth)^2))
+  
+  frob_norm = norm(d,"F")
+  
+  #Biniarise truth and estimated ISDM - i.e. set nonzero and non-diagonal elements to 1 so can compare to ground truth
+  truth[truth!=1 &truth!=0] = 1
+  estim[estim!=1 &estim!=0] = 1
+  
+  n.stream = dim(truth)[1]
+  
+  TN = sum(truth==0) #true number of missing edges 
+  TP = (sum(truth==1)) #no. true edges 
+  
+  
+  TPR = FPR = FP = FN =NULL;
+  
+  #estimated - truth
+  #positive value -> edge found in estimated graph when there should NOT be -> False Positive
+  #negative value -> edge not found in estimated graph when there SHOULD be -> False Negative
+  diff = estim - truth
+  
+  FP = sum(diff>0) #false positives 
+  FN = sum(diff<0) #false negatives
+  
+  #TPR and FPR
+  FPR = FP/(FP+TN)
+  TPR= 1-(FN/TP)  
+  
+  #F1 - score
+  F1 = TP/(TP+0.5*(FP+FN))
+  
+  
+  return(list(TPR = TPR, FPR = FPR, l2=l2, F1=F1, frob_norm = frob_norm))
+  
+}
+
+
+# 13. Plot intercept estimates --------------------------------------------
+
+beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
+  #'  Function to plot intercept estimates for each unit across monte carlo samples
+  #'
+  #' @param beta_0_res nested list of intercept estimates from monte carlo sim study
+  #' @param p dimension
+  #' @param title title of plot
+  #' @param true_beta_0 true intercept in model specification
+  #' @export  
+  beta0_hat = list(); beta0_hat = rep(list(beta0_hat), p)
+  for(j in 1:p){
+    beta0_hat[[j]] = unlist(map(beta_0_res, j))
+  }
+  
+  df <- do.call(data.frame, beta0_hat)
+  names(df) = seq(1,p)
+  
+  
+  # test with ggplot
+  df_long <- reshape2::melt(df, id.vars = NULL,variable.name = "Variable", value.name = "Value")
+  
+  # Plot using ggplot2
+  ggplot(df_long, aes(x = as.factor(Variable), y = Value)) +
+    geom_boxplot(fill = "white") +
+    geom_hline(yintercept = true_beta_0, color = "blue", linetype = "dashed", size = 1) +
+    labs(title = title, x = expression(d), y = expression(hat(beta[0]))) +
+    ylim(a, b) +
+    theme_minimal()
+  
+}
+
+
+# 13.b plot intercept estimates -------------------------------------------
+
+
+plot_intercept_estimates2 = function(out, a, b, title, true_beta_0,p){
+  beta_0_hats = map(out, 2)
+  beta_0_boxplots2(beta_0_hats, p, title, true_beta_0, a, b)
+}
+
+
+
+# 14. Function to convert list to matrix ----------------------------------
+
+list_to_matrix = function(f){
+  mat_f = matrix(NA, ncol=length(f[[1]]), nrow = length(f))
+  for(i in 1:100){
+    mat_f[i,]=f[[i]]
+  }
+  return(mat_f)
+}
+
+
+# 15. Function to reconstruct f estimate ----------------------------------
+
+get_f = function(out,m, t_end, unit_id){
+  #' Function to obtain f estimate with non-centred basis functions but estimated coefficients
+  #'
+  #' @param out RDS file from STORM
+  #' @param m number of basis functions
+  #' @param t_end dimension of previous values
+  #' @param unit_id index for considered dimension
+  #' @export  
+  phi <- bs(seq(0,1, length.out = t_end), df=m, intercept = F) 
+  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+  phi_bar = NULL;
+  for(i in 1:ncol(phi)){
+    phi2[,i] = phi[,i] - mean(phi[,i])
+    phi_bar[i] = mean(phi[,i])
+  }
+  c_hats = map(out, 4)
+  c_hats_id = map(c_hats, unit_id)
+  
+  
+  
+  f = lapply(c_hats_id, function(x) phi2%*%as.matrix(x))
+
+  
+  return(f)
+}
+
+# 16. plots for normal f --------------------------------------------------
+
+plot_f_cis_normal <- function(f, unit_id, title, N) {
+  check <- list_to_matrix(f)
+  median_vals <- colQuantiles(check, probs = 0.5)
+  upper_vals <- colQuantiles(check, probs = 0.975)
+  lower_vals <- colQuantiles(check, probs = 0.025)
+  
+  
+  xs <- dnorm(seq(0, 1, length.out=N-1), mean = 0.5, sd =  0.05)-1
+  
+  data <- data.frame(
+    t = 1:length(median_vals),
+    median = median_vals,
+    upper = upper_vals,
+    lower = lower_vals,
+    xs = xs
+  )
+  
+  ggplot(data, aes(x = t/N)) +
+    geom_line(aes(y = median), color = "black") +
+    geom_line(aes(y = upper), color = "red") +
+    geom_line(aes(y = lower), color = "red") +
+    geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    labs(x = "t", y = expression(hat(f)(t)), title = title) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(limits = c(-5, 9)) +
+    theme(legend.position = "topright") +
+    guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
+}
+# 11. Estimate coeff with known beta --------------------------------------
+
+Estimate_coefficients_true_beta <- function(data_source, p, max_iter, tol, true_beta, m){
+  #'  Function to estimate coefficients of the BAPLA model for all dimensions and regularization parameter
+  #'
+  #' @param data_source data
+  #' @param p dimension
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  p = dim(data_source)[1]
+  #print(p)
+  beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
+  c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL; beta0_hat2 = NULL;
+  for (i in 1:p){
+    print(i)
+    beta = true_beta[i,] # get row of true matrix
+    res = Estimate_coefficients_beta(data_source, i, max_iter, tol, beta, m)
+    beta0_hat[i] = res$beta0
+    beta0_hat2[i] = res$beta_alt
+    beta_hat[i,] = res$beta #should be same as in true beta
+    f_hat[[i]] = res$f
+    c_hat[[i]] = res$c
+    iter[i] = res$iter
+  }
+  
+  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter, beta_alt = beta0_hat2))
+}
+
+
+# Estimate coefficients with known beta (single) --------------------------
+
+Estimate_coefficients_beta = function(data, idx, max_iter, tol, beta,  m){
+  #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+  #'
+  #' @param data data source 
+  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param beta true beta
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  
+  # obtain data
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  # standardize the data
+  x_bar = colMeans(X1) # get mean of each column
+  # X = X1
+  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+  for (i in 1:p){
+    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+  }
+  
+  # set regularisation parameter
+  
+  # # set initial parameters 
+  beta_0 = 0
+  
+  
+  c <- rep(0, m)
+  
+  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+  phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+  phi_bar = NULL;
+  for(i in 1:ncol(phi)){
+    phi2[,i] = phi[,i] - mean(phi[,i])
+    phi_bar[i] = mean(phi[,i])
+  }
+  
+  f <- phi2%*%as.matrix(c)
+  
+  
+  # Perform cyclical coordinate descent
+  for(iter in 1:max_iter) {
+    #print(iter)
+    # current parameter estimates
+    beta_tilde <- beta
+    beta0_tilde <- beta_0
+    f_tilde <- f
+    c_tilde <- c
+    
+    # Get working response and weights for IRLS
+    # i.e. ~ Equations (16) and (17) of glmnet paper
+    
+    # compute p_tilde
+    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+    # compute w
+    w = p_tilde * (1-p_tilde)
+    
+    # compute z
+    z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+    
+    
+    # Intercept update - 
+    #beta_0 <- crossprod(w, z- (X%*%beta) - f ) / sum(w)
+    beta_0 <- mean(z)
+    beta_0 <- as.numeric(beta_0)
+    
+    
+    
+    # Update spline coefficients assuming known form for f
+    
+    # step 1: calculate the c_k*phi_k(t)
+    t = list(); t = rep(list(t), length(c));
+    for(k in 1:length(c)){
+      t[[k]] <- c[k]*phi2[,k]
+    }
+    
+    
+    # # step 2: update each c_k in turn
+    for(k in 1:length(c)){
+      cj_sum <- Reduce("+", t[-k])
+      c[k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
+      t[[k]] <- c[k]*phi2[,k] #update with new c_k
+    }
+    
+    f = phi2 %*% as.matrix(c)
+    
+    f = as.vector(f)
+    
+    # Checks for convergence
+    
+    if( max((beta0_tilde-beta_0)^2)<tol^2) break
+  }
+  
+  #DE-STANDARDISE THE COEFFICIENTS
+  # sum_term = NULL;
+  # for(j in 1:p){
+  #   beta[j] = beta[j]/sd(X1[,j])
+  #   sum_term[j] = (x_bar[j]*beta[j])
+  # }
+  # beta_0 = beta_0 - sum(sum_term)
+  
+  # Account for centered basis functions
+  beta_alt = beta_0 - sum(c*phi_bar)
+  
+  
+  # Print final coefficients
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_alt))
+}
+
+
 # Old functions -----------------------------------------------------------
 
 
@@ -857,79 +1224,6 @@ lambda_boxplots = function(lams, p, title){
 
 
 
-# 13. Plot output of f estimates from stim study --------------------------
-
-f_plots = function(f_hat, title){
-  #'  Function to plot estimates of f_i(t)
-  #'
-  #' @param f_hat list of estimates for each unit/i
-  #' @param title title of plot
-  #' @export  
-  f_hat_list = list(); av_f_hat = rep(list(f_hat_list), p)
-  for(i in 1:p){
-    c = map(f_hat, i)
-    av_f_hat[[i]] = Reduce("+", c)/length(c)
-  }
-  
-  
-  plot(av_f_hat[[1]], xlab = expression(t), ylab = expression(hat(f)(t)), main = title, type='l')
-  for(i in 2:p){
-    lines(av_f_hat[[i]], col=i)
-  }
-  
-  const = 10000
-  N=10000;
-  lines(const*dnorm(seq(500,8999), mean = N/2, sd=N/10), col="blue", lwd =2, lty = "dashed")
-}
-
-
-# 14. Get uncentered estimates of f  --------------------------------------
-
-get_f = function(out,m, t_end, unit_id){
-  #' Function to obtain f estimate with non-centred basis functions but estimated coefficients
-  #'
-  #' @param out RDS file from STORM
-  #' @param m number of basis functions
-  #' @param t_end dimension of previous values
-  #' @param unit_id index for considered dimension
-  #' @export  
-  phi <- bs(seq(1, t_end), df=m, intercept = F) 
-  c_hats = map(out, 4)
-  c_hats_id = map(c_hats, unit_id)
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
-  
-  return(f)
-}
-
-
-# 15. Function to convert list to matrix ----------------------------------
-
-list_to_matrix = function(f){
-  mat_f = matrix(NA, ncol=length(f[[1]]), nrow = length(f))
-  for(i in 1:100){
-    mat_f[i,]=f[[i]]
-  }
-  return(mat_f)
-}
-
-
-# 16. Function to extract f estimates from storm results ------------------
-
-get_f = function(out,m, t_end, unit_id){
-  #' Function to obtain f estimate with non-centred basis functions but estimated coefficients
-  #'
-  #' @param out RDS file from STORM
-  #' @param m number of basis functions
-  #' @param t_end dimension of previous values
-  #' @param unit_id index for considered dimension
-  #' @export  
-  phi <- bs(seq(1, t_end), df=m, intercept = F) 
-  c_hats = map(out, 4)
-  c_hats_id = map(c_hats, unit_id)
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
-  
-  return(f)
-}
 
 
 
