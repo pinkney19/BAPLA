@@ -41,7 +41,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -95,7 +95,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -148,7 +148,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -202,7 +202,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -257,7 +257,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -311,7 +311,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -365,7 +365,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   
@@ -419,7 +419,7 @@ refit <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %d
   beta_0_hat = res$beta0
   f_hat = res$f_hat
   c_hat = res$c_hat
-  
+  beta_alt = res$beta_alt
   
   return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, c_hat = c_hat)) 
   

@@ -54,138 +54,30 @@ saveRDS(ses_zero,"ses_zero.RDS")
 # Intercept ---------------------------------------------------------------
 
 
-beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
-  #'  Function to plot intercept estimates for each unit across monte carlo samples
-  #'
-  #' @param beta_0_res nested list of intercept estimates from monte carlo sim study
-  #' @param p dimension
-  #' @param title title of plot
-  #' @param true_beta_0 true intercept in model specification
-  #' @export  
-  beta0_hat = list(); beta0_hat = rep(list(beta0_hat), p)
-  for(j in 1:p){
-    beta0_hat[[j]] = unlist(map(beta_0_res, j))
-  }
-  
-  df <- do.call(data.frame, beta0_hat)
-  names(df) = seq(1,p)
-  
-  
-  # test with ggplot
-  df_long <- reshape2::melt(df, id.vars = NULL,variable.name = "Variable", value.name = "Value")
-  
-  # Plot using ggplot2
-  ggplot(df_long, aes(x = as.factor(Variable), y = Value)) +
-    geom_boxplot(fill = "white") +
-    geom_hline(yintercept = true_beta_0, color = "blue", linetype = "dashed", size = 1) +
-    labs(title = title, x = expression(d), y = expression(hat(beta[0]))) +
-    ylim(a, b) +
-    theme_minimal()
-  
-}
 
-
-plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
-  beta_0_hats = map(out, 2)
-  beta_0_boxplots2(beta_0_hats, 10, title, true_beta_0, a, b)
-}
 
 library(ggplot2)
 # plots for High-firing model 
-p1 = plot_intercept_estimates2(refit_50_1000, -3, 3, "n = 1000", 0.1)
-p2 = plot_intercept_estimates2(refit_50_2000, -3, 3, "n =  2000", 0.1)
-p3 = plot_intercept_estimates2(refit_50_5000, -3, 3, "n = 5000", 0.1)
-p4 = plot_intercept_estimates2(refit_50_10000, -3, 3, "n = 10000", 0.1)
+p1 = plot_intercept_estimates2(refit_50_1000, -1, 1, "n = 1000", 0.1,10)
+p2 = plot_intercept_estimates2(refit_50_2000, -1, 1, "n =  2000", 0.1,10)
+p3 = plot_intercept_estimates2(refit_50_5000, -1, 1, "n = 5000", 0.1,10)
+p4 = plot_intercept_estimates2(refit_50_10000, -1, 1, "n = 10000", 0.1,10)
 library(ggpubr)
 ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 
 
 
-
-# Intercept estimates -----------------------------------------------------
-
-beta_0_boxplots2 = function(beta_0_res, p, title, true_beta_0, a, b){
-  #'  Function to plot intercept estimates for each unit across monte carlo samples
-  #'
-  #' @param beta_0_res nested list of intercept estimates from monte carlo sim study
-  #' @param p dimension
-  #' @param title title of plot
-  #' @param true_beta_0 true intercept in model specification
-  #' @export  
-  beta0_hat = list(); beta0_hat = rep(list(beta0_hat), p)
-  for(j in 1:p){
-    beta0_hat[[j]] = unlist(map(beta_0_res, j))
-  }
-  
-  df <- do.call(data.frame, beta0_hat)
-  names(df) = seq(1,p)
-  
-  
-  # test with ggplot
-  df_long <- reshape2::melt(df, id.vars = NULL,variable.name = "Variable", value.name = "Value")
-  
-  # Plot using ggplot2
-  ggplot(df_long, aes(x = as.factor(Variable), y = Value)) +
-    geom_boxplot(fill = "skyblue") +
-    geom_hline(yintercept = true_beta_0, color = "navy", linetype = "dashed", size = 1) +
-    labs(title = title, x = expression(p), y = expression(hat(beta[0]))) +
-    ylim(a, b) +
-    theme_minimal()
-  
-}
+p5 = plot_intercept_estimates2(refit_zero_1000, -5, -1, "zero - 1000", -2.6, 10)
+p6 = plot_intercept_estimates2(refit_zero_2000, -5, -1, "zero - 2000", -2.6,10)
+p7 = plot_intercept_estimates2(refit_zero_5000, -5, -1, "zero - 5000", -2.6,10)
+p8 = plot_intercept_estimates2(refit_zero_10000, -5, -1, "zero - 10000", -2.6,10)
+ggarrange(p5,p6,p7,p8, ncol=4, common.legend =T)
 
 
-plot_intercept_estimates2 = function(out, a, b, title, true_beta_0){
-  beta_0_hats = map(out, 2)
-  beta_0_boxplots2(beta_0_hats, 10, title, true_beta_0, a, b)
-}
-
-library(ggplot2)
-
-plot_intercept_estimates2(refit_zero_1000, -3, -1, "zero - 1000", -2.6)
-plot_intercept_estimates2(refit_zero_2000, -3, -1, "zero - 2000", -2.6)
-plot_intercept_estimates2(refit_zero_5000, -3, -1, "zero - 5000", -2.6)
-plot_intercept_estimates2(refit_zero_10000, -3, -1, "zero - 10000", -2.6)
-
-
-plot_intercept_estimates2(refit_50_1000, -2, 4, "50 - 1000", 0.1)
-plot_intercept_estimates2(refit_50_2000, -2, 4, "50 - 2000", 0.1)
-plot_intercept_estimates2(refit_50_5000, -2, 4, "50 - 5000", 0.1)
-plot_intercept_estimates2(refit_50_10000, -2, 4, "50 - 10000", 0.1)
 
 
 
 # F estimates -------------------------------------------------------------
-
-
-# check from github
-list_to_matrix = function(f){
-  mat_f = matrix(NA, ncol=length(f[[1]]), nrow = length(f))
-  for(i in 1:100){
-    mat_f[i,]=f[[i]]
-  }
-  return(mat_f)
-}
-
-
-# get F estimates  --------------------------------------------------------------
-library(splines)
-get_f = function(out,m, t_end, unit_id){
-  #' Function to obtain f estimate with non-centred basis functions but estimated coefficients
-  #'
-  #' @param out RDS file from STORM
-  #' @param m number of basis functions
-  #' @param t_end dimension of previous values
-  #' @param unit_id index for considered dimension
-  #' @export  
-  phi <- bs(seq(1, t_end), df=m, intercept = F) 
-  c_hats = map(out, 4)
-  c_hats_id = map(c_hats, unit_id)
-  f = lapply(c_hats_id, function(x) phi%*%as.matrix(x))
-  
-  return(f)
-}
-
 
 f_hat_50_1000 = get_f(refit_50_1000, 10, 999, unit_id = 1)
 f_hat_50_2000 = get_f(refit_50_2000, 10, 1999, unit_id = 1)
@@ -198,36 +90,25 @@ f_hat_zero_5000 = get_f(refit_zero_5000, 10, 4999, unit_id = 1)
 f_hat_zero_10000 = get_f(refit_zero_10000, 10, 9999, unit_id = 1)
 
 
-plot_f_cis = function(f, unit_id, title,N, const){
-  
-  #f1 = map(f,unit_id )
-  check = list_to_matrix(f)
-  library(matrixStats)
-  plot( colQuantiles(check, probs=0.5), ylim=c(-2,6), type='l', xlab="t", 
-        ylab=expression(hat(f)(t)), main = title)
-  lines(colQuantiles(check, probs =0.975), col="red")
-  lines( colQuantiles(check, probs=0.025), col="red")
-  
-  
-  lines(N*dgamma(seq(500,(N+500-1)),  shape = 3 , scale=(N+1000)/10),  col="blue", lwd =2, lty = "dashed")
-  legend("topright", c("truth", "95% CIs", "Avg"), col=c("blue", "red", "black"), 
-         lty = c(2,1,1), lwd = c(2,1,1), cex = 0.6)
-  
-  #return(check)
-  
-}
-par(mfrow=c(1,1), mar = c(5.5, 4.5, 4.5, 2.5))
-plot_f_cis(f_hat_50_1000, 1, "50 - 1000",1000, 1000)
-plot_f_cis(f_hat_50_2000, 1, "50 - 2000",2000, 2000)
-plot_f_cis(f_hat_50_5000, 1, "50 - 5000",5000, 5000)
-plot_f_cis(f_hat_50_10000, 1, "50 - 10000",10000, 10000)
 
-plot_f_cis(f_hat_zero_1000, 1, "zero-1000", 1000, 1000)
-plot_f_cis(f_hat_zero_2000, 1, "zero-2000", 2000, 2000)
-plot_f_cis(f_hat_zero_5000, 1, "zero-5000", 5000, 5000)
-plot_f_cis(f_hat_zero_10000, 1, "zero-10000", 10000, 10000)
+library(ggplot2)
+library(matrixStats)
 
 
+f1 = plot_f_cis_gamma(f_hat_50_1000, 1, "n = 1000",1000)
+f2 = plot_f_cis_gamma(f_hat_50_2000, 1, "n = 2000",2000)
+f3 = plot_f_cis_gamma(f_hat_50_5000, 1, "n = 5000",5000)
+f4 = plot_f_cis_gamma(f_hat_50_10000, 1, "n = 10000",10000)
+
+ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
+
+
+f5 = plot_f_cis_gamma(f_hat_zero_1000, 1, "n = 1000",1000)
+f6 = plot_f_cis_gamma(f_hat_zero_2000, 1, "n = 2000",2000)
+f7 = plot_f_cis_gamma(f_hat_zero_5000, 1, "n = 5000",5000)
+f8 = plot_f_cis_gamma(f_hat_zero_10000, 1, "n = 10000",10000)
+
+ggarrange(f5,f6,f7,f8, ncol=4, common.legend =T)
 
 
 
