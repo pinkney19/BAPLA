@@ -153,6 +153,51 @@ Simulate_data_add_gamma = function(p, N, beta, beta_0, cut_off, shape, scale){
   #new_y = y[, -(1:cut_off)]
   return(y)
 }
+
+# 4c. Simulate data with gamma and normal f -------------------------------
+
+
+Simulate_data_add_gamma_norm = function(p, N, beta, beta_0, cut_off, shape, scale, mu, sigma){
+  
+  #' binary time series simulation Function.
+  #'
+  #' @param p Number of dimensions
+  #' @param N Number of time points
+  #' @param beta p x p linear coefficient matrix  
+  #' @param beta_0 1 x p vector of intercept terms
+  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
+  #' @export  
+  
+  # Set up empty matrix to store data in
+  y = matrix(data=NA, nrow=p, ncol=N)
+  # Each column represents data from each "unit" at a given time point
+  for(i in 1:p){
+    # generate y_0 for each unit using independent bernoullis'
+    # store output in first columns of Y matrix
+    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
+  }
+  # simulate data based on model parameters
+  # Loop over time points
+  for(j in 2:N){
+    # Loop over dimensions
+    for(i in 1:p){
+      # extract vector of previous values (i.e. y_{t-1} values)
+      y_minus = as.matrix(y[,j-1])
+      if(i<=p/2){
+        # first half add gamma
+        y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + (dgamma(j/N, shape = shape, scale = scale)-1))) 
+      }
+      if(i>p/2){
+        # second half add normal
+        y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus + (dnorm(j/N, mean = mu, sd=sigma)-1)))
+      }
+    }
+  }
+  
+  # get rid of first 100 samples => "burn in"
+  #new_y = y[, -(1:500)]
+  return(y)
+}
 # 5. Estimation for all units --------------------------------------
 
 Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
@@ -835,7 +880,6 @@ Estimate_coefficients_refit <- function(data_source, p, max_iter, tol, m, reg_be
   return(list(beta0=beta0, beta_hat=beta, f_hat = f, c_hat = c, beta_alt = beta_alt))
 }
 
-
 # 19. errors for estimated intercept term ---------------------------------
 
 est_intercept = function(out,p, truth){
@@ -852,6 +896,113 @@ est_intercept = function(out,p, truth){
 
 
 # perahps not needed !
+
+
+
+# 20. Function to extract BIC values for single unit ----------------------
+
+get_bic_vals = function(out_storm, N_samp, t_end, m,lambdas, data, unit_id, gamma, p, threshold){
+  av_BIC = NULL;av_AIC=NULL;av_eBIC=NULL;av_nn=NULL;av_nll=NULL;av_nll2 = NULL;
+  any = rep(0, length(lambdas)); all = rep(0, length(lambdas))
+  for(i in 1:length(lambdas)){
+    #print(i)
+    b = N_samp*i
+    if(i==1){
+      res = out_storm[1:b]
+    }
+    if(i!=1){
+      res = out_storm[((b-N_samp)+1):b]
+    }
+    
+    # get estimates of beta
+    beta_hats = map(res, 1)
+    # select coefficient vector for specified unit
+    
+    beta_vec = lapply(beta_hats, function(x) x[unit_id, ])
+    
+    # set values below threshold to zero
+    beta_vec = lapply(beta_vec, function(x) ifelse(x < threshold, 0, x))
+    
+    # get intercept estimates
+    beta_0 = map(res,2)
+    # select those for specified unit
+    beta_0 = unlist(map(beta_0, unit_id))
+    
+    # get f estimates
+    c_hat = map(res, 4)
+    # select for specified unit
+    c_hat = map(c_hat, unit_id)
+    phi <- bs(seq(0,1, length.out=t_end), df=m, intercept = F) # to check?
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(k in 1:ncol(phi)){
+      phi2[,k] = phi[,k] - mean(phi[,k])
+      phi_bar[k] = mean(phi[,k])
+    }
+    f = lapply(c_hat, function(x) phi2%*%as.matrix(x))
+    
+    # calculate BIC for the 10 training samples
+    BIC_vec = NULL; AIC_vec = NULL; eBIC_vec = NULL; nll2=NULL; nll=NULL; num_non_zeroes=NULL;check = NULL
+    
+    for(j in 1:length(beta_hats)){#length(beta_hats)){
+      
+      # select data of interest to the unit_id
+      y = data[[j]][unit_id,][2:(t_end+1)] 
+      X1 = data[[j]][,(1:t_end)] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+      X1 = t(X1)
+      
+      
+      term1 = y * (beta_0[j] + X1 %*% beta_vec[[j]] + f[[j]])
+      term2 = log(1 + exp(beta_0[j] + X1 %*% beta_vec[[j]] + f[[j]])) 
+      nll[j] = sum(term1-term2) 
+      
+      p_prob = inv.logit(beta_0[j] + X1 %*% beta_vec[[j]] + f[[j]])
+      nll2[j] = sum( y*(log(p_prob)) + ( (1-y)*(log(1-p_prob)) ))
+      
+      num_non_zeroes[j] = sum(beta_vec[[j]] != 0)
+      pen_term = (num_non_zeroes[j]+1+(m))*log(length(y))
+      eBIC_term = 2*gamma*log(p)* (num_non_zeroes[j]+1+(m))
+      
+      BIC_vec[j] = -2*(nll[j]) + pen_term #+ eBIC_term
+      eBIC_vec[j] = BIC_vec[j] + eBIC_term
+      AIC_vec[j] = -2*(nll[j]) + (2*(num_non_zeroes[j]+1+(m)))
+      
+      check[j] = pen_term > (2*(num_non_zeroes[j]+1+(m)))
+    }
+    # check if any are zeroes
+    if(any(num_non_zeroes==0)){any[i] = 1}
+    # check if all zeroes
+    if(all(num_non_zeroes==0)){all[i] = 1}
+    # get average BIC across the training samples
+    av_BIC[i] = mean(BIC_vec)
+    av_AIC[i] = mean(AIC_vec)
+    av_eBIC[i] = mean(eBIC_vec)
+    av_nn[i] = mean(num_non_zeroes)
+    av_nll[i] = mean(nll)
+    av_nll2[i] = mean(nll2)
+  }
+  return(list(BIC = av_BIC, AIC = av_AIC, eBIC = av_eBIC,  nn=av_nn, nll=av_nll, nll2 = av_nll2, any = any, all = all ))
+}
+
+
+# 21. Function to choose lambda value for all units -----------------------
+
+get_lambdas = function(out, N_samp, t_end, m, lambdas, data, p, title){
+  lambdas_BIC = NULL; lambdas_eBIC = NULL; lambdas_AIC = NULL;
+  out_AIC = NULL; out_BIC = NULL; out_eBIC = NULL;
+  for(i in 1:p){
+    print(i)
+    res = get_bic_vals(out, N_samp, t_end, m,lambdas, data,i, 0.5, p, threshold = 1e-5)
+    idx = which(res$any==1)[1] #extract index of lambda for which all are zero
+    lambdas_AIC[i] = lambdas[which.min(res$AIC)]
+    lambdas_BIC[i] = lambdas[which.min(res$BIC)]
+    lambdas_eBIC[i] = lambdas[which.min(res$eBIC)]
+  }
+  df = data.frame(cbind(lambdas_AIC, lambdas_BIC, lambdas_eBIC))
+  names(df)=c("AIC", "BIC", "eBIC")
+  boxplot(df, ylab=expression(lambda), main=title)
+  return(df)
+}
 
 # 11. Estimate coeff with known beta --------------------------------------
 
