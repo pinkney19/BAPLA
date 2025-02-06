@@ -147,18 +147,12 @@ f_std_zero = c(est_f(out_zero_1000, 10, 1000)$err, est_f(out_50_2000, 10, 2000)$
 f_std_zero
 
 
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER/Simulations/10")
+saveRDS(f_mses_50, "f_mses_50.RDS")
+saveRDS(f_std_50,"f_ses_50.RDS")
 
-
-
-
-
-
-
-
-
-
-
-
+saveRDS(f_mses_zero, "f_mses_zero.RDS")
+saveRDS(f_std_zero,"f_ses_zero.RDS")
 
 library(ggplot2)
 library(matrixStats)

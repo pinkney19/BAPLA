@@ -754,7 +754,7 @@ re_fit_supp = function(data, idx, max_iter, tol, m, reg_beta){
   
   c <- rep(0, m) 
   
-  phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+  phi <- bs(seq(0,1, length.out=length(y)), df=m, intercept = F) 
   phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
   phi_bar = NULL;
   # center the basis functions
@@ -896,8 +896,6 @@ est_intercept = function(out,p, truth){
 
 
 # perahps not needed !
-
-
 
 # 20. Function to extract BIC values for single unit ----------------------
 

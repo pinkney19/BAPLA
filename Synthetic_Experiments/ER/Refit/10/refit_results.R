@@ -74,7 +74,27 @@ p8 = plot_intercept_estimates2(refit_zero_10000, -5, -1, "zero - 10000", -2.6,10
 ggarrange(p5,p6,p7,p8, ncol=4, common.legend =T)
 
 
+mses_50 = c(est_intercept(refit_50_1000, 10, 0.1)$mse, est_intercept(refit_50_2000, 10, 0.1)$mse, 
+            est_intercept(refit_50_5000, 10, 0.1)$mse, est_intercept(refit_50_10000, 10, 0.1)$mse)
+mses_50
+std_50 = c(est_intercept(refit_50_1000, 10, 0.1)$err, est_intercept(refit_50_2000, 10, 0.1)$err, 
+           est_intercept(refit_50_5000, 10, 0.1)$err, est_intercept(refit_50_10000, 10, 0.1)$err)
+std_50
 
+
+mses_zero = c(est_intercept(refit_zero_1000, 10, -2.6)$mse, est_intercept(refit_zero_2000, 10, -2.6)$mse, 
+              est_intercept(refit_zero_5000, 10, -2.6)$mse, est_intercept(refit_zero_10000, 10, -2.6)$mse)
+mses_zero
+std_zero = c(est_intercept(refit_zero_1000, 10, -2.6)$err, est_intercept(refit_50_2000, 10, -2.6)$err, 
+             est_intercept(refit_zero_5000, 10, -2.6)$err, est_intercept(refit_zero_10000, 10, -2.6)$err)
+std_zero
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER/Refit/10")
+saveRDS(mses_50, "int_mses_50.RDS")
+saveRDS(std_50,"int_ses_50.RDS")
+
+saveRDS(mses_zero, "int_mses_zero.RDS")
+saveRDS(std_zero,"int_ses_zero.RDS")
 
 
 # F estimates -------------------------------------------------------------
@@ -110,6 +130,34 @@ f8 = plot_f_cis_gamma(f_hat_zero_10000, 1, "n = 10000",10000)
 
 ggarrange(f5,f6,f7,f8, ncol=4, common.legend =T)
 
+# mses for f
+est_f = function(out,p, N){
+  mse = NULL; se = NULL;
+  for(i in 1:p){
+    truth = dgamma(seq(0,1,length.out = N-1), shape = 2, scale = 0.05)-1
+    # get intercept estimate for specific dimensions
+    f_hat = get_f(out, p, N-1, i)
+    f_hat = lapply(f_hat, as.numeric)
+    mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
+    se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
+  }
+  return(list(mse = mean(mse), err = mean(se)))
+}
 
+# errors 
+f_mses_50 = c(est_f(refit_50_1000, 10, 1000)$mse, est_f(refit_50_2000, 10, 2000)$mse, 
+              est_f(refit_50_5000, 10, 5000)$mse, est_f(refit_50_10000, 10, 10000)$mse)
+f_mses_50
+f_std_50 = c(est_f(refit_50_1000, 10,1000)$err, est_f(refit_50_2000, 10, 2000)$err, 
+             est_f(refit_50_5000, 10, 5000)$err, est_f(refit_50_10000, 10, 10000)$err)
+f_std_50
+
+
+f_mses_zero = c(est_f(refit_zero_1000, 10, 1000)$mse, est_f(refit_zero_2000, 10, 2000)$mse, 
+                est_f(refit_zero_5000, 10, 5000)$mse, est_f(refit_zero_10000, 10, 10000)$mse)
+f_mses_zero
+f_std_zero = c(est_f(refit_zero_1000, 10, 1000)$err, est_f(refit_50_2000, 10, 2000)$err, 
+               est_f(refit_zero_5000, 10, 5000)$err, est_f(refit_zero_10000, 10, 10000)$err)
+f_std_zero
 
 
