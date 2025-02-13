@@ -1002,6 +1002,38 @@ get_lambdas = function(out, N_samp, t_end, m, lambdas, data, p, title){
   return(df)
 }
 
+
+# 22. Errors for gamma f --------------------------------------------------
+
+err_gamma_f = function(out,p, N){
+  mse = NULL; se = NULL;
+  for(i in 1:p){
+    truth = dgamma(seq(0,1,length.out = N-1), shape = 2, scale = 0.05)-1
+    # get intercept estimate for specific dimensions
+    f_hat = get_f(out, p, N-1, i)
+    f_hat = lapply(f_hat, as.numeric)
+    mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
+    se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
+  }
+  return(list(mse = mean(mse), err = mean(se)))
+}
+
+
+# 23. Errors for normal f -------------------------------------------------
+
+err_normal_f = function(out,p, N){
+  mse = NULL; se = NULL;
+  for(i in 1:p){
+    truth = dnorm(seq(0,1,length.out = N-1), mean = 0.5, sd = 0.05)-1
+    # get intercept estimate for specific dimensions
+    f_hat = get_f(out, p, N-1, i)
+    f_hat = lapply(f_hat, as.numeric)
+    mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
+    se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
+  }
+  return(list(mse = mean(mse), err = mean(se)))
+}
+
 # 11. Estimate coeff with known beta --------------------------------------
 
 Estimate_coefficients_true_beta <- function(data_source, p, max_iter, tol, true_beta, m){

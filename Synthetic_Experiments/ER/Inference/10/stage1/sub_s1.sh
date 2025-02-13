@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J ER_inf_10
-#SBATCH -c 41
+#SBATCH -c 21
 #SBATCH --array=1-8%2
 #SBATCH -e inf%.e
 #SBATCH -o inf%.out

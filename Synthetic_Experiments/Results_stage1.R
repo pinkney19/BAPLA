@@ -36,7 +36,7 @@ get_results = function(p, model_type, inf){
 
 
 CG_10 = get_results(10, "CG", inf = T)
-CG_50 = get_results(50, "CG", inf = F)
+CG_50 = get_results(50, "CG", inf = T)
 
 ER_10 = get_results(10, "ER", inf = T)
 ER_50 = get_results(50, "ER", inf = F)
@@ -46,17 +46,17 @@ ER_50 = get_results(50, "ER", inf = F)
 #SB_50 = get_results(50, "SB")
 
 
-table = rbind(CG_10, CG_50, ER_10, ER_50)#, CG_10, CG_50)#, SB_10, SB_50)
+table = rbind(CG_10, CG_50)#, ER_10, ER_50)#, CG_10, CG_50)#, SB_10, SB_50)
 
 
 tbl = as.data.frame(table)
 
 n=c(1000,2000, 5000, 10000)
-n = rep(n,8) #n= rep(n,12)
+n = rep(n,4) #n= rep(n,12)
 beta_0 = c(rep(0.1,4), rep(-2.6,4))
-beta_0 = rep(beta_0, 4) #used to be 6
+beta_0 = rep(beta_0, 2) #used to be 6
 d = c(rep(10,8), rep(50,8))
-d = rep(d, 2) #used to be 3
+d = rep(d, 1) #used to be 3
 
 library(dplyr)
 
