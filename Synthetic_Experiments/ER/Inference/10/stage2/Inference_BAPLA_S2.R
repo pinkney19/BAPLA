@@ -17,7 +17,7 @@ if (l==1){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -27,8 +27,10 @@ if (l==1){
     source("BAPLA_Functions.R")
     
     # load data
+    #setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulate_Data/10/Sims_data")
     data_50 <- readRDS("data_50_1000.RDS")
-    out_50 <- readRDS("refit_50_1000.RDS") #use first stage estimates)
+    #setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/10")
+    out_50 <- readRDS("refit_50_1000.RDS") #use second stage estimates)
    
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -45,7 +47,13 @@ if (l==1){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
   
@@ -72,7 +80,7 @@ if (l==2){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -83,7 +91,7 @@ if (l==2){
     
     # load data
     data_50 <- readRDS("data_50_2000.RDS")
-    out_50 <- readRDS("refit_50_2000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_2000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -101,7 +109,13 @@ if (l==2){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F)
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -130,7 +144,7 @@ if (l==3){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -141,7 +155,7 @@ if (l==3){
     
     # load data
     data_50 <- readRDS("data_50_5000.RDS")
-    out_50 <- readRDS("refit_50_5000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_5000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -159,7 +173,13 @@ if (l==3){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -188,7 +208,7 @@ if (l==4){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -199,7 +219,7 @@ if (l==4){
     
     # load data
     data_50 <- readRDS("data_50_10000.RDS")
-    out_50 <- readRDS("refit_50_10000.RDS") #use first stage estimates)
+    out_50 <- readRDS("refit_50_10000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -217,7 +237,13 @@ if (l==4){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -247,7 +273,7 @@ if (l==5){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -258,7 +284,7 @@ if (l==5){
     
     # load data
     data_zero <- readRDS("data_zero_1000.RDS")
-    out_zero <- readRDS("refit_zero_1000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_1000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -275,7 +301,13 @@ if (l==5){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -303,7 +335,7 @@ if (l==6){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -314,7 +346,7 @@ if (l==6){
     
     # load data
     data_zero <- readRDS("data_zero_2000.RDS")
-    out_zero <- readRDS("refit_zero_2000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_2000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -331,7 +363,13 @@ if (l==6){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -359,7 +397,7 @@ if (l==7){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -370,7 +408,7 @@ if (l==7){
     
     # load data
     data_zero <- readRDS("data_zero_5000.RDS")
-    out_zero <- readRDS("refit_zero_5000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_5000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -387,7 +425,13 @@ if (l==7){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)
@@ -415,7 +459,7 @@ if (l==8){
   unit_seq = seq(1,10)
   grid = expand.grid(sample = n_samp, unit=unit_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
-  cl <- makeCluster(40) 
+  cl <- makeCluster(20) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -426,7 +470,7 @@ if (l==8){
     
     # load data
     data_zero <- readRDS("data_zero_10000.RDS")
-    out_zero <- readRDS("refit_zero_10000.RDS") #use first stage estimates)
+    out_zero <- readRDS("refit_zero_10000.RDS") #use second stage estimates)
     
     # Initialize parameters
     p = 10; alpha=0.05;
@@ -443,7 +487,13 @@ if (l==8){
     c = out$c_hat
     t_end = dim(data)[2] - 1
     phi <- bs(seq(1, t_end), df=10, intercept = F) 
-    f_hat = lapply(c, function(x) phi%*%as.matrix(x))
+    phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+    phi_bar = NULL;
+    for(i in 1:ncol(phi)){
+      phi2[,i] = phi[,i] - mean(phi[,i])
+      phi_bar[i] = mean(phi[,i])
+    }
+    f_hat = lapply(c, function(x) phi2%*%as.matrix(x))
     
     # Get desparsified estimates and CIs
     res = despars_lasso(unit_idx, data, p, beta_0, beta_hat, f_hat, alpha)

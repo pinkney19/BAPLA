@@ -22,7 +22,7 @@ if (l==1){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -75,7 +75,7 @@ if (l==2){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -127,7 +127,7 @@ if (l==3){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -178,7 +178,7 @@ if (l==4){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -231,7 +231,7 @@ if (l==5){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -282,7 +282,7 @@ if (l==6){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -335,7 +335,7 @@ if (l==7){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
@@ -386,7 +386,7 @@ if (l==8){
   library(doRNG)
   library(pracma) #for logspace
   list_of_pairs <- Map(list, data, beta_hats)
-  cl <- makeCluster(20) 
+  cl <- makeCluster(40) 
   start <- Sys.time()
   registerDoParallel(cl)
   registerDoRNG(seed = 123)
