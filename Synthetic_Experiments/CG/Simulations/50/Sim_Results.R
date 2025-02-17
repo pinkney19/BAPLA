@@ -66,19 +66,19 @@ saveRDS(aurocs_se_zero, "AUC_se_zero.RDS")
 
 # Errors
 
-mses_50 = c(est_intercept(out_50_1000, 10, 0.1)$mse, est_intercept(out_50_2000, 10, 0.1)$mse, 
-            est_intercept(out_50_5000, 10, 0.1)$mse, est_intercept(out_50_10000, 10, 0.1)$mse)
+mses_50 = c(est_intercept(out_50_1000, p, 0.1)$mse, est_intercept(out_50_2000, p, 0.1)$mse, 
+            est_intercept(out_50_5000, p, 0.1)$mse, est_intercept(out_50_10000, p, 0.1)$mse)
 mses_50
-std_50 = c(est_intercept(out_50_1000, 10, 0.1)$err, est_intercept(out_50_2000, 10, 0.1)$err, 
-           est_intercept(out_50_5000, 10, 0.1)$err, est_intercept(out_50_10000, 10, 0.1)$err)
+std_50 = c(est_intercept(out_50_1000, p, 0.1)$err, est_intercept(out_50_2000, p, 0.1)$err, 
+           est_intercept(out_50_5000, p, 0.1)$err, est_intercept(out_50_10000, p, 0.1)$err)
 std_50
 
 
-mses_zero = c(est_intercept(out_zero_1000, 10, -2.6)$mse, est_intercept(out_zero_2000, 10, -2.6)$mse, 
-              est_intercept(out_zero_5000, 10, -2.6)$mse, est_intercept(out_zero_10000, 10, -2.6)$mse)
+mses_zero = c(est_intercept(out_zero_1000, p, -2.6)$mse, est_intercept(out_zero_2000, p, -2.6)$mse, 
+              est_intercept(out_zero_5000, p, -2.6)$mse, est_intercept(out_zero_10000, p, -2.6)$mse)
 mses_zero
-std_zero = c(est_intercept(out_zero_1000, 10, -2.6)$err, est_intercept(out_50_2000, 10, -2.6)$err, 
-             est_intercept(out_zero_5000, 10, -2.6)$err, est_intercept(out_zero_10000, 10, -2.6)$err)
+std_zero = c(est_intercept(out_zero_1000, p, -2.6)$err, est_intercept(out_50_2000, p, -2.6)$err, 
+             est_intercept(out_zero_5000, p, -2.6)$err, est_intercept(out_zero_10000, p, -2.6)$err)
 std_zero
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/50")
@@ -112,21 +112,21 @@ ggarrange(p1,p2,p3,p4, ncol=4, common.legend =T)
 # F estimates -------------------------------------------------------------
 
 # Errors
-
+m = 10
 # errors 
-f_mses_50 = c(err_normal_f(out_50_1000, 10, 1000)$mse, err_normal_f(out_50_2000, 10, 2000)$mse, 
-              err_normal_f(out_50_5000, 10, 5000)$mse, err_normal_f(out_50_10000, 10, 10000)$mse)
+f_mses_50 = c(err_normal_f(out_50_1000, p, 1000,m)$mse, err_normal_f(out_50_2000, p, 2000,m)$mse, 
+              err_normal_f(out_50_5000, p, 5000,m)$mse, err_normal_f(out_50_10000, p, 10000,m)$mse)
 f_mses_50
-f_std_50 = c(err_normal_f(out_50_1000, 10,1000)$err, err_normal_f(out_50_2000, 10, 2000)$err, 
-             err_normal_f(out_50_5000, 10, 5000)$err, err_normal_f(out_50_10000, 10, 10000)$err)
+f_std_50 = c(err_normal_f(out_50_1000, p,1000,m)$err, err_normal_f(out_50_2000, p, 2000,m)$err, 
+             err_normal_f(out_50_5000, p, 5000,m)$err, err_normal_f(out_50_10000, p , 10000,m)$err)
 f_std_50
 
 
-f_mses_zero = c(err_normal_f(out_zero_1000, 10, 1000)$mse, err_normal_f(out_zero_2000, 10, 2000)$mse, 
-                err_normal_f(out_zero_5000, 10, 5000)$mse, err_normal_f(out_zero_10000, 10, 10000)$mse)
+f_mses_zero = c(err_normal_f(out_zero_1000, p, 1000,m)$mse, err_normal_f(out_zero_2000, p, 2000,m)$mse, 
+                err_normal_f(out_zero_5000, p, 5000,m)$mse, err_normal_f(out_zero_10000, p, 10000,m)$mse)
 f_mses_zero
-f_std_zero = c(err_normal_f(out_zero_1000, 10, 1000)$err, err_normal_f(out_50_2000, 10, 2000)$err, 
-               err_normal_f(out_zero_5000, 10, 5000)$err, err_normal_f(out_zero_10000, 10, 10000)$err)
+f_std_zero = c(err_normal_f(out_zero_1000, p, 1000,m)$err, err_normal_f(out_50_2000, p, 2000,m)$err, 
+               err_normal_f(out_zero_5000, p, 5000,m)$err, err_normal_f(out_zero_10000, p, 10000,m)$err)
 f_std_zero
 
 

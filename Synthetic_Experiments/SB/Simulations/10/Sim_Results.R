@@ -154,6 +154,15 @@ f_std_zero = c(est_f(out_zero_1000, 10, 1000)$err, est_f(out_50_2000, 10, 2000)$
              est_f(out_zero_5000, 10, 5000)$err, est_f(out_zero_10000, 10, 10000)$err)
 f_std_zero
 
+# save files
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB/Simulations/10")
+saveRDS(f_mses_50, "f_mses_50.RDS")
+saveRDS(f_std_50,"f_ses_50.RDS")
+
+saveRDS(f_mses_zero, "f_mses_zero.RDS")
+saveRDS(f_std_zero,"f_ses_zero.RDS")
+
+
 
 
 # Example Plots -----------------------------------------------------------

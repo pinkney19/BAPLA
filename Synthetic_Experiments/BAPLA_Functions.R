@@ -470,6 +470,7 @@ metrics_new = function(res, gt, threshold){
   # put entries less than threshold to zero
   lapply(beta_list, function(x) ifelse(abs(x) < threshold, 0, x))
   av_mse = mean( unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2)) )
+  all_mse = unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2))
   # standard errors
   se = std_err(unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2)) )
   
@@ -501,7 +502,7 @@ metrics_new = function(res, gt, threshold){
   auc_obj = mean(unlist(auc_list))
   se_auc = std_err(unlist(auc_list))
   
-  return(list(F1 = F1, av_mse = av_mse, av_AUC = auc_obj, se = se, f1_se = F1_se, auc_se = se_auc)) 
+  return(list(F1 = F1, av_mse = av_mse, av_AUC = auc_obj, se = se, f1_se = F1_se, auc_se = se_auc, all = all_mse)) 
 }
 
 
@@ -891,7 +892,7 @@ est_intercept = function(out,p, truth){
     mse[i] = mean( (beta_0s-truth)^2 )
     se[i] = std_err( (beta_0s-truth)^2 )
   }
-  return(list(mse = mean(mse), err = mean(se)))
+  return(list(mse = mean(mse), err = mean(se), all = mse))
 }
 
 
@@ -1005,33 +1006,57 @@ get_lambdas = function(out, N_samp, t_end, m, lambdas, data, p, title){
 
 # 22. Errors for gamma f --------------------------------------------------
 
-err_gamma_f = function(out,p, N){
+err_gamma_f = function(out,p, N, m){
   mse = NULL; se = NULL;
   for(i in 1:p){
     truth = dgamma(seq(0,1,length.out = N-1), shape = 2, scale = 0.05)-1
     # get intercept estimate for specific dimensions
-    f_hat = get_f(out, p, N-1, i)
+    f_hat = get_f(out, m, N-1, i)
     f_hat = lapply(f_hat, as.numeric)
     mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
     se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
   }
-  return(list(mse = mean(mse), err = mean(se)))
+  return(list(mse = mean(mse), err = mean(se), all = mse))
 }
 
 
 # 23. Errors for normal f -------------------------------------------------
 
-err_normal_f = function(out,p, N){
-  mse = NULL; se = NULL;
+err_normal_f = function(out,p, N, m){
+  mse = NULL; se = NULL; #all = NULL; all = rep(list(all), p)
   for(i in 1:p){
     truth = dnorm(seq(0,1,length.out = N-1), mean = 0.5, sd = 0.05)-1
     # get intercept estimate for specific dimensions
-    f_hat = get_f(out, p, N-1, i)
+    f_hat = get_f(out, m, N-1, i)
     f_hat = lapply(f_hat, as.numeric)
     mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
     se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
   }
-  return(list(mse = mean(mse), err = mean(se)))
+  return(list(mse = mean(mse), err = mean(se), all = mse))
+}
+
+
+# 24. Errors split for normal and gamma -----------------------------------
+
+err_normal_gamma_f = function(out,p, N,m){
+  mse = NULL; se = NULL; #all = NULL; all = rep(list(all), p)
+  for(i in 1:p){
+    if(i<=p/2){
+      # first half add gamma
+      truth = dgamma(seq(0,1,length.out = N-1), shape = 2, scale = 0.05)-1
+    }
+    
+    if(i>p/2){
+      #second half normal
+      truth = dnorm(seq(0,1,length.out = N-1), mean = 0.5, sd = 0.05)-1
+    }
+    # get intercept estimate for specific dimensions
+    f_hat = get_f(out, m, N-1, i)
+    f_hat = lapply(f_hat, as.numeric)
+    mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
+    se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
+  }
+  return(list(mse = mean(mse), err = mean(se), all = mse))
 }
 
 # 11. Estimate coeff with known beta --------------------------------------

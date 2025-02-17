@@ -132,41 +132,22 @@ f8 = plot_f_cis_gamma(f_hat_zero_10000, 1, "n = 10000",10000)
 ggarrange(f5,f6,f7,f8, ncol=4, common.legend =T)
 
 # mses for f
-est_f = function(out,p, N){
-  mse = NULL; se = NULL;
-  for(i in 1:p){
-    if(i<=p/2){
-      # first half add gamma
-      truth = dgamma(seq(0,1,length.out = N-1), shape = 2, scale = 0.05)-1
-    }
-    
-    if(i>p/2){
-      #second half normal
-      truth = dnorm(seq(0,1,length.out = N-1), mean = 0.5, sd = 0.05)-1
-    }
-    # get intercept estimate for specific dimensions
-    f_hat = get_f(out, p, N-1, i)
-    f_hat = lapply(f_hat, as.numeric)
-    mse[i] = mean(unlist(lapply(f_hat, function(x) mean( (x - truth)^2))))
-    se[i] = mean(unlist(lapply(f_hat, function(x) std_err( (x - truth)^2))))
-  }
-  return(list(mse = mean(mse), err = mean(se)))
-}
+m  = 10;
 
 # errors 
-f_mses_50 = c(est_f(refit_50_1000, 10, 1000)$mse, est_f(refit_50_2000, 10, 2000)$mse, 
-              est_f(refit_50_5000, 10, 5000)$mse, est_f(refit_50_10000, 10, 10000)$mse)
+f_mses_50 = c(err_normal_gamma_f(refit_50_1000, 10, 1000,m)$mse, err_normal_gamma_f(refit_50_2000, 10, 2000,m)$mse, 
+              err_normal_gamma_f(refit_50_5000, 10, 5000,m)$mse, err_normal_gamma_f(refit_50_10000, 10, 10000,m)$mse)
 f_mses_50
-f_std_50 = c(est_f(refit_50_1000, 10,1000)$err, est_f(refit_50_2000, 10, 2000)$err, 
-             est_f(refit_50_5000, 10, 5000)$err, est_f(refit_50_10000, 10, 10000)$err)
+f_std_50 = c(err_normal_gamma_f(refit_50_1000, 10,1000,m)$err, err_normal_gamma_f(refit_50_2000, 10, 2000,m)$err, 
+             err_normal_gamma_f(refit_50_5000, 10, 5000,m)$err, err_normal_gamma_f(refit_50_10000, 10, 10000,m)$err)
 f_std_50
 
 
-f_mses_zero = c(est_f(refit_zero_1000, 10, 1000)$mse, est_f(refit_zero_2000, 10, 2000)$mse, 
-                est_f(refit_zero_5000, 10, 5000)$mse, est_f(refit_zero_10000, 10, 10000)$mse)
+f_mses_zero = c(err_normal_gamma_f(refit_zero_1000, 10, 1000,m)$mse, err_normal_gamma_f(refit_zero_2000, 10, 2000,m)$mse, 
+                err_normal_gamma_f(refit_zero_5000, 10, 5000,m)$mse, err_normal_gamma_f(refit_zero_10000, 10, 10000,m)$mse)
 f_mses_zero
-f_std_zero = c(est_f(refit_zero_1000, 10, 1000)$err, est_f(refit_50_2000, 10, 2000)$err, 
-               est_f(refit_zero_5000, 10, 5000)$err, est_f(refit_zero_10000, 10, 10000)$err)
+f_std_zero = c(err_normal_gamma_f(refit_zero_1000, 10, 1000,m)$err, err_normal_gamma_f(refit_50_2000, 10, 2000,m)$err, 
+               err_normal_gamma_f(refit_zero_5000, 10, 5000,m)$err, err_normal_gamma_f(refit_zero_10000, 10, 10000,m)$err)
 f_std_zero
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB/Refit/10")

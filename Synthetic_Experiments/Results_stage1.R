@@ -7,7 +7,15 @@ get_results = function(p, model_type, inf){
   rmse_s1_50 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/rmse_50.RDS"))
   rmse_s1_zero <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/rmse_zero.RDS"))
   
+  # mses for intercept
+  int_mse_50 = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/int_mses_50.RDS"))
+  int_mse_zero = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/int_mses_zero.RDS"))
   
+  # mses for f
+  f_mse_50 = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/f_mses_50.RDS"))
+  f_mse_zero = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/f_mses_zero.RDS"))
+  
+  # AUROC
   AUC_50 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/AUC_50.RDS"))
   AUC_zero <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/AUC_zero.RDS"))
   
@@ -22,11 +30,12 @@ get_results = function(p, model_type, inf){
     res_zero_s1 = matrix(NA, 4, 4)
   }
   
-  out_50 = cbind(as.numeric(rmse_s1_50),  as.numeric(AUC_50), as.numeric(res_50_s1[,1]), as.numeric(res_50_s1[,2]), as.numeric(res_50_s1[,3]), as.numeric(res_50_s1[,4]))
+  out_50 = cbind(as.numeric(rmse_s1_50), as.numeric(int_mse_50), as.numeric(f_mse_50), as.numeric(AUC_50), 
+                 as.numeric(res_50_s1[,1]), as.numeric(res_50_s1[,2]), as.numeric(res_50_s1[,3]), as.numeric(res_50_s1[,4]))
  
   
-  out_zero = cbind(as.numeric(rmse_s1_zero),  as.numeric(AUC_zero), as.numeric(res_zero_s1[,1]), as.numeric(res_zero_s1[,2]), 
-                     as.numeric(res_zero_s1[,3]), as.numeric(res_zero_s1[,4]))
+  out_zero = cbind(as.numeric(rmse_s1_zero), as.numeric(int_mse_zero), as.numeric(f_mse_zero), as.numeric(AUC_zero), as.numeric(res_zero_s1[,1]), 
+                   as.numeric(res_zero_s1[,2]), as.numeric(res_zero_s1[,3]), as.numeric(res_zero_s1[,4]))
  
   
   out = round(rbind(out_50, out_zero),2)
@@ -39,25 +48,24 @@ CG_10 = get_results(10, "CG", inf = T)
 CG_50 = get_results(50, "CG", inf = T)
 
 ER_10 = get_results(10, "ER", inf = T)
-ER_50 = get_results(50, "ER", inf = F)
+ER_50 = get_results(50, "ER", inf = T)
 
 
-#SB_10 = get_results(10, "SB")
-#SB_50 = get_results(50, "SB")
+SB_10 = get_results(10, "SB", inf=T)
+SB_50 = get_results(50, "SB", inf=T)
 
 
-table = rbind(CG_10, CG_50)#, ER_10, ER_50)#, CG_10, CG_50)#, SB_10, SB_50)
+table = rbind(CG_10, CG_50, ER_10, ER_50, SB_10, SB_50)
 
 
 tbl = as.data.frame(table)
 
 n=c(1000,2000, 5000, 10000)
-n = rep(n,4) #n= rep(n,12)
+n= rep(n,12)
 beta_0 = c(rep(0.1,4), rep(-2.6,4))
-beta_0 = rep(beta_0, 2) #used to be 6
+beta_0 = rep(beta_0, 6) 
 d = c(rep(10,8), rep(50,8))
-d = rep(d, 1) #used to be 3
-
+d = rep(d, 3)
 library(dplyr)
 
 tbl <- tbl %>% mutate(n = n)
