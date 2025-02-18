@@ -924,6 +924,8 @@ get_bic_vals = function(out_storm, N_samp, t_end, m,lambdas, data, unit_id, gamm
     
     # set values below threshold to zero
     beta_vec = lapply(beta_vec, function(x) ifelse(x < threshold, 0, x))
+    # set NaNs to zero
+    beta_vec = lapply(beta_vec, function(x) ifelse(is.na(x), 0, x))
     
     # get intercept estimates
     beta_0 = map(res,2)

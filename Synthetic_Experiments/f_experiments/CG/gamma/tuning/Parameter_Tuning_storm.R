@@ -9,7 +9,7 @@ if (l==1){
   library(doRNG)
   library(pracma) #for logspace
   
-  m_seq = round(seq(3, 20, length.out = 10))
+  m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
   lambdas = logspace(log10(10),log10(300),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
@@ -65,7 +65,7 @@ if (l==2){
   library(doRNG)
   library(pracma) #for logspace
   
-  m_seq = round(seq(3, 20, length.out = 10))
+  m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
   lambdas = logspace(log10(10),log10(300),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
@@ -123,7 +123,7 @@ if (l==3){
   library(doRNG)
   library(pracma) #for logspace
   
-  m_seq = round(seq(3, 20, length.out = 10))
+  m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
   lambdas = logspace(log10(10),log10(300),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
@@ -180,7 +180,7 @@ if (l==4){
   library(pracma) #for logspace
   
   
-  m_seq = round(seq(3, 20, length.out = 10))
+  m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
   lambdas = logspace(log10(10),log10(300),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
