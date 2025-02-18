@@ -1,5 +1,6 @@
 # Simulations for m = 3 ---------------------------------------------------
 
+m = 3;
 
 # n = 1000 ----------------------------------------------------------------
 
@@ -42,7 +43,7 @@ end <-Sys.time()
 stopCluster(cl) 
 print(end-start) 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
-saveRDS(out, "out_50_1000.RDS")
+saveRDS(out, paste0("m_",m,"out_1000.RDS"))
 
 
 # n = 2000
@@ -83,7 +84,7 @@ end <-Sys.time()
 stopCluster(cl) 
 print(end-start)
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
-saveRDS(out, "out_50_2000.RDS")
+saveRDS(out, paste0("m_",m,"out_2000.RDS"))
 
 
 #n = 5000
@@ -125,7 +126,7 @@ end <-Sys.time()
 stopCluster(cl) 
 print(end-start) 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
-saveRDS(out, "out_50_5000.RDS")
+saveRDS(out, paste0("m_",m,"out_5000.RDS"))
 
 
 
@@ -168,5 +169,5 @@ end <-Sys.time()
 stopCluster(cl) 
 print(end-start) 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
-saveRDS(out, "out_50_10000.RDS")
+saveRDS(out, paste0("m_",m,"out_10000.RDS"))
 
