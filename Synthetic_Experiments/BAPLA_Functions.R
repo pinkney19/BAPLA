@@ -339,9 +339,12 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
     
     f = as.vector(f)
     
-    # Checks for convergence
+    if(sum(is.na(beta))!=0) break
     
-    if( max((beta_tilde-beta)^2)<tol^2) break
+    # Checks for convergence
+    if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+      if( max((beta_tilde-beta)^2)<tol^2) break
+    }
   }
   
   #DE-STANDARDISE THE COEFFICIENTS

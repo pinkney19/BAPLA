@@ -148,16 +148,16 @@ ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T)
 #Errors
 
 # errors 
-f_mses_50 = c(err_normal_f(out_50_1000, 10, 1000)$mse, err_normal_f(out_50_2000, 10, 2000)$mse, 
-              err_normal_f(out_50_5000, 10, 5000)$mse, err_normal_f(out_50_10000, 10, 10000)$mse)
+f_mses_50 = c(err_normal_f(out_50_1000, 10, 1000, 10)$mse, err_normal_f(out_50_2000, 10, 2000,10)$mse, 
+              err_normal_f(out_50_5000, 10, 5000,10)$mse, err_normal_f(out_50_10000, 10, 10000,10)$mse)
 f_mses_50
-f_std_50 = c(err_normal_f(out_50_1000, 10,1000)$err, err_normal_f(out_50_2000, 10, 2000)$err, 
-             err_normal_f(out_50_5000, 10, 5000)$err, err_normal_f(out_50_10000, 10, 10000)$err)
+f_std_50 = c(err_normal_f(out_50_1000, 10,1000,10)$err, err_normal_f(out_50_2000, 10, 2000,10)$err, 
+             err_normal_f(out_50_5000, 10, 5000,10)$err, err_normal_f(out_50_10000, 10, 10000,10)$err)
 f_std_50
 
 
-f_mses_zero = c(err_normal_f(out_zero_1000, 10, 1000)$mse, err_normal_f(out_zero_2000, 10, 2000)$mse, 
-                err_normal_f(out_zero_5000, 10, 5000)$mse, err_normal_f(out_zero_10000, 10, 10000)$mse)
+f_mses_zero = c(err_normal_f(out_zero_1000, 10, 1000 ,10)$mse, err_normal_f(out_zero_2000, 10, 2000, 10)$mse, 
+                err_normal_f(out_zero_5000, 10, 5000, 10)$mse, err_normal_f(out_zero_10000, 10, 10000, 10)$mse)
 f_mses_zero
 f_std_zero = c(err_normal_f(out_zero_1000, 10, 1000)$err, err_normal_f(out_50_2000, 10, 2000)$err, 
                err_normal_f(out_zero_5000, 10, 5000)$err, err_normal_f(out_zero_10000, 10, 10000)$err)
