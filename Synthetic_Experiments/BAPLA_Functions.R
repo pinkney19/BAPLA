@@ -690,7 +690,7 @@ plot_f_cis_normal <- function(f, unit_id, title, N) {
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_y_continuous(limits = c(-5, 9)) +
+    scale_y_continuous(limits = c(-5, 10)) +
     theme(legend.position = "topright") +
     guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
 }
@@ -1225,6 +1225,239 @@ Estimate_coefficients_beta = function(data, idx, max_iter, tol, beta,  m){
 
 
 
+
+
+
+# 13. Estimate coefficients without f -------------------------------------
+
+Estimate_coefficients_no_rate = function(data, idx, max_iter, tol, lams, m){
+  #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+  #'
+  #' @param data data source 
+  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  
+  # obtain data
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  # standardize the data
+  x_bar = colMeans(X1) # get mean of each column
+  # X = X1
+  X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+  for (i in 1:p){
+    X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+  }
+  
+  # set regularisation parameter
+  lambda = lams[idx]
+  
+  # # set initial parameters 
+  beta_0 = 0
+  beta = rep(0,p)
+  
+  
+  
+  # Perform cyclical coordinate descent
+  for(iter in 1:max_iter) {
+    #print(iter)
+    # current parameter estimates
+    beta_tilde <- beta
+    beta0_tilde <- beta_0
+    
+    # Get working response and weights for IRLS
+    # i.e. ~ Equations (16) and (17) of glmnet paper
+    
+    # compute p_tilde
+    p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde ) )^-1
+    # compute w
+    w = p_tilde * (1-p_tilde)
+    
+    # compute z
+    z = beta0_tilde + X %*% beta_tilde + ( (y-p_tilde)/ w )
+    
+    # Beta matrix update
+    for(j in 1:p) {
+      
+      # Compute partial residual
+      # i.e. fitted value excluding contribution from x_{ij}
+      
+      y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] 
+      
+      # compute least-squares coefficient when fitting this partial residual to x_{ij}
+      # remember to use z instead of y as the "working response"
+      
+      ls_coef <- crossprod(w*X[,j], z - (y_tilde))
+      
+      # Update beta coefficient
+      beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+      
+      
+    }
+    
+    # Intercept update - 
+    beta_0 <- crossprod(w, z- (X%*%beta)  ) / sum(w)
+    beta_0 <- as.numeric(beta_0)
+    
+    
+    #if there is NAs in the beta estimate - break AND set beta = beta_tilde
+    #need to set fs and betas to previous as well
+    if(sum(is.na(beta))!=0){
+      beta = beta_tilde
+      beta_0 = beta0_tilde
+      break
+    }
+    
+    # Checks for convergence
+    if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+      if( max((beta_tilde-beta)^2)<tol^2) break
+    }
+  }
+  
+  #DE-STANDARDISE THE COEFFICIENTS
+  sum_term = NULL;
+  for(j in 1:p){
+    beta[j] = beta[j]/sd(X1[,j])
+    sum_term[j] = (x_bar[j]*beta[j])
+  }
+  beta_0 = beta_0 - sum(sum_term)
+  
+  
+  
+  # Print final coefficients
+  return(list(beta0=beta_0, beta=beta, iter = iter))
+}
+
+
+# 14. Estimate coefficients without f (all units) -------------------------
+
+Estimate_coefficients_logit_no_f <- function(data_source, p, max_iter, tol, lams, m){
+  #'  Function to estimate coefficients of the BAPLA model for all dimensions and regularization parameter
+  #'
+  #' @param data_source data
+  #' @param p dimension
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @param m number of basis coefficients for splines
+  #' @export  
+  p = dim(data_source)[1]
+  #print(p)
+  beta0_hat=NULL; beta_hat = matrix(NA, p ,p)
+  iter = NULL; beta0_alt = NULL;
+  for (i in 1:p){
+    print(i)
+    res = Estimate_coefficients_no_rate(data_source, i, max_iter, tol, lams, m)
+    beta0_hat[i] = res$beta0
+    beta_hat[i,] = res$beta
+    iter[i] = res$iter
+  }
+  
+  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, iter = iter))
+}
+
+
+# 27. Get bic vals without f ----------------------------------------------
+
+get_bic_vals_no_f = function(out_storm, N_samp, t_end, m,lambdas, data, unit_id, gamma, p, threshold){
+  av_BIC = NULL;av_AIC=NULL;av_eBIC=NULL;av_nn=NULL;av_nll=NULL;av_nll2 = NULL;
+  any = rep(0, length(lambdas)); all = rep(0, length(lambdas))
+  for(i in 1:length(lambdas)){
+    #print(i)
+    b = N_samp*i
+    if(i==1){
+      res = out_storm[1:b]
+    }
+    if(i!=1){
+      res = out_storm[((b-N_samp)+1):b]
+    }
+    
+    # get estimates of beta
+    beta_hats = map(res, 1)
+    # select coefficient vector for specified unit
+    
+    beta_vec = lapply(beta_hats, function(x) x[unit_id, ])
+    
+    # set values below threshold to zero
+    beta_vec = lapply(beta_vec, function(x) ifelse(x < threshold, 0, x))
+    # set NaNs to zero
+    beta_vec = lapply(beta_vec, function(x) ifelse(is.na(x), 0, x))
+    
+    # get intercept estimates
+    beta_0 = map(res,2)
+    # select those for specified unit
+    beta_0 = unlist(map(beta_0, unit_id))
+    
+    # calculate BIC for the 10 training samples
+    BIC_vec = NULL; AIC_vec = NULL; eBIC_vec = NULL; nll2=NULL; nll=NULL; num_non_zeroes=NULL;check = NULL
+    
+    for(j in 1:length(beta_hats)){#length(beta_hats)){
+      
+      # select data of interest to the unit_id
+      y = data[[j]][unit_id,][2:(t_end+1)] 
+      X1 = data[[j]][,(1:t_end)] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+      X1 = t(X1)
+      
+      
+      term1 = y * (beta_0[j] + X1 %*% beta_vec[[j]] )
+      term2 = log(1 + exp(beta_0[j] + X1 %*% beta_vec[[j]] ) )
+      nll[j] = sum(term1-term2) 
+      
+      p_prob = inv.logit(beta_0[j] + X1 %*% beta_vec[[j]] )
+      nll2[j] = sum( y*(log(p_prob)) + ( (1-y)*(log(1-p_prob)) ))
+      
+      
+      num_non_zeroes[j] = sum(beta_vec[[j]] != 0)
+      pen_term = (num_non_zeroes[j]+1+(m))*log(length(y))
+      eBIC_term = 2*gamma*log(p)* (num_non_zeroes[j]+1+(m))
+      
+      BIC_vec[j] = -2*(nll[j]) + pen_term #+ eBIC_term
+      eBIC_vec[j] = BIC_vec[j] + eBIC_term
+      AIC_vec[j] = -2*(nll[j]) + (2*(num_non_zeroes[j]+1+(m)))
+      
+      check[j] = pen_term > (2*(num_non_zeroes[j]+1+(m)))
+    }
+    # check if any are zeroes
+    if(any(num_non_zeroes==0)){any[i] = 1}
+    # check if all zeroes
+    if(all(num_non_zeroes==0)){all[i] = 1}
+    # get average BIC across the training samples
+    av_BIC[i] = mean(BIC_vec)
+    av_AIC[i] = mean(AIC_vec)
+    av_eBIC[i] = mean(eBIC_vec)
+    av_nn[i] = mean(num_non_zeroes)
+    av_nll[i] = mean(nll)
+    av_nll2[i] = mean(nll2)
+  }
+  return(list(BIC = av_BIC, AIC = av_AIC, eBIC = av_eBIC,  nn=av_nn, nll=av_nll, nll2 = av_nll2, any = any, all = all ))
+}
+
+
+# 28. get lambdas no f ----------------------------------------------------
+
+get_lambdas_no_f = function(out, N_samp, t_end, m, lambdas, data, p, title){
+  lambdas_BIC = NULL; lambdas_eBIC = NULL; lambdas_AIC = NULL;
+  out_AIC = NULL; out_BIC = NULL; out_eBIC = NULL;
+  for(i in 1:p){
+    print(i)
+    res = get_bic_vals_no_f(out, N_samp, t_end, m,lambdas, data,i, 0.5, p, threshold = 1e-5)
+    idx = which(res$any==1)[1] #extract index of lambda for which all are zero
+    lambdas_AIC[i] = lambdas[which.min(res$AIC)]
+    lambdas_BIC[i] = lambdas[which.min(res$BIC)]
+    lambdas_eBIC[i] = lambdas[which.min(res$eBIC)]
+  }
+  df = data.frame(cbind(lambdas_AIC, lambdas_BIC, lambdas_eBIC))
+  names(df)=c("AIC", "BIC", "eBIC")
+  boxplot(df, ylab=expression(lambda), main=title)
+  return(df)
+}
 
 # Old functions -----------------------------------------------------------
 

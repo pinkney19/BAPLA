@@ -51,11 +51,15 @@ data <- data.frame(m = rep(m_seq, times = length(x_beta)),
 
 p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   geom_line() +
-  ylim(0, 0.3) +
+  ylim(0,1) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
-  labs(y = "Average RMSE", x = "No. Basis Functions", title = "Interaction Matrix") +
+  labs(y = "Average RMSE", x = expression(m), title = "") +
   theme_minimal()
 
+p1
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments")
+ggsave("plot_errs_interaction_gamma.pdf", plot = p1, width = 4, height =3, units = "in")
 
 data2 <- data.frame(m = rep(m_seq, times = length(x_beta)),
                     MSE_f = unlist(x_f),
@@ -65,12 +69,16 @@ p2 = ggplot(data2, aes(x = m, y = MSE_f, color = n)) +
   geom_line() +
   ylim(0, 5) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
-  labs(y = "Average MSE", x = "No. Basis Functions", title = "Non-stationary Firing Rate") +
+  labs(y = "Average MSE", x = expression(m), title = expression(hat(f)[i](t))) +
   theme_minimal()
 
+p2
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments")
+ggsave("plot_errs_gamma_f.pdf", plot = p2, width = 4, height =3, units = "in")
 
 library(ggpubr)
 plot = ggarrange(p1, p2, ncol=2, common.legend = T)
+plot
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments")
 ggsave("plot_errs_f.pdf", plot = plot, width = 8, height =3, units = "in")
