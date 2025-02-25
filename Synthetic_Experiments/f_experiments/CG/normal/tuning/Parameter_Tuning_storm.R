@@ -11,7 +11,7 @@ if (l==1){
   
   m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
-  lambdas = logspace(log10(10),log10(300),100)
+  lambdas = logspace(log10(1),log10(150),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   
@@ -67,7 +67,7 @@ if (l==2){
   
   m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
-  lambdas = logspace(log10(10),log10(300),100)
+  lambdas = logspace(log10(1),log10(150),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   
@@ -125,7 +125,7 @@ if (l==3){
   
   m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
-  lambdas = logspace(log10(10),log10(300),100)
+  lambdas = logspace(log10(1),log10(150),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   
@@ -182,7 +182,7 @@ if (l==4){
   
   m_seq = c(3,5,10,15,20)
   data_seq = seq(1, 10)
-  lambdas = logspace(log10(10),log10(300),100)
+  lambdas = logspace(log10(1),log10(150),100)
   grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   

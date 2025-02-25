@@ -26,7 +26,9 @@ library(splines)
 # m = 3 -------------------------------------------------------------------
 m_seq = c(3,5,10,15,20)
 
-for(i in 1:length(m_seq)){
+#for(i in 1:length(m_seq)){
+  
+for(i in 1:length(m_seq)){  
   
   print(paste("No basis functions is ", m_seq[i])) 
   

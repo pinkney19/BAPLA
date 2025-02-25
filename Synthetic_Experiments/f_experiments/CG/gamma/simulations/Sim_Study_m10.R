@@ -1,6 +1,6 @@
 # Simulations for m = 10 ---------------------------------------------------
 
-m = 10;
+m = 10
 
 # n = 1000 ----------------------------------------------------------------
 
@@ -31,7 +31,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
                                             beta_hat = res$beta_hat
                                             beta_0_hat = res$beta0
-                                            f_hat = res$f_hat
+                                            f_hat = res$f
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             
@@ -42,7 +42,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
 end <-Sys.time() 
 stopCluster(cl) 
 print(end-start) 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results/Nas_removed")
 saveRDS(out, paste0("m_",m,"out_1000.RDS"))
 
 
@@ -72,7 +72,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
                                             beta_hat = res$beta_hat
                                             beta_0_hat = res$beta0
-                                            f_hat = res$f_hat
+                                            f_hat = res$f
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             
@@ -83,7 +83,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
 end <-Sys.time() 
 stopCluster(cl) 
 print(end-start)
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results/Nas_removed")
 saveRDS(out, paste0("m_",m,"out_2000.RDS"))
 
 
@@ -114,7 +114,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
                                             beta_hat = res$beta_hat
                                             beta_0_hat = res$beta0
-                                            f_hat = res$f_hat
+                                            f_hat = res$f
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             
@@ -125,7 +125,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
 end <-Sys.time() 
 stopCluster(cl) 
 print(end-start) 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results/Nas_removed")
 saveRDS(out, paste0("m_",m,"out_5000.RDS"))
 
 
@@ -157,7 +157,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             res = Estimate_coefficients_logit(k, p, max_iter, tol, lams_zero, m)
                                             beta_hat = res$beta_hat
                                             beta_0_hat = res$beta0
-                                            f_hat = res$f_hat
+                                            f_hat = res$f
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             
@@ -168,6 +168,6 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
 end <-Sys.time() 
 stopCluster(cl) 
 print(end-start) 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/results/Nas_removed")
 saveRDS(out, paste0("m_",m,"out_10000.RDS"))
 

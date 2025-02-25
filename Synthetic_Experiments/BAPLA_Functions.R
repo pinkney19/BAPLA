@@ -339,8 +339,16 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
     
     f = as.vector(f)
     
-    if(sum(is.na(beta))!=0) break
-    
+    #if there is NAs in the beta estimate - break AND set beta = beta_tilde
+    #need to set fs and betas to previous as well
+    if(sum(is.na(beta))!=0){
+      beta = beta_tilde
+      beta_0 = beta0_tilde
+      f = f_tilde
+      c = c_tilde
+      break
+    }
+
     # Checks for convergence
     if(sum(is.na(beta))==0){ #if no na's in the beta estimate
       if( max((beta_tilde-beta)^2)<tol^2) break
@@ -472,6 +480,8 @@ metrics_new = function(res, gt, threshold){
   beta_list = map(res, 1)
   # put entries less than threshold to zero
   lapply(beta_list, function(x) ifelse(abs(x) < threshold, 0, x))
+
+  
   av_mse = mean( unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2)) )
   all_mse = unlist(lapply(beta_list, function(x) performance_measures(x, gt)$l2))
   # standard errors
@@ -963,6 +973,7 @@ get_bic_vals = function(out_storm, N_samp, t_end, m,lambdas, data, unit_id, gamm
       p_prob = inv.logit(beta_0[j] + X1 %*% beta_vec[[j]] + f[[j]])
       nll2[j] = sum( y*(log(p_prob)) + ( (1-y)*(log(1-p_prob)) ))
       
+     
       num_non_zeroes[j] = sum(beta_vec[[j]] != 0)
       pen_term = (num_non_zeroes[j]+1+(m))*log(length(y))
       eBIC_term = 2*gamma*log(p)* (num_non_zeroes[j]+1+(m))
