@@ -93,6 +93,11 @@ save_results(10, 10, beta)
 save_results(10, 15, beta)
 save_results(10, 20, beta)
 
+save_results(10, 25, beta)
+save_results(10, 30, beta)
+save_results(10, 35, beta)
+save_results(10, 40, beta)
+
 
 # Save all ----------------------------------------------------------------
 
@@ -142,3 +147,8 @@ save_all_res(10, 5, beta)
 save_all_res(10, 10, beta)
 save_all_res(10, 15, beta)
 save_all_res(10, 20, beta)
+
+save_all_res(10, 25, beta)
+save_all_res(10, 30, beta)
+save_all_res(10, 35, beta)
+save_all_res(10, 40, beta)

@@ -51,7 +51,7 @@ data <- data.frame(m = rep(m_seq, times = length(x_beta)),
 
 p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   geom_line() +
-  ylim(0,1) +
+  ylim(0,0.6) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average RMSE", x = expression(m), title = "") +
   theme_minimal()

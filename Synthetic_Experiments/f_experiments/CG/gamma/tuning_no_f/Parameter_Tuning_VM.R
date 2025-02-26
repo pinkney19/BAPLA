@@ -31,7 +31,7 @@ out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dop
   max_iter = 1000; tol=1e-5; 
   l = as.numeric(k[2])
   lams = rep(l,p)
-  m = as.numeric(k[3])
+ 
   
   data_idx = as.numeric(k[1])
   data = data_50[[data_idx]]
@@ -49,7 +49,7 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 print(end-start)
-setwd("/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
+setwd("~/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
 saveRDS(out, "out_50_1000.RDS")  
 
 # n = 2000
@@ -61,7 +61,7 @@ library(pracma) #for logspace
 
 data_seq = seq(1, 10)
 lambdas = logspace(log10(1),log10(150),100)
-grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
+grid = expand.grid(sample = data_seq, lams = lambdas)
 list_of_pairs <- split(grid, seq(nrow(grid)))
 
 cl <- makeCluster(4) 
@@ -70,7 +70,7 @@ registerDoParallel(cl)
 registerDoRNG(seed = 123)
 out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dopar%{
   
-  #setwd("~/Downloads/BAPLA/Synthetic_Experiments")
+  setwd("~/Downloads/BAPLA/Synthetic_Experiments")
   source("BAPLA_Functions.R")
   
   # load data
@@ -83,7 +83,7 @@ out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dop
   max_iter = 1000; tol=1e-5; 
   l = as.numeric(k[2])
   lams = rep(l,p)
-  m = as.numeric(k[3])
+ 
   
   data_idx = as.numeric(k[1])
   data = data_50[[data_idx]]
@@ -101,7 +101,7 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 print(end-start)
-setwd("/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
+setwd("~/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
 saveRDS(out, "out_50_2000.RDS")
 
 
@@ -116,7 +116,7 @@ library(pracma) #for logspace
 
 data_seq = seq(1, 10)
 lambdas = logspace(log10(1),log10(150),100)
-grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
+grid = expand.grid(sample = data_seq, lams = lambdas)
 list_of_pairs <- split(grid, seq(nrow(grid)))
 
 cl <- makeCluster(4) 
@@ -125,7 +125,7 @@ registerDoParallel(cl)
 registerDoRNG(seed = 123)
 out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dopar%{
   
-  #setwd("~/Downloads/BAPLA/Synthetic_Experiments")
+  setwd("~/Downloads/BAPLA/Synthetic_Experiments")
   source("BAPLA_Functions.R")
   
   # load data
@@ -138,7 +138,7 @@ out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dop
   max_iter = 1000; tol=1e-5; 
   l = as.numeric(k[2])
   lams = rep(l,p)
-  m = as.numeric(k[3])
+ 
   
   data_idx = as.numeric(k[1])
   data = data_50[[data_idx]]
@@ -156,7 +156,7 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 print(end-start)
-setwd("/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
+setwd("~/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
 saveRDS(out, "out_50_5000.RDS")
 
 # n = 10000
@@ -169,7 +169,7 @@ library(pracma) #for logspace
 
 data_seq = seq(1, 10)
 lambdas = logspace(log10(1),log10(150),100)
-grid = expand.grid(sample = data_seq, lams = lambdas,  m = m_seq)
+grid = expand.grid(sample = data_seq, lams = lambdas)
 list_of_pairs <- split(grid, seq(nrow(grid)))
 
 cl <- makeCluster(4) 
@@ -178,7 +178,7 @@ registerDoParallel(cl)
 registerDoRNG(seed = 123)
 out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dopar%{
   
-  #setwd("~/Downloads/BAPLA/Synthetic_Experiments")
+  setwd("~/Downloads/BAPLA/Synthetic_Experiments")
   source("BAPLA_Functions.R")
   
   # load data
@@ -191,7 +191,7 @@ out <- foreach(k = list_of_pairs, .packages = c("splines","LaplacesDemon")) %dop
   max_iter = 1000; tol=1e-5; 
   l = as.numeric(k[2])
   lams = rep(l,p)
-  m = as.numeric(k[3])
+ 
   
   data_idx = as.numeric(k[1])
   data = data_50[[data_idx]]
@@ -209,5 +209,6 @@ end <-Sys.time()
 stopCluster(cl) 
 end-start 
 print(end-start)
-setwd("/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
+
+setwd("~/luna/BAPLA/Synthetic_Experiments/f_experiments/CG_gamma/beta_0.1/tuning_no_f")
 saveRDS(out, "out_50_10000.RDS")
