@@ -90,7 +90,7 @@ AUCs = rbind(AUC_5m[id], AUC_10m[id], AUC_20m[id], AUC_40m[id])
 
 times = rbind(0.54373633333,as.numeric(m_10time_10000), as.numeric(m_20time_10000), as.numeric(m_40time_10000))
 
-df = round(data.frame(rmses, int_mses, f_mses, AUCs, times),2)
+df = round(data.frame(rmses, int_mses, f_mses, AUCs),2) #, times),2)
 
 library(xtable)
 xtable(df)
