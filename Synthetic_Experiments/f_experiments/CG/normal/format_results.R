@@ -71,7 +71,7 @@ data2 <- data.frame(m = rep(m_seq, times = length(x_beta)),
 
 p2 = ggplot(data2, aes(x = m, y = MSE_f, color = n)) +
   geom_line() +
-  ylim(0, 7) +
+  ylim(0, 9) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average MSE", x = expression(m), title = "") +
   theme_minimal()

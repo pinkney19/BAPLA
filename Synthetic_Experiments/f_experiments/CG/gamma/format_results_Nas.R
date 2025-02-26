@@ -28,12 +28,20 @@ m15 = round(get_results_2(15), 2)
 m20 = round(get_results_2(20), 2)
 
 
-m_seq = c(3,5,10,15,20)
+m25 = round(get_results_2(25) ,2)
+m30 = round(get_results_2(30) ,2)
+m35 = round(get_results_2(35), 2)
+m40 = round(get_results_2(40), 2)
+
+
+m_seq = c(3,5,10,15,20, 25, 30, 35, 40)
 n = c(1000,2000,5000,10000)
 x_beta = NULL; x_beta = list(rep(x_beta), length(n)); x_f = x_beta
 for(i in 1:length(n)){
-  x_beta[[i]] = c(m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]])
-  x_f[[i]] = c(m3$f_mse[[i]], m5$f_mse[[i]], m10$f_mse[[i]],m15$f_mse[[i]], m20$f_mse[[i]])
+  x_beta[[i]] = c(m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
+                  m25$rmse[[i]], m30$rmse[[i]],m35$rmse[[i]], m40$rmse[[i]])
+  x_f[[i]] = c(m3$f_mse[[i]], m5$f_mse[[i]], m10$f_mse[[i]],m15$f_mse[[i]], m20$f_mse[[i]],
+               m25$f_mse[[i]], m30$f_mse[[i]],m35$f_mse[[i]], m40$f_mse[[i]])
 }
 
 # plot(m_seq, x_beta[[1]], ylim =c(0,0.3), type='l', ylab = "Average RMSE", xlab = "m", main = expression(Gamma))
@@ -51,7 +59,7 @@ data <- data.frame(m = rep(m_seq, times = length(x_beta)),
 
 p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   geom_line() +
-  ylim(0,0.6) +
+  ylim(0,0.65) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average RMSE", x = expression(m), title = "") +
   theme_minimal()
@@ -67,9 +75,9 @@ data2 <- data.frame(m = rep(m_seq, times = length(x_beta)),
 
 p2 = ggplot(data2, aes(x = m, y = MSE_f, color = n)) +
   geom_line() +
-  ylim(0, 5) +
+  ylim(0, 9) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
-  labs(y = "Average MSE", x = expression(m), title = expression(hat(f)[i](t))) +
+  labs(y = "Average MSE", x = expression(m), title = ) +
   theme_minimal()
 
 p2
