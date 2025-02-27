@@ -33,7 +33,7 @@ for(i in 1:length(m_seq)){
   
   plot_list_beta0[[i]] = plot_intercept_estimates2(out_10000, -0.2,0.5, "", 0.1, 10)
  
-  plot_list[[i]] = plot_f_cis_normal(f_hat_50_10000, 1, paste0("m = ",m) ,10000)
+  plot_list[[i]] = plot_f_cis_normal(f_hat_50_10000, 1, "" ,10000)
 
 }
 
@@ -48,7 +48,7 @@ plot_list_beta0[[5]]
 
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/f_plots")
-ggsave("norm_20_10000_alt.pdf", plot = plot_list[[5]], width = 3.5, height =3.5, units = "in")
+ggsave("norm_20_10000.pdf", plot = plot_list[[5]], width = 3.5, height =3.5, units = "in")
 
 
 

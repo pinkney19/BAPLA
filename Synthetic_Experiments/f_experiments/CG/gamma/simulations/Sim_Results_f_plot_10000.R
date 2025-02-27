@@ -31,7 +31,7 @@ for(i in 1:length(m_seq)){
   f_hat_50_10000 = get_f(out_10000, m, 9999, unit_id = 1)
 
   plot_list_beta0[[i]] = plot_intercept_estimates2(out_10000, -0.2,0.5, "", 0.1, 10)
-  plot_list[[i]] = plot_f_cis_gamma(f_hat_50_10000, 1, paste0("m = ",m) ,10000)
+  plot_list[[i]] = plot_f_cis_gamma(f_hat_50_10000, 1, "" ,10000)
 
 }
 library(ggpubr)
