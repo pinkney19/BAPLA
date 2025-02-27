@@ -33,12 +33,14 @@ m30 = round(get_results_2(30) ,2)
 m35 = round(get_results_2(35), 2)
 m40 = round(get_results_2(40), 2)
 
+# no f
+rmse0 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/sims_no_f/formatted_res/rmse.RDS")
 
 m_seq = c(3,5,10,15,20, 25, 30, 35, 40)
 n = c(1000,2000,5000,10000)
 x_beta = NULL; x_beta = list(rep(x_beta), length(n)); x_f = x_beta
 for(i in 1:length(n)){
-  x_beta[[i]] = c(m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
+  x_beta[[i]] = c(rmse0[[i]],m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
                   m25$rmse[[i]], m30$rmse[[i]],m35$rmse[[i]], m40$rmse[[i]])
   x_f[[i]] = c(m3$f_mse[[i]], m5$f_mse[[i]], m10$f_mse[[i]],m15$f_mse[[i]], m20$f_mse[[i]],
                m25$f_mse[[i]], m30$f_mse[[i]],m35$f_mse[[i]], m40$f_mse[[i]])
@@ -50,16 +52,20 @@ for(i in 1:length(n)){
 # }
 
 
+
+
 library(ggplot2)
 
+m_seq2 = c(0, 3,5,10,15,20, 25, 30, 35, 40)
+
 # Assuming m_seq and x_beta are already defined
-data <- data.frame(m = rep(m_seq, times = length(x_beta)),
+data <- data.frame(m = rep(m_seq2, times = length(x_beta)),
                    RMSE = unlist(x_beta),
-                   n = factor(rep(n, each = length(m_seq))))
+                   n = factor(rep(n, each = length(m_seq2))))
 
 p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   geom_line() +
-  ylim(0,0.65) +
+  ylim(0,0.85) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average RMSE", x = expression(m), title = "") +
   theme_minimal()
@@ -83,6 +89,20 @@ p2 = ggplot(data2, aes(x = m, y = MSE_f, color = n)) +
 p2
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments")
 ggsave("plot_errs_gamma_f.pdf", plot = p2, width = 4, height =3, units = "in")
+
+
+# consistency plot
+m_star = 10;
+id = which(m_seq == m_star)
+mse_f_star = map(x_f, 3)
+
+df3 = data.frame(data = unlist(mse_f_star), n = n)
+
+p3 = ggplot(df3, aes(x=n, y = data)) +
+    geom_line() + 
+    labs(y = "MSE",x = expression(n)) + 
+  theme_minimal()
+p3 
 
 library(ggpubr)
 plot = ggarrange(p1, p2, ncol=2, common.legend = T)

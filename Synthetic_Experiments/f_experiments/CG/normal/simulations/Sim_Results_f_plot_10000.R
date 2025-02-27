@@ -15,30 +15,44 @@ beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/beta_10.RDS")
 
 # m = 3 -------------------------------------------------------------------
 
-m_seq = c(3, 5, 10, 15, 20);
+m_seq = c(3, 5, 10, 15, 20, 25, 30, 35, 40);
 
 library(splines)
 library(ggplot2)
 library(matrixStats)
 
 # load simulation results -------------------------------------------------
-plot_list = list();
+plot_list = list();plot_list_beta0 = list();
 for(i in 1:length(m_seq)){
   m = m_seq[i]
   out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_10000.RDS"))
 
   
   f_hat_50_10000 = get_f(out_10000, m, 9999, unit_id = 1)
-
+  
+  
+  plot_list_beta0[[i]] = plot_intercept_estimates2(out_10000, -0.2,0.5, "", 0.1, 10)
  
   plot_list[[i]] = plot_f_cis_normal(f_hat_50_10000, 1, paste0("m = ",m) ,10000)
 
 }
 
-
+library(ggpubr)
 plot = ggarrange(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]], plot_list[[5]], ncol=5, common.legend = T)
 plot
-plot2 = ggarrange(plot_list[[3]], plot_list[[5]], ncol=2, common.legend = T)
+
+plot_list[[5]]
+plot_list_beta0[[5]]
+
+
+
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/f_plots")
+ggsave("norm_20_10000_alt.pdf", plot = plot_list[[5]], width = 3.5, height =3.5, units = "in")
+
+
+
+plot2 = ggarrange(plot_list[[3]], plot_list[[5]], plot_list[[9]], ncol=3, common.legend = T)
 plot2
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/f_plots")

@@ -32,13 +32,13 @@ m30 = round(get_results_2(30) ,2)
 m35 = round(get_results_2(35), 2)
 m40 = round(get_results_2(40), 2)
 
-
+rmse0 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/sims_no_f/formatted_res/rmse.RDS")
 
 m_seq = c(3,5,10,15,20, 25, 30, 35, 40)
 n = c(1000,2000,5000,10000)
 x_beta = NULL; x_beta = list(rep(x_beta), length(n)); x_f = x_beta
 for(i in 1:length(n)){
-  x_beta[[i]] = c(m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
+  x_beta[[i]] = c(rmse0[[i]], m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
                   m25$rmse[[i]], m30$rmse[[i]],m35$rmse[[i]], m40$rmse[[i]])
   x_f[[i]] = c(m3$f_mse[[i]], m5$f_mse[[i]], m10$f_mse[[i]],m15$f_mse[[i]], m20$f_mse[[i]],
                m25$f_mse[[i]], m30$f_mse[[i]],m35$f_mse[[i]], m40$f_mse[[i]])
@@ -52,14 +52,16 @@ for(i in 1:length(n)){
 
 library(ggplot2)
 
-# Assuming m_seq and x_beta are already defined
-data <- data.frame(m = rep(m_seq, times = length(x_beta)),
+m_seq2 = c(0, 3,5,10,15,20, 25, 30, 35, 40)
+
+
+data <- data.frame(m = rep(m_seq2, times = length(x_beta)),
                    RMSE = unlist(x_beta),
-                   n = factor(rep(n, each = length(m_seq))))
+                   n = factor(rep(n, each = length(m_seq2))))
 
 p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   geom_line() +
-  ylim(0, 0.65) +
+  ylim(0, 0.85) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average RMSE", x = expression(m), title = "") +
   theme_minimal()
