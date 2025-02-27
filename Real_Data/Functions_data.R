@@ -383,6 +383,20 @@ bapla_single_unit_trial = function(trial_data, idx, max_iter, tol, lams, m){
     
     f = as.vector(f)
     
+    #if there is NAs in the beta estimate - break AND set beta = beta_tilde
+    #need to set fs and betas to previous as well
+    if(sum(is.na(beta))!=0){
+      beta = beta_tilde
+      beta_0 = beta0_tilde
+      f = f_tilde
+      c = c_tilde
+      break
+    }
+    
+    # Checks for convergence
+    if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+      if( max((beta_tilde-beta)^2)<tol^2) break
+    }
     # Checks for convergence
     #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
     #if( max((beta_tilde-beta)^2)<tol^2) break
@@ -397,11 +411,9 @@ bapla_single_unit_trial = function(trial_data, idx, max_iter, tol, lams, m){
   beta_0 = beta_0 - sum(sum_term)
   
   # Account for centered basis functions
-  beta_0 = beta_0 - sum(c*phi_bar)
+  beta_0_alt = beta_0 - sum(c*phi_bar)
   
-  # estimate original f
-  f_orig = phi %*% as.matrix(c)
   
   # Print final coefficients
-  return(list(beta0=beta_0, beta=beta, f=f, c=c, f_orig = f_orig, iter = iter))
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_0_alt = beta_0_alt))
 }
