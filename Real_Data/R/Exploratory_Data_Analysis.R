@@ -45,3 +45,8 @@ plots_lr <- ggarrange(plot_lr[[1]], plot_lr[[2]], plot_lr[[3]],plot_lr[[4]],plot
                       plot_lr[[6]],plot_lr[[7]],plot_lr[[8]],plot_lr[[9]],plot_lr[[10]],
                       plot_lr[[12]], ncol=4, nrow=3, common.legend = T)
 plots_lr
+
+
+ggarrange(plot_lr[[1]], plot_lr[[2]], plot_lr[[6]], ncol=3, common.legend = T)
+
+
