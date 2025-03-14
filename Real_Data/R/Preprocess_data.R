@@ -72,10 +72,23 @@ regions_dr = removeNumbers(names(dr))
 regions_dl == regions_dr
 regions_dl[1] = regions_dr[1] = "CA1"
 
-# Make data same number of trials 
+# save regions data
+setwd("~/Downloads/BAPLA/Real_Data/Data")
+saveRDS(regions_dl, "region_id.RDS")
 
-dr_new = cut_data(dr, 60)
-dl_new = cut_data(dl, 60)
+# Make data same number of trials 
+dr_out = cut_data(dr, 60)
+dr_new = dr_out$new_data
+right_kept = dr_out$trials_kept
+dl_out = cut_data(dl, 60)
+dl_new = dl_out$new_data
+left_kept = dr_out$trials_kept
+
+setwd("~/Downloads/BAPLA/Real_Data/Data/kept_trials")
+saveRDS(right_kept, "idx_right.RDS") # save trials used for right analysis.
+saveRDS(left_kept, "idx_left.RDS") # save trials used for left analysis.
+saveRDS(id_right, "idx_unit.RDS") # save ids of units used in analysis.
+
 
 names(dl_new) = regions_dl
 names(dr_new) = regions_dr

@@ -20,8 +20,8 @@ if (l==1){
   library(doRNG)
   library(pracma) #for logspace
   library(purrr)
-  lambdas = logspace(log10(1),log10(150),100)
-  units = seq(1, 74)
+  lambdas = logspace(log10(1),log10(300),100)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[1:50], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -37,10 +37,10 @@ if (l==1){
                                               unit_id = as.numeric(k[2])
                                               lam = as.numeric(k[1])
                                               
-                                              m = 6
+                                              m = 4
                                               
                                               # Estimate coefficients with own function
-                                              res = bapla_single_unit_trial(left_data, unit_id, 1000, 1e-5, rep(lam,74), m)
+                                              res = bapla_single_unit_trial(left_data, unit_id, 1000, 1e-5, rep(lam,78), m)
                                               beta_hat = res$beta
                                               beta_0_hat = res$beta0
                                               f_hat = res$f
@@ -67,8 +67,8 @@ if (l==2){
   library(doParallel)
   library(doRNG)
   library(pracma) #for logspace
-  lambdas = logspace(log10(1),log10(150),100)
-  units = seq(1, 74)
+  lambdas = logspace(log10(1),log10(300),100)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[51:100], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -84,10 +84,10 @@ if (l==2){
                                                   unit_id = as.numeric(k[2])
                                                   lam = as.numeric(k[1])
                                                   
-                                                  m = 6
+                                                  m = 4
                                                   
                                                   # Estimate coefficients with own function
-                                                  res = bapla_single_unit_trial(left_data, unit_id, 1000, 1e-5, rep(lam,74), m)
+                                                  res = bapla_single_unit_trial(left_data, unit_id, 1000, 1e-5, rep(lam,78), m)
                                                   beta_hat = res$beta
                                                   beta_0_hat = res$beta0
                                                   f_hat = res$f
@@ -114,8 +114,8 @@ if (l==3){
   library(doParallel)
   library(doRNG)
   library(pracma) #for logspace
-  lambdas = logspace(log10(1),log10(150),100)
-  units = seq(1, 74)
+  lambdas = logspace(log10(1),log10(300),100)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[1:50], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -131,10 +131,10 @@ if (l==3){
                                                   unit_id = as.numeric(k[2])
                                                   lam = as.numeric(k[1])
                                                   
-                                                  m = 6
+                                                  m = 4
                                                   
                                                   # Estimate coefficients with own function
-                                                  res = bapla_single_unit_trial(right_data, unit_id, 1000, 1e-5, rep(lam,74), m)
+                                                  res = bapla_single_unit_trial(right_data, unit_id, 1000, 1e-5, rep(lam,78), m)
                                                   beta_hat = res$beta
                                                   beta_0_hat = res$beta0
                                                   f_hat = res$f
@@ -159,8 +159,8 @@ if (l==4){
   library(doParallel)
   library(doRNG)
   library(pracma) #for logspace
-  lambdas = logspace(log10(1),log10(150),100)
-  units = seq(1, 74)
+  lambdas = logspace(log10(1),log10(300),100)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[51:100], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -176,10 +176,10 @@ if (l==4){
                                                   unit_id = as.numeric(k[2])
                                                   lam = as.numeric(k[1])
                                                   
-                                                  m = 6
+                                                  m = 4
                                                   
                                                   # Estimate coefficients with own function
-                                                  res = bapla_single_unit_trial(right_data, unit_id, 1000, 1e-5, rep(lam,74), m)
+                                                  res = bapla_single_unit_trial(right_data, unit_id, 1000, 1e-5, rep(lam,78), m)
                                                   beta_hat = res$beta
                                                   beta_0_hat = res$beta0
                                                   f_hat = res$f

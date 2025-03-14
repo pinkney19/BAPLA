@@ -25,7 +25,10 @@ plot_psth <- function(spike_times, bin_size, pre_time, post_time, title) {
   }
   
   # Normalize histogram
-  hist <- (hist / length(spike_times)) / bin_size
+  hist <- (hist) / length(spike_times) / bin_size
+  #hist <- (hist) / bin_size
+  # integrate to zero
+  #hist = hist - mean(hist)
   
   # Prepare data for plotting
   data <- data.frame(time = time_window[-length(time_window)], firing_rate = hist)
@@ -35,14 +38,15 @@ plot_psth <- function(spike_times, bin_size, pre_time, post_time, title) {
     geom_bar(stat = "identity", width = bin_size, fill = "deepskyblue", alpha = 0.7) +
     geom_vline(xintercept = 0, color = "grey50") +
     labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
+    #ylim(0, 2)
     theme_minimal()
   
-  return(plot)
+  return(list(plot=plot, hist = hist))
 }
 
 # 2. Plot multiple PSTH plots ---------------------------------------------
 
-plot_examples = function(spike_data, bin_size){
+plot_examples = function(spike_data, bin_size, regions){
   #'  Function to plot example psth plots for multiple units
   #'
   #' @param spike_data 
@@ -51,15 +55,7 @@ plot_examples = function(spike_data, bin_size){
   plot_list = list();
   for(i in 1:length(regions)){
     print(i)
-    if (length(spike_data[[i]]) != 0) {
-      if(i!=3){
-        plot_list[[i]] = plot_psth(spike_data[[i]][[1]], bin_size, 0.2,0.4, regions[i])
-      }
-    }
-    if(i==3){
-      plot_list[[i]] = plot_psth(spike_data[[i]][[2]], bin_size, 0.2,0.4, regions[i])
-    }
-    
+    plot_list[[i]] = plot_psth(spike_data[[i]][[1]], bin_size, 0.2,0.4, regions[i])
   }
   return(plot_list)
 }
@@ -462,9 +458,210 @@ bapla_single_unit_trial = function(trial_data, idx, max_iter, tol, lams, m){
   return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_0_alt = beta_0_alt))
 }
 
+
+
+# 7.b ---------------------------------------------------------------------
+
+#' bapla_single_unit_trial2 = function(trial_data, idx, max_iter, tol, lams, m){
+#'   #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+#'   #'
+#'   #' @param data data source 
+#'   #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+#'   #' @param max_iter Maximum number of iterations
+#'   #' @param tol tolereance level for the coordinate descent algorithm
+#'   #' @param lams Regularisation parameter
+#'   #' @param m number of basis coefficients for splines
+#'   #' @export  
+#'   
+#'   ######################### obtain data for each trial ######################## 
+#'   trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+#'   for(l in 1:length(trial_data)){
+#'     data = trial_data[[l]]
+#'     y = data[idx,][2:length(data[idx,])] # use
+#'     X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+#'     X1 = t(X1)
+#'     p = dim(data)[1]
+#'     
+#'     # standardize the data
+#'     x_bar = colMeans(X1) # get mean of each column
+#'     # X = X1
+#'     X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+#'     for (i in 1:p){
+#'       X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+#'     }
+#'     
+#'     trial_X[[l]] = X
+#'     
+#'   }
+#'   ############## Initialisations #################
+#'   # set regularisation parameter
+#'   lambda = lams[idx]
+#'   
+#'   # # set initial parameters 
+#'   beta_0 = 0
+#'   beta = rep(0,p)
+#'   
+#'   c <- rep(0, m)
+#'   
+#'   phi <- bs(seq(1, length(y)), df=m, intercept = F) 
+#'   phi2 = matrix(NA, nrow = nrow(phi), ncol=ncol(phi))
+#'   phi_bar = NULL;
+#'   for(i in 1:ncol(phi)){
+#'     phi2[,i] = phi[,i] - mean(phi[,i])
+#'     phi_bar[i] = mean(phi[,i])
+#'   }
+#'   
+#'   f <- phi2%*%as.matrix(c)
+#'   
+#'   ############## Cyclical coordinate descent #############
+#'   
+#'   for(iter in 1:max_iter) {
+#'     print(iter)
+#'     # current parameter estimates
+#'     beta_tilde <- beta
+#'     beta0_tilde <- beta_0
+#'     f_tilde <- f
+#'     c_tilde <- c
+#'     
+#'     ls_coef = list(); ls_coef = rep(list(ls_coef), length(trial_data))
+#'     denom = ls_coef;
+#'     for(l in 1:length(trial_data)){
+#'       
+#'       X = trial_X[[l]]
+#'       
+#'       # compute p_tilde
+#'       p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+#'       # compute w
+#'       w = p_tilde * (1-p_tilde)
+#'       
+#'       # compute z
+#'       z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+#'       
+#'       # Beta matrix update
+#'       for(j in 1:p) {
+#'         
+#'         # Compute partial residual
+#'         # i.e. fitted value excluding contribution from x_{ij}
+#'         
+#'         y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] + f
+#'         
+#'         # compute least-squares coefficient when fitting this partial residual to x_{ij}
+#'         # remember to use z instead of y as the "working response"
+#'         
+#'         ls_coef[[l]][j] <- crossprod(w*X[,j], z - (y_tilde))
+#'         
+#'         denom[[l]][j] <- sum(w*(X[,j]^2))
+#'         
+#'         # Update beta coefficient
+#'         #beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+#'         
+#'         
+#'       }
+#'       
+#'       
+#'     }
+#'     
+#'     # update beta coefficient
+#'     for(j in 1:p){
+#'       ls_coef_trial = sum(unlist(map(ls_coef,j)))
+#'       denom_trial = sum(unlist(denom,j))
+#'       beta[j] = ( sign(ls_coef_trial) * pmax(0, abs(ls_coef_trial ) - lambda) / denom_trial ) 
+#'     }
+#'     
+#'     # Intercept update 
+#'     num = NULL; denom = NULL;
+#'     for (l in 1:length(trial_data)){
+#'       X = trial_X[[l]]
+#'       
+#'       # compute p_tilde
+#'       p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+#'       # compute w
+#'       w = p_tilde * (1-p_tilde)
+#'       # compute z
+#'       z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+#'       
+#'       num[l] <-as.numeric(crossprod(w, z- (X%*%beta) - f ))
+#'       denom[l] <- sum(w)
+#'     }
+#'     
+#'     beta_0 <- sum(num)/sum(denom)
+#'     
+#'     # Update spline coefficients assuming known form for f
+#'     
+#'     
+#'     # spline coefficients update 
+#'     c2 = list(); c2 = rep(list(c2), length(trial_data));
+#'     for (l in 1:length(trial_data)){
+#'       X = trial_X[[l]]
+#'       
+#'       # compute p_tilde
+#'       p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde - f_tilde) )^-1
+#'       # compute w
+#'       w = p_tilde * (1-p_tilde)
+#'       # compute z
+#'       z = beta0_tilde + X %*% beta_tilde + f + ( (y-p_tilde)/ w )
+#'       
+#'       # step 1: calculate the c_k*phi_k(t)
+#'       t = list(); t = rep(list(t), length(c));
+#'       for(k in 1:length(c)){
+#'         t[[k]] <- c[k]*phi2[,k]
+#'       }
+#'       
+#'       # # step 2: update each c_k in turn
+#'       for(k in 1:length(c)){
+#'         cj_sum <- Reduce("+", t[-k])
+#'         c2[[l]][k] <-  crossprod(w*phi2[,k], z- beta_0 - (X%*%beta) - cj_sum) / sum(w*(phi2[,k])^2)
+#'         t[[k]] <- as.numeric(c2[[l]][k])*phi2[,k] #update with new c_k
+#'       }
+#'     }
+#'     
+#'     for(i in 1:length(trial_data)){
+#'       c2[[i]] = unlist(c2[[i]])
+#'     }
+#'     c = Reduce("+",c2)
+#'     
+#'     f = phi2 %*% as.matrix(c)
+#'     
+#'     f = as.vector(f)
+#'     
+#'     #if there is NAs in the beta estimate - break AND set beta = beta_tilde
+#'     #need to set fs and betas to previous as well
+#'     if(sum(is.na(beta))!=0){
+#'       beta = beta_tilde
+#'       beta_0 = beta0_tilde
+#'       f = f_tilde
+#'       c = c_tilde
+#'       break
+#'     }
+#'     
+#'     # Checks for convergence
+#'     if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+#'       if( max((beta_tilde-beta)^2)<tol^2) break
+#'     }
+#'     # Checks for convergence
+#'     #if( all(!is.na(beta)) & all(!is.na(beta_0)) & all(!is.na(c)) & sqrt(sum((beta - beta_tilde)^2)) < tol & sqrt(sum((beta_0 - beta0_tilde)^2)) <tol  & sqrt(sum((c - c_tilde)^2)) < tol) break
+#'     #if( max((beta_tilde-beta)^2)<tol^2) break
+#'   }
+#'   
+#'   #DE-STANDARDISE THE COEFFICIENTS
+#'   sum_term = NULL;
+#'   for(j in 1:p){
+#'     beta[j] = beta[j]/sd(X1[,j])
+#'     sum_term[j] = (x_bar[j]*beta[j])
+#'   }
+#'   beta_0 = beta_0 - sum(sum_term)
+#'   
+#'   # Account for centered basis functions
+#'   beta_0_alt = beta_0 - sum(c*phi_bar)
+#'   
+#'   
+#'   # Print final coefficients
+#'   return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_0_alt = beta_0_alt))
+#' }
+
 # 8. plot igraph ----------------------------------------------------------
 
-plot_graph = function(beta_matrix, arrow_size, node_size){
+plot_graph = function(beta_matrix, arrow_size, node_size, region_col){
   #' Function to plot the interaction matrix as an igraph plot
   #'
   #' @param beta_matrix p x p interaction matrix
@@ -476,7 +673,7 @@ plot_graph = function(beta_matrix, arrow_size, node_size){
   # Set edge colors based on the sign of the matrix values
   E(graph)$color <- ifelse(E(graph)$weight > 0, "red", "blue")
   # Set vertex color to white
-  V(graph)$color <- "white"
+  V(graph)$color <- region_col
     # Set vertex label color to black
   V(graph)$label.color <- "black"
     V(graph)$size <- node_size
@@ -485,7 +682,9 @@ plot_graph = function(beta_matrix, arrow_size, node_size){
     #set.seed(123)
     # Set the layout to circular
     layout <- layout_in_circle(graph)
-    plot(graph, edge.arrow.size = arrow_size, vertex.label = seq(1,dim(beta_matrix)[1]), edge.width = 2, edge.curved=0.2)
+    plot(graph, edge.arrow.size = arrow_size,
+         vertex.label = seq(1,dim(beta_matrix)[1]), 
+         edge.width = 0.1, edge.curved=0.2, layout = layout)
 }
 
 
@@ -496,7 +695,7 @@ cut_data = function(data, num_trials){
   #' @param data (list) data to cut/modify 
   #' @param num_trials (scalar) number of trials to keep
   
-  new_data = list();
+  new_data = list(); kept_trials = list();
   for(i in 1:length(data)){
     
     # Calculate the number of spikes in each trial
@@ -504,6 +703,9 @@ cut_data = function(data, num_trials){
     
     # Get the order of trials based on the number of spikes (smallest to largest)
     order_indices <- order(sums)
+    
+    # Record the indices of the trials used in our analysis
+    kept_trials[[i]] = rev(order_indices)[1:num_trials]
     
     # Reorder the trials data based on the number of spikes
     sorted_data <- data[[i]][order_indices]
@@ -513,5 +715,5 @@ cut_data = function(data, num_trials){
     
     new_data[[i]] = sorted_data[1:num_trials]
   }
-  return(new_data)
+  return(list(new_data = new_data, trials_kept = kept_trials))
 }

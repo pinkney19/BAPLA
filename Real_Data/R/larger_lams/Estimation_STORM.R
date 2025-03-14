@@ -21,7 +21,7 @@ if (l==1){
   library(pracma) #for logspace
   library(purrr)
   lambdas = logspace(log10(150),log10(300),100)
-  units = seq(1, 74)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[1:50], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -68,7 +68,7 @@ if (l==2){
   library(doRNG)
   library(pracma) #for logspace
   lambdas = logspace(log10(150),log10(300),100)
-  units = seq(1, 74)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[51:100], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -115,7 +115,7 @@ if (l==3){
   library(doRNG)
   library(pracma) #for logspace
   lambdas = logspace(log10(150),log10(300),100)
-  units = seq(1, 74)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[1:50], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
@@ -160,7 +160,7 @@ if (l==4){
   library(doRNG)
   library(pracma) #for logspace
   lambdas = logspace(log10(150),log10(300),100)
-  units = seq(1, 74)
+  units = seq(1, 78)
   grid = expand.grid( lams = lambdas[51:100], neuron = units)
   list_of_pairs <- split(grid, seq(nrow(grid)))
   cl <- makeCluster(19) 
