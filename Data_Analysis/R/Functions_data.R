@@ -720,3 +720,73 @@ cut_data = function(data, num_trials){
   }
   return(list(new_data = new_data, trials_kept = kept_trials, num_spikes = num_spikes))
 }
+
+
+# 10. Function to count avg spikes per trial ------------------------------
+
+avg_spike_per_trial = function(data){
+  #' Function to calculate average number of spiking events per experimental trial
+  #' for each neuron/unit
+  #' @param data (list) nested list of trial times for each unit
+  av_spike = NULL;
+  for(i in 1:length(data)){
+    av_spike[i] = mean(unlist(lapply(data[[i]], sum)))
+  }
+  return(av_spike)
+}
+
+
+# 11. Function to plot avg points -----------------------------------------
+
+
+plot_avg_points = function(left_data, right_data, title){
+  #' Function to plot average number of points per trial
+  #' @param left_data (list)  
+  #' @param right_data (list)
+  #' @param title (string) title of plot
+  pp_left = lapply(left_data, rowSums)
+  av_left = Reduce("+",pp_left)/length(pp_left)
+  plot(seq(1, length(av_left)), av_left, col="blue", ylab = "Avg Points per Trial", xlab = "Unit", ylim = c(0,60), main = title)
+  
+  pp_right = lapply(right_data, rowSums)
+  av_right = Reduce("+",pp_right)/length(pp_right)
+  points(seq(1, length(av_right)), av_right, col="red")
+  abline(h = 10, lty = 2)
+  legend("topright", c("left", "right"), col=c("blue", "red"), pch = c(1,1))
+  return(list(av_lft = av_left, av_rt = av_right))
+}
+
+
+# 12. Function to remove zero trials from raw data ------------------------
+
+remove_zeros = function(unit_data){
+  #' Function to remove trials with no spikes from raw data
+  #' unit_data (list) list of raw spikes times (i.e. no binned)
+  new_data = list();
+  for(i in 1:length(unit_data)){
+    no_spikes = lengths(unit_data[[i]]) # get number of spikes in each trial
+    zero_ids = which(no_spikes == 0) # get IDs of trials with no spikes
+    if(length(zero_ids)>0){ # if there are trials with no spikes -> remove them
+      new_data[[i]] = unit_data[[i]][-zero_ids]
+    }
+    if(length(zero_ids)==0){ # If all trials have spikes, keep them all 
+      new_data[[i]] = unit_data[[i]]
+    }
+  }
+  return(new_data)
+}
+
+
+# 13. Function to remove low firing trials from raw data ------------------
+
+remove_low_trials = function(unit_data, trial_ids){
+  #' Function to remove low firing trials from raw data
+  #' @param unit_data (list) list of raw spike times
+  #' @param trial_ids (list) list of trial ids to keep in analysis
+  new_data = list();
+  for(i in 1:length(unit_data)){
+    # select most active trials
+    new_data[[i]] = unit_data[[i]][trial_ids[[i]]]
+  }
+  return(new_data)
+}

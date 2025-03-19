@@ -146,16 +146,7 @@ right_data_to_use = dr_new[common_ids]
 
 
 # get average number of spikes per trial for each unit --------------------
-avg_spike_per_trial = function(data){
-  #' Function to calculate average number of spiking events per experimental trial
-  #' for each neuron/unit
-  #' @param data (list) nested list of trial times for each unit
-  av_spike = NULL;
-  for(i in 1:length(data)){
-    av_spike[i] = mean(unlist(lapply(data[[i]], sum)))
-  }
-  return(av_spike)
-}
+
 
 av_left = avg_spike_per_trial(left_data_to_use)
 av_right = avg_spike_per_trial(right_data_to_use)

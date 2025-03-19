@@ -1,4 +1,5 @@
-
+setwd("~/Downloads/BAPLA/Data_Analysis/R")
+source("Functions_data.R")
 
 
 # Load IDs of neurons used in analysis ------------------------------------
@@ -53,20 +54,7 @@ ggarrange(plts[[1]],plts[[2]], plts[[3]],
 # Plot PSTH with SELECTED trials ------------------------------------------
 
 # get rid of trials with no spikes
-remove_zeros = function(unit_data){
-  new_data = list();
-  for(i in 1:length(unit_data)){
-    no_spikes = lengths(unit_data[[i]]) # get number of spikes in each trial
-    zero_ids = which(no_spikes == 0) # get IDs of trials with no spikes
-    if(length(zero_ids)>0){ # if there are trials with no spikes -> remove them
-      new_data[[i]] = unit_data[[i]][-zero_ids]
-    }
-    if(length(zero_ids)==0){ # If all trials have spikes, keep them all 
-      new_data[[i]] = unit_data[[i]]
-    }
-  }
-  return(new_data)
-}
+
 
 units_right2 = remove_zeros(units_right)
 units_left2 = remove_zeros(units_left)
@@ -74,14 +62,7 @@ units_left2 = remove_zeros(units_left)
 trials_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials/trial_ids/trials_left.RDS")
 trials_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials/trial_ids/trials_right.RDS")
 
-remove_low_trials = function(unit_data, trial_ids){
-  new_data = list();
-  for(i in 1:length(unit_data)){
-    # select most active trials
-    new_data[[i]] = unit_data[[i]][trial_ids[[i]]]
-  }
-  return(new_data)
-}
+
 
 units_right3 = remove_low_trials(units_right2, trials_right)
 units_left3 = remove_low_trials(units_left2, trials_left)
