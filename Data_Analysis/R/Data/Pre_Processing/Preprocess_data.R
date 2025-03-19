@@ -7,17 +7,10 @@ library(purrr)
 # Load data ---------------------------------------------------------------
 
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Data")
-right_binned <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/right_binned.RDS")
-left_binned <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/left_binned.RDS")
+right_binned <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/right_binned.RDS")
+left_binned <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/left_binned.RDS")
 regions = names(left_binned)
 
-# Exploratory Checks ------------------------------------------------------
-
-# par(mfrow=c(3,4))
-# for(i in 1:length(regions)){
-#   plot(seq(-0.2,0.4,by = 0.001),left_binned[[i]][[1]][[1]], type='l',main = regions[i], xlab = "time(secs)", ylab = "")
-#   
-# }
 
 # Remove trials with no spikes --------------------------------------------
 
@@ -34,17 +27,18 @@ par(mfrow = c(1,2))
 hist(cl, main = "Avg Left Trials in each Region")
 hist(cr, main = "Avg Right Trials in each Region")
 
-# setwd("~/Downloads/BAPLA/Real_Data/Data/processed")
-# saveRDS(data_left, "data_left.RDS")
-# saveRDS(data_right, "data_right.RDS")
 
 
 # Filter units based on number of trials ----------------------------------
 
 
 # Check which neurons have at least 60 "Active" trials -------------------------
+# i.e. neurons with activity (spiking) in at least 60 trials
 
 id_right = which(unlist(no_trials_right)>60)
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials")
+saveRDS(id_right, "right_id_filtered_trials.RDS")
+
 dr = unlist(data_right, recursive = F)
 dr = dr[id_right]
 
@@ -52,9 +46,13 @@ id_left = which(unlist(no_trials_left)>60)
 dl = unlist(data_left, recursive = F)
 dl = dl[id_left]
 
-# keep same neurons in both left and right trials
+# keep same neurons in both left and right trials - want to be able to compare
 
 keep_ids = which(names(dl)%in% names(dr))
+
+id_left2 = id_left[keep_ids]
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials")
+saveRDS(id_left2, "left_id_filtered_trials.RDS")
 
 dl = dl[keep_ids]
 
@@ -77,9 +75,7 @@ regions_dl == regions_dr
 
 # Filter units based on how active they are, i.e., how many spikes? ------------
 
-# save regions data
-# setwd("~/Downloads/BAPLA/Real_Data/Data")
-# saveRDS(regions_dl, "region_id.RDS")
+
 
 # Make data same number of trials 
 dr_out = cut_data(dr, 60)
@@ -89,6 +85,7 @@ dr_num_spikes = dr_out$num_spikes
 dl_out = cut_data(dl, 60)
 dl_new = dl_out$new_data
 dl_num_spikes = dl_out$num_spikes
+left_kept = dl_out$trials_kept
 
 av_dl = sapply(dl_num_spikes, mean)
 av_dr = sapply(dr_num_spikes, mean)
@@ -100,16 +97,43 @@ plot(seq(1, 218), sapply(dr_num_spikes, mean), col="red", ylab = "Avg. Spikes", 
      main = "Average No. Spikes per trial", type='l', ylim = c(0,65))
 lines(seq(1, 218), sapply(dl_num_spikes, mean), col="blue")
 legend("topright", c("Left", "Right"), col=c("blue", "red"), lty = c(1,1))
+abline(h = 10, lty = 2)
 idx_r = which(av_dr>10); idx_l = which(av_dl>10)
+
+# save IDs of neurons which match fitlering conditions - i.e., at least 60 trials and at least 10 spikes
+id_right2 = id_right[idx_r]
+
+# save IDS of trials for which the neurons matching the filtering conditions refer to
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials/trial_ids")
+trials_right = right_kept[idx_r]
+saveRDS(trials_right, "trials_right.RDS")
+
+
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials")
+saveRDS(id_right2, "right_id_filtered_spikes.RDS")
 
 common_ids = idx_l[which(idx_l %in% idx_r)]
 common_ids
+
+left3 = id_left2[common_ids]
+names(left3) == names(id_right2) # check same ids
+
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials")
+saveRDS(left3, "left_id_filtered_spikes.RDS")
+
+trials_left = left_kept[common_ids]
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/neuron_ids/60_trials/trial_ids")
+saveRDS(trials_left, "trials_left.RDS")
+
+points(common_ids, sapply(dl_num_spikes, mean)[common_ids] ) # add to plot
+
 
 length(common_ids)
 
 unique(regions_dr[common_ids])
 
-
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing")
+saveRDS(common_ids, "60_trials_idx.RDS")
 # save data which satisfy criteria ----------------------------------------
 
 left_data_to_use = dl_new[common_ids]
