@@ -671,10 +671,15 @@ plot_graph = function(beta_matrix, arrow_size, node_size, region_col){
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
   # Set edge colors based on the sign of the matrix values
-  E(graph)$color <- ifelse(E(graph)$weight > 0, "red", "blue")
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight >0, "solid", "dashed")
+  
+  
   # Set vertex color to white
   V(graph)$color <- region_col
-    # Set vertex label color to black
+  # Set vertex label color to black
   V(graph)$label.color <- "black"
     V(graph)$size <- node_size
     # Plot the graph
@@ -683,8 +688,7 @@ plot_graph = function(beta_matrix, arrow_size, node_size, region_col){
     # Set the layout to circular
     layout <- layout_in_circle(graph)
     plot(graph, edge.arrow.size = arrow_size,
-         vertex.label = seq(1,dim(beta_matrix)[1]), 
-         edge.width = 0.1, edge.curved=0.2, layout = layout)
+         vertex.label = seq(1,dim(beta_matrix)[1]), edge.curved=0.2, layout = layout)
 }
 
 
@@ -789,4 +793,83 @@ remove_low_trials = function(unit_data, trial_ids){
     new_data[[i]] = unit_data[[i]][trial_ids[[i]]]
   }
   return(new_data)
+}
+
+
+# 14. BIC Function --------------------------------------------------------
+
+BIC_function= function(lam_idx, unit_idx, gamma, trial_data, beta_0, betas, f, m){
+  #' Function to get BIC for real data
+  #' @param lam_idx index of lambda value
+  #' @param unit_idx index of the unit/neuron
+  #' @param gamma hyperparameter for eBIC
+  #' @param trial_data data from neuroscience experiment
+  
+  ######################### obtain data for each trial ######################## 
+  trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+  nll = NULL;
+  for(l in 1:length(trial_data)){
+    # select data of interest to the unit_id (and trial of interest)
+    data = trial_data[[l]]
+    y = data[unit_idx,][2:length(data[unit_idx,])] # use
+    X1 = data[,(1: (length(data[unit_idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    #########################################
+    
+    term1 = y * (beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] + f[[lam_idx]])
+    term2 = log(1 + exp(beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] + f[[lam_idx]])) 
+    nll[l] = sum(term1-term2) 
+  }
+  
+  lik = sum(nll)
+  
+  num_non_zeroes = sum(betas[[lam_idx]] != 0)
+  n_star = 600 * 60 #36060
+  pen_term = (num_non_zeroes+1+(m))*log(n_star)
+  eBIC_term = 2*gamma*log(p)* (num_non_zeroes+1+(m))
+  
+  BIC = -2*lik + pen_term #+ eBIC_term
+  eBIC = BIC + eBIC_term
+  AIC = -2*lik + (2*(num_non_zeroes+1+(m)))
+  
+  return(list(BIC = BIC, AIC = AIC, eBIC = eBIC))
+}
+
+
+# 15. Regularisation parameter selection --------------------------------------
+
+choose_lambda = function(trial_data, p, lambdas, out_storm){
+  #' Function to select regularisation parameter based on BIC results
+  #' 
+  BIC = NULL; BIC = rep(list(BIC), p)
+  lam_star = NULL; lam_id = NULL;
+  out = list();
+  for(j in 1:p){
+    print(j)
+    b = length(lambdas)*j
+    if(j==1){
+      # select results from storm
+      out  = out_storm[1:b]
+    }
+    if(j!=1){
+      # select results from storm
+      out = out_storm[((b-length(lambdas))+1):b]
+    }
+    betas = map(out, 1)
+    beta_0 = map(out, 5) # use corrected for basis functions
+    f = map(out, 3)
+    # make betas matrix not vector
+    betas = lapply(betas, as.matrix)
+    
+    for(i in 1:length(lambdas)){
+      BIC[[j]][i] = BIC_function(i, j, 0.5, trial_data, beta_0, betas, f, m=4)$BIC
+    }
+    lam_id[j] = which.min(BIC[[j]])
+    lam_star[j] = lambdas[which.min(BIC[[j]])]
+    
+    
+  }
+  return(list(lam_star = lam_star, lam_id = lam_id, BIC = BIC))
 }

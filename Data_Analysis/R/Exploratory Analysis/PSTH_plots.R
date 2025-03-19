@@ -30,7 +30,8 @@ names(units_right) == names(right_id)
 library(tm)
 regions = removeNumbers(names(units_left))
 reg_id = c(1,2,5,7, 27, 30, 43, 46, 48)
-
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Exploratory Analysis")
+saveRDS(regions, "region_ids.RDS")
 
 # Plot PSTH with ALL trials -----------------------------------------------
 
