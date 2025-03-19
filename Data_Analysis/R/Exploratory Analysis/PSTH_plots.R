@@ -113,3 +113,9 @@ av_r = sapply(n_right, mean)
 par(mfrow = c(1,1))
 plot(seq(1, length(av_l)), av_l, col="red")
 points(seq(1, length(av_r)),av_r, col="blue")
+
+
+# save data ---------------------------------------------------------------
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Trials/raw")
+saveRDS(units_left3, "left.RDS")
+saveRDS(units_right3, "right.RDS")
