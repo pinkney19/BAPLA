@@ -184,8 +184,8 @@ legend("right", legend = regs, col = cols,
 
 intercept_left = out_left$beta_0_alt
 intercept_right = out_right$beta_0_alt
-beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )#[reg_id]
-beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )#[reg_id]
+beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )[reg_id]
+beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
 
 
 # F plots -----------------------------------------------------------------
@@ -195,10 +195,10 @@ f_right = out_right$fs
 
 plot_f = function(f_out, reg_id, beta_out){
   f = f_out[reg_id]
-  beta_0 = beta_out[reg_id]
+  #beta_0 = beta_out[reg_id]
   par(mfrow = c(3,3), mar = c(5,4,4,5))
   for(i in 1:length(f)){
-    plot(seq(-0.2, 0.4, length.out =  length(f[[i]]) ),  f[[i]]+beta_0[i], lty = 1, main = regs[i],
+    plot(seq(-0.2, 0.4, length.out =  length(f[[i]]) ),  f[[i]], lty = 1, main = regs[i],
          xlab = "Time (msec)", ylab = expression(hat(f)(t)), type='l')
   }
 }
@@ -206,7 +206,19 @@ plot_f = function(f_out, reg_id, beta_out){
 plot_f(f_left, reg_id, beta0_left)
 plot_f(f_right, reg_id, beta0_right)
 
-check = f_left[[1]]
+adjusted_f = function(f_out, reg_id, beta_out){
+  f = f_out[reg_id]
+  adj_f = list();
+  for(i in 1:length(f)){
+    adj_f[[i]] = f[[i]] + beta_out[[i]]
+  }
+  return(adj_f)
+}
+
+
+f_adj_left = adjusted_f(f_left, reg_id, beta0_left)
+f_adj_right = adjusted_f(f_right, reg_id, beta0_right)
+
 
 c2 = 1/(1+exp(-check))*1000
 

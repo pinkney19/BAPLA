@@ -130,7 +130,7 @@ get_estimates = function(lambdas, est_res, lam_id){
 
 lambdas = logspace(log10(10),log10(300),100)
 
-left_res$lam_id
+
 out_left = get_estimates(lambdas, est_left, left_res$lam_id)
 out_right = get_estimates(lambdas, est_right, right_res$lam_id)
 
@@ -176,7 +176,7 @@ par(mar = c(1,1,1,1))
 plot_graph(beta_left, 0.05, 10, col_region)
 #legend("topleft", legend = regs, col = cols,   pch = 19, bty = "n")
 plot_graph(beta_right,0.05, 10, col_region)
-legend("right", legend = regs, col = cols,   
+legend("topright", legend = regs, col = cols,   
        pch = 19, bty = "n", cex = 1.5)
 
 
@@ -213,6 +213,11 @@ check = f_left[[1]]
 
 c2 = 1/(1+exp(-check))*1000
 
-# check -------------------------------------------------------------------
+# check for CA1
 
-CA = est_left[1:100]
+left_res$lam_id[1] = 50
+out_left2 = get_estimates(lambdas, est_left, left_res$lam_id)
+f2 = out_left2$fs
+par(mfrow = c(1,1))
+plot(seq(-0.2, 0.4, length.out =  length(f2[[1]]) ),  f2[[1]], lty = 1, main = regs[1], type='l',
+     xlab = "Time (msec)", ylab = expression(f[i](t)))
