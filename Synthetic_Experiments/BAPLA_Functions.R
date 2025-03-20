@@ -57,8 +57,15 @@ plot_graph = function(beta_matrix, arrow_size, node_size){
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
   # Set edge colors based on the sign of the matrix values
-  E(graph)$color <- ifelse(E(graph)$weight > 0, "red", "blue")
+  #E(graph)$color <- ifelse(E(graph)$weight > 0, "red", "blue")
   # Set vertex color to white
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight >0, "solid", "dashed")
+  
+  
   V(graph)$color <- "white"
     # Set vertex label color to black
   V(graph)$label.color <- "black"

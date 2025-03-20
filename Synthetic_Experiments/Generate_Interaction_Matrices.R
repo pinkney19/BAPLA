@@ -120,3 +120,15 @@ saveRDS(as.matrix(ER_50), "beta_50.RDS")
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB")
 saveRDS(as.matrix(SB_10), "beta_10.RDS")
 saveRDS(as.matrix(SB_50), "beta_50.RDS")
+
+
+
+# Plots for paper ---------------------------------------------------------
+set.seed(2)
+par(mfrow=c(1,1),mar = c(0.1,0.1,0.1,0.1))
+plot_graph(CG_10, 0.5, 10)
+set.seed(12) #2
+plot_graph(SB_10, 0.5, 10)
+set.seed(2)
+plot_graph(ER_10, 0.5, 10)
+
