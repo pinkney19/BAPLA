@@ -40,7 +40,7 @@ setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 
 library(ggplot2)
-
+library(ggpubr)
 plts = list();
 for(i in 1:length(reg_id)){
   plts[[i]] = plot_right_left_psth(units_right[[reg_id[i]]], units_left[[reg_id[i]]], 0.01, 0.2, 0.4, regions[reg_id[i]])

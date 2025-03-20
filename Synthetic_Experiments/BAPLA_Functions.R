@@ -1517,7 +1517,7 @@ despars_lasso = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
   p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
   
   
-  first_deriv = - ( t(y-p_t) %*% X1 ) / length(y) ##need to divide by n - double check - think do according to van de geer?? (1 x p)
+  first_deriv = - ( t(y-p_t) %*% X1 ) / length(y) ## (1 x p)
   vec_pt = as.vector(p_t)
   D = diag(vec_pt * (1-vec_pt))
   sigma_hat = ( t(X1) %*% D %*% X1 ) /length(y) #p x p
@@ -1527,7 +1527,7 @@ despars_lasso = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
   #check = (t(W) %*% W )/length(y)
   #round(check,8) == round(sigma_hat,8)
   
-  # use W as input to standard glmnet??
+  # use W as input to standard glmnet
   library(glmnet)
   # nodewise lasso 
   C = diag(p); tau = NULL; tau2=NULL
