@@ -127,12 +127,20 @@ get_estimates = function(lambdas, est_res, lam_id){
   return(list(fs = fs, beta_hat = beta_hat, iter = iter, beta_0 = beta_0, beta_0_alt = beta_0_alt))
   
 }
-
+library(pracma)
+library(purrr)
 lambdas = logspace(log10(10),log10(300),100)
 
 left_res$lam_id
 out_left = get_estimates(lambdas, est_left, left_res$lam_id)
 out_right = get_estimates(lambdas, est_right, right_res$lam_id)
+
+
+# save results
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation/results")
+saveRDS(out_left, "left_params.RDS")
+saveRDS(out_right, "right_params.RDS")
+
 
 par(mfrow = c(1,2), mar = c(5,4,4,5))
 image(out_left$beta_hat, main = "left trials")
