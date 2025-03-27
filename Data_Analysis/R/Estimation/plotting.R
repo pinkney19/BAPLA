@@ -159,10 +159,10 @@ num_region <- mapping[region_id]
 col_region = map_cols[region_id]
 
 col_region[1] = "#F8766D"
-
+library(igraph)
 par(mar = c(1,1,1,1))
-plot_graph(out_left$beta_hat, 0.05, 10, col_region)
-plot_graph(out_right$beta_hat, 0.05, 10, col_region)
+plot_graph(out_left$beta_hat, 0.3, 10, col_region)
+plot_graph(out_right$beta_hat, 0.5, 10, col_region)
 
 # convert edges to +/- 1
 
@@ -180,10 +180,10 @@ image(beta_left, main = "left")
 image(beta_right, main = "right")
 
 regs[1] = "CA1"
-par(mar = c(1,1,1,1))
-plot_graph(beta_left, 0.05, 10, col_region)
+par(mar = c(0.2,0.02,.2,.02))
+plot_graph(beta_left, 0.3, 10, col_region)
 #legend("topleft", legend = regs, col = cols,   pch = 19, bty = "n")
-plot_graph(beta_right,0.05, 10, col_region)
+plot_graph(beta_right,0.3, 10, col_region)
 legend("right", legend = regs, col = cols,   
        pch = 19, bty = "n", cex = 1.5)
 
@@ -192,8 +192,8 @@ legend("right", legend = regs, col = cols,
 
 intercept_left = out_left$beta_0_alt
 intercept_right = out_right$beta_0_alt
-beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )[reg_id]
-beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
+#beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )[reg_id]
+#beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
 
 
 # F plots -----------------------------------------------------------------
@@ -201,7 +201,21 @@ beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
 f_left = out_left$fs
 f_right = out_right$fs
 
-plot_f = function(f_out, reg_id, beta_out){
+calc_firing_rate = function(f, intercept){
+  fir_rate = list();
+  for(i in 1:length(f)){
+    fir_rate[[i]] = f[[i]] + intercept[[i]] 
+  }  
+  rate = lapply(fir_rate, function(x) exp(x)/(1+exp(x))*1000 )
+  return(rate)
+}
+
+fire_right = calc_firing_rate(f_right, intercept_right)
+fire_left = calc_firing_rate(f_left, intercept_left)
+
+reg_id[2]=3 #get rid of 300 example? -> necessary??
+
+plot_f = function(f_out, reg_id){
   f = f_out[reg_id]
   #beta_0 = beta_out[reg_id]
   par(mfrow = c(3,3), mar = c(5,4,4,5))
@@ -211,25 +225,25 @@ plot_f = function(f_out, reg_id, beta_out){
   }
 }
 
-plot_f(f_left, reg_id, beta0_left)
-plot_f(f_right, reg_id, beta0_right)
+plot_f(fire_left, reg_id)
+plot_f(fire_right, reg_id)
 
-adjusted_f = function(f_out, reg_id, beta_out){
-  f = f_out[reg_id]
-  adj_f = list();
-  for(i in 1:length(f)){
-    adj_f[[i]] = f[[i]] + beta_out[[i]]
-  }
-  return(adj_f)
-}
-
-
-f_adj_left = adjusted_f(f_left, reg_id, beta0_left)
-f_adj_right = adjusted_f(f_right, reg_id, beta0_right)
-
-
-c2 = 1/(1+exp(-check))*1000
-
-# check -------------------------------------------------------------------
-
-CA = est_left[1:100]
+# adjusted_f = function(f_out, reg_id, beta_out){
+#   f = f_out[reg_id]
+#   adj_f = list();
+#   for(i in 1:length(f)){
+#     adj_f[[i]] = f[[i]] + beta_out[[i]]
+#   }
+#   return(adj_f)
+# }
+# 
+# 
+# f_adj_left = adjusted_f(f_left, reg_id, beta0_left)
+# f_adj_right = adjusted_f(f_right, reg_id, beta0_right)
+# 
+# 
+# c2 = 1/(1+exp(-check))*1000
+# 
+# # check -------------------------------------------------------------------
+# 
+# CA = est_left[1:100]

@@ -1,3 +1,78 @@
+firing_rate_func = function(spike_train_data, time_bins, bin_size){
+  # Initialize a vector to store spike counts for each bin
+  spike_counts <- matrix(0, nrow = length(spike_train_data), ncol = length(time_bins) - 1)
+  
+  # Count spikes in each bin for each trial
+  for (i in 1:length(spike_train_data)) {
+    trial_spikes <- spike_train_data[[i]]
+    for (j in 1:(length(time_bins) - 1)) {
+      # Count spikes in the j-th bin
+      spike_counts[i, j] <- sum(trial_spikes >= time_bins[j] & trial_spikes < time_bins[j + 1])
+    }
+  }
+  
+  avg_spike_counts <- colMeans(spike_counts)
+  
+  # Calculate the average spike count per bin across trials
+  # Convert spike count to firing rate (Hz = spikes per second)
+  # Firing rate = spike count / (number of trials * bin size)
+  firing_rate1 <- avg_spike_counts  /  bin_size
+  return(firing_rate1)
+}
+
+
+# alternative PSTH --------------------------------------------------------
+plot_right_left_psth <- function(right_times, left_times, bin_size, pre_time, post_time, title) {
+  #'  Function to plot normalised PSTH for left and right trials
+  #'
+  #' @param right_times
+  #' @param left_times
+  #' @param bin_size 
+  #' @param pre_time
+  #' @param post_time
+  #' @param title title of plot
+  #' @export  
+  
+ 
+  
+  
+  # Define the time window (e.g., -0.2s to 0.4s around the stimulus)
+  time_window <- c(-pre_time, post_time)  # seconds
+  
+  # Define bin size for PSTH (e.g., 0.01 seconds)
+  
+  
+  # Create bins based on the defined time window and bin size
+  time_bins <- seq(time_window[1], time_window[2], by = bin_size)
+  
+  
+  firing_rate1 = firing_rate_func(right_times, time_bins, bin_size)
+  firing_rate2 = firing_rate_func(left_times, time_bins, bin_size)
+
+  data <- data.frame(time = time_bins[-length(time_bins)], firing_rate = firing_rate1)
+  
+
+  data2 <- data.frame(time = time_bins[-length(time_bins)], firing_rate = firing_rate2)
+  
+  # Combine data into one data frame
+  data$Trials <- 'Right'
+  data2$Trials <- 'Left'
+  combined_data <- rbind(data, data2)
+  
+  # Plot PSTH
+  plot = ggplot(combined_data, aes(x = time, y = firing_rate, fill = Trials)) +
+    geom_bar(stat = "identity", position = "identity", alpha = 0.5)+
+    geom_vline(xintercept = 0, color = "grey50") +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
+    theme_minimal()
+  
+  return(plot)
+}
+
+
+
+
 
 # 1. Plot single unit PSTH ------------------------------------------------
 
@@ -838,9 +913,69 @@ BIC_function= function(lam_idx, unit_idx, gamma, trial_data, beta_0, betas, f, m
 }
 
 
+# 14.b function to calculate log-likelihood for common lambda per region -------------------------
+
+calc_log_lik = function(lam_idx, unit_idx, trial_data, beta_0, betas, f, m){
+  #' Function to get BIC for real data
+  #' @param lam_idx index of lambda value
+  #' @param unit_idx index of the unit/neuron
+  #' @param gamma hyperparameter for eBIC
+  #' @param trial_data data from neuroscience experiment
+  
+  ######################### obtain data for each trial ######################## 
+  trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+  ll = NULL;
+  for(l in 1:length(trial_data)){
+    print(l)
+    # select data of interest to the unit_id (and trial of interest)
+    data = trial_data[[l]]
+    y = data[unit_idx,][2:length(data[unit_idx,])] # use
+    X1 = data[,(1: (length(data[unit_idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    #########################################
+    
+    term1 = y * (beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] + f[[lam_idx]])
+    term2 = log(1 + exp(beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] + f[[lam_idx]])) 
+    ll[l] = sum(term1-term2) 
+  }
+  
+  lik = sum(ll)
+  
+  num_non_zeroes = sum(betas[[lam_idx]] != 0)
+  
+  return(list(lik=lik, k=num_non_zeroes))
+}
+
+BIC_common_lambda = function(lam_idx, beta_list, lik, beta0_list, f_list, m){ 
+  #' Function to calcaulte BIC for common lambda per region
+  #' @param lam_idx index of lambda value
+  #' @param beta_list nested list of interaction matrices for the units of interest
+  #' @param lik list of likelihood valus for the units of interest
+  #' @param beta0_list list of intercept values for the untis of interest
+  #' @param f_list list of estimated f's for units of interest
+  #' @param m number of basis functions used in the estimation
+  #' 
+  
+  
+  
+  num_non_zeroes = sum(betas[[lam_idx]] != 0)
+  n_star = 600 * 60 #36060
+  pen_term = (num_non_zeroes+1+(m))*log(n_star)
+  eBIC_term = 2*gamma*log(p)* (num_non_zeroes+1+(m))
+  
+  BIC = -2*lik + pen_term #+ eBIC_term
+  eBIC = BIC + eBIC_term
+  AIC = -2*lik + (2*(num_non_zeroes+1+(m)))
+  
+  return(list(BIC = BIC, AIC = AIC, eBIC = eBIC))
+}
+
+
 # 15. Regularisation parameter selection --------------------------------------
 
-choose_lambda = function(trial_data, p, lambdas, out_storm){
+choose_lambda = function(trial_data, p, lambdas, out_storm, m){
   #' Function to select regularisation parameter based on BIC results
   #' 
   BIC = NULL; BIC = rep(list(BIC), p)
@@ -864,7 +999,7 @@ choose_lambda = function(trial_data, p, lambdas, out_storm){
     betas = lapply(betas, as.matrix)
     
     for(i in 1:length(lambdas)){
-      BIC[[j]][i] = BIC_function(i, j, 0.5, trial_data, beta_0, betas, f, m=4)$BIC
+      BIC[[j]][i] = BIC_function(i, j, 0.5, trial_data, beta_0, betas, f, m)$BIC
     }
     lam_id[j] = which.min(BIC[[j]])
     lam_star[j] = lambdas[which.min(BIC[[j]])]
@@ -900,6 +1035,7 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
   W = matrix(NA, p,p);  
   W = rep(list(W), length(trial_data));
   for(i in 1:length(trial_data)){
+    #print(i)
     data = trial_data[[i]]
     y = data[idx,][2:length(data[idx,])] 
     X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
@@ -940,6 +1076,7 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
   # nodewise lasso 
   C = diag(p); tau = NULL; tau2=NULL
   for (j in 1:p){
+    #print(j)
     w_minus_j = W[[i]][,-j]
     w_j = W[[i]][,j]
     # use glmnet for regression problem for each j

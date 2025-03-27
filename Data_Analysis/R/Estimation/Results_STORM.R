@@ -25,8 +25,8 @@ right_data <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Tria
 # output ------------------------------------------------------------------
 
 library(purrr)
-left_res = choose_lambda(trial_data = left_data, p = 48, lambdas, est_left)
-right_res = choose_lambda(trial_data = right_data, p = 48, lambdas, est_right)
+left_res = choose_lambda(trial_data = left_data, p = 48, lambdas, est_left, m=4)
+right_res = choose_lambda(trial_data = right_data, p = 48, lambdas, est_right, m=4)
 
 # save results
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation/results")
