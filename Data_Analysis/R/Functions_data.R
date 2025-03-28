@@ -1035,7 +1035,7 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
   W = matrix(NA, p,p);  
   W = rep(list(W), length(trial_data));
   for(i in 1:length(trial_data)){
-    #print(i)
+    print(i)
     data = trial_data[[i]]
     y = data[idx,][2:length(data[idx,])] 
     X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
@@ -1080,7 +1080,24 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
     w_minus_j = W[[i]][,-j]
     w_j = W[[i]][,j]
     # use glmnet for regression problem for each j
-    gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+    
+    # address issue with glmnet
+    retry = T
+    while(retry){
+      tryCatch({
+        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+        # if succeeds -> exit loop
+        retry = F
+      }, error = function(e){
+        # print error message
+        cat("An error occurred:", e$message, "\n")
+        
+        # Retry the loop in the event that an error occurs
+        retry = T
+        set.seed(456)
+      }
+      )
+    }
     gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
     gamma_j = as.vector(gamma_j$beta)
     # populate "phi" matrix

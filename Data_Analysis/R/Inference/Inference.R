@@ -28,6 +28,29 @@ saveRDS(res, "res_left.RDS")
 
 
 
+# right -------------------------------------------------------------------
+
+data_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Trials/binned/right.RDS")
+right_params <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/results/right_params.RDS")
+
+beta_hat= right_params$beta_hat
+beta_0 = unlist(right_params$beta_0_alt)
+f_hat = right_params$fs
+
+# Initialize parameters
+p = 48; alpha=0.05;
+
+# Get desparsified estimates and CIs
+res = list();
+
+for(i in 1:p){
+  print(i)
+  set.seed(1234) #reproducibility
+  res[[i]] = despars_lasso_trial(i, data_right, p, beta_0, beta_hat, f_hat, alpha)
+}
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference")
+saveRDS(res, "res_right.RDS")
+
 
 
 
