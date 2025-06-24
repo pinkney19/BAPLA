@@ -72,6 +72,59 @@ plot_right_left_psth <- function(right_times, left_times, bin_size, pre_time, po
 
 
 
+# plot only left or only right --------------------------------------------
+
+plot_psth_one <- function(right_times, left_times, bin_size, pre_time, post_time, title, right_flag) {
+  #'  Function to plot normalised PSTH for left and right trials
+  #'
+  #' @param right_times
+  #' @param left_times
+  #' @param bin_size 
+  #' @param pre_time
+  #' @param post_time
+  #' @param title title of plot
+  #' @export  
+  
+  
+  
+  
+  # Define the time window (e.g., -0.2s to 0.4s around the stimulus)
+  time_window <- c(-pre_time, post_time)  # seconds
+  
+  # Define bin size for PSTH (e.g., 0.01 seconds)
+  
+  
+  # Create bins based on the defined time window and bin size
+  time_bins <- seq(time_window[1], time_window[2], by = bin_size)
+  
+  
+  firing_rate1 = firing_rate_func(right_times, time_bins, bin_size)
+  firing_rate2 = firing_rate_func(left_times, time_bins, bin_size)
+  
+  data <- data.frame(time = time_bins[-length(time_bins)], firing_rate = firing_rate1)
+  
+  
+  data2 <- data.frame(time = time_bins[-length(time_bins)], firing_rate = firing_rate2)
+  
+  # Combine data into one data frame
+  data$Trials <- 'Right'
+  data2$Trials <- 'Left'
+  combined_data <- rbind(data, data2)
+  
+  # Plot PSTH
+  if(right_flag == T){colour = "black"}
+  if(right_flag == F){colour = "black"}
+  plot = ggplot(combined_data, aes(x = time, y = firing_rate, fill = Trials)) +
+    geom_bar(stat = "identity", position = "identity", alpha = 0.5)+
+    geom_vline(xintercept = 0, color = "deepskyblue") +
+    scale_fill_manual(values = c(colour, colour)) +
+    labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
+  return(plot)
+}
+
 
 
 # 1. Plot single unit PSTH ------------------------------------------------
@@ -1082,22 +1135,19 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
     # use glmnet for regression problem for each j
     
     # address issue with glmnet
-    retry = T
-    while(retry){
-      tryCatch({
-        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+    #retry = T
+    #while(retry){
+     tryCatch({
+    gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
         # if succeeds -> exit loop
         retry = F
-      }, error = function(e){
-        # print error message
+     }, error = function(e){
+      #print error message
         cat("An error occurred:", e$message, "\n")
-        
-        # Retry the loop in the event that an error occurs
-        retry = T
-        set.seed(456)
-      }
-      )
-    }
+      },
+    finally =  {gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+      })
+    #s}
     gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
     gamma_j = as.vector(gamma_j$beta)
     # populate "phi" matrix

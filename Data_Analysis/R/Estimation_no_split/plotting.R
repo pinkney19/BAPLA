@@ -182,6 +182,7 @@ legend("right", legend = regs, col = cols,
        pch = 19, bty = "n", cex = 1.5)
 
 
+
 # Beta_0 ------------------------------------------------------------------
 
 intercept_left = out_left$beta_0_alt
@@ -206,6 +207,12 @@ calc_firing_rate = function(f, intercept){
 
 fire_right = calc_firing_rate(f_right, intercept_right)
 fire_left = calc_firing_rate(f_left, intercept_left)
+
+
+# save f data
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/results")
+saveRDS(fire_right[reg_id], "f_right.RDS")
+saveRDS(fire_left[reg_id], "f_left.RDS")
 
 reg_id[2]=2 #get rid of 300 example? -> necessary??
 
