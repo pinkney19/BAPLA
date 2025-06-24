@@ -691,9 +691,12 @@ plot_f_cis_normal <- function(f, unit_id, title, N) {
   
   ggplot(data, aes(x = t/N)) +
     geom_line(aes(y = median), color = "black") +
-    geom_line(aes(y = upper), color = "red") +
-    geom_line(aes(y = lower), color = "red") +
-    geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    #geom_line(aes(y = upper), color = "red") +
+    #geom_line(aes(y = lower), color = "red") +
+    #geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    geom_line(aes(y = upper), color = "black", linetype = "dashed") +
+    geom_line(aes(y = lower), color = "black", linetype="dashed") +
+    geom_line(aes(y = xs), color = "deepskyblue", linetype = "dashed", size = 1) +
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -724,9 +727,12 @@ plot_f_cis_gamma <- function(f, unit_id, title, N) {
   
   ggplot(data, aes(x = t/N)) +
     geom_line(aes(y = median), color = "black") +
-    geom_line(aes(y = upper), color = "red") +
-    geom_line(aes(y = lower), color = "red") +
-    geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    # geom_line(aes(y = upper), color = "red") +
+    # geom_line(aes(y = lower), color = "red") +
+    # geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    geom_line(aes(y = upper), color = "black", linetype = "dashed") +
+    geom_line(aes(y = lower), color = "black", linetype="dashed") +
+    geom_line(aes(y = xs), color = "deepskyblue", linetype = "dashed", size = 1) +
     labs(x = "t", y = expression(hat(f)(t)), title = title) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +

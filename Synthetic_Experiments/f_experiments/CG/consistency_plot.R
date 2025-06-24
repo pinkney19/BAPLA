@@ -123,16 +123,29 @@ ggplot(df4, aes(x = n, y = data)) +
 df = data.frame(data = c(unlist(mse_f_star_gamma), mse_f_star_norm), n = rep(n, 2), 
                 type = factor(c(rep("gamma", 4), rep("normal",4))) )
 
-p1 = ggplot(data = df, aes(x = n, y = data, color = type)) +
-  geom_line()+
-  ylim(0, 3.2)+
+# p1 = ggplot(data = df, aes(x = n, y = data, color = type)) +
+#   geom_line()+
+#   ylim(0, 3.2)+
+#   xlim(1000, 10000) +
+#   labs(x = expression(n), y = "MSE") +
+#   theme_minimal() + 
+#   #theme(legend.position = "top") +
+#   theme(legend.title = element_blank())+
+#   scale_color_manual(values=c("blue", "red"))+
+#   theme(legend.position=c(0.8,0.75))
+
+p1 <- ggplot(data = df, aes(x = n, y = data, linetype = type)) +
+  geom_line() +
+  ylim(0, 3.2) +
   xlim(1000, 10000) +
   labs(x = expression(n), y = "MSE") +
-  theme_minimal() + 
-  #theme(legend.position = "top") +
-  theme(legend.title = element_blank())+
-  scale_color_manual(values=c("blue", "red"))+
-  theme(legend.position=c(0.8,0.75))
+  theme_minimal() +
+  theme(legend.title = element_blank()) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme(legend.position = c(0.8, 0.75))
+
+
+
 p1 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG")
-ggsave("consistency_plot2.pdf", plot = p1, width = 3.5, height =3.5, units = "in")
+ggsave("consistency_plot_bw.pdf", plot = p1, width = 3.5, height =3.5, units = "in")

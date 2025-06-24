@@ -47,7 +47,7 @@ plot2 = ggarrange( plot_list[[3]], plot_list[[5]], plot_list[[9]], ncol=3, commo
 plot2
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma/simulations/f_plots")
-ggsave("gamma_10_10000.pdf", plot = plot_list[[3]], width = 3.5, height =3.5, units = "in")
+ggsave("gamma_10_10000_bw.pdf", plot = plot_list[[3]], width = 3.5, height =3.5, units = "in")
 
 
 

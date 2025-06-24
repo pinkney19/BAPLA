@@ -48,7 +48,7 @@ plot_list_beta0[[5]]
 
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/f_plots")
-ggsave("norm_20_10000.pdf", plot = plot_list[[5]], width = 3.5, height =3.5, units = "in")
+ggsave("norm_20_10000_bw.pdf", plot = plot_list[[5]], width = 3.5, height =3.5, units = "in")
 
 
 
