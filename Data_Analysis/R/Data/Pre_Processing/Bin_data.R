@@ -6,8 +6,8 @@ source("Functions_data.R")
 
 # Load data ---------------------------------------------------------------
 
-left_trial_spikes <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/left_trial_spikes.RDS")
-right_trial_spikes <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/right_trial_spikes.RDS")
+left_trial_spikes <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/left_trial_spikes.RDS")
+right_trial_spikes <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/right_trial_spikes.RDS")
 
 
 regions <- names(left_trial_spikes)

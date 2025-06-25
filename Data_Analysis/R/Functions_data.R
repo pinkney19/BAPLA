@@ -63,7 +63,8 @@ plot_right_left_psth <- function(right_times, left_times, bin_size, pre_time, po
   plot = ggplot(combined_data, aes(x = time, y = firing_rate, fill = Trials)) +
     geom_bar(stat = "identity", position = "identity", alpha = 0.5)+
     geom_vline(xintercept = 0, color = "grey50") +
-    scale_fill_manual(values = c("blue", "red")) +
+    #scale_fill_manual(values = c("blue", "red")) +
+    scale_fill_manual(values = c("white", "black")) +
     labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
     theme_minimal()
   

@@ -3,8 +3,12 @@ source("Functions_data.R")
 # inital raster and psth plot ---------------------------------------------
 
 left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Trials/raw/left.RDS")
+right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Trials/raw/right.RDS")
+
 
 plot_psth_one(left[[47]], left[[47]], 0.01, 0.2, 0.4, "", F)
+
+plot_psth_one(right[[47]], right[[47]], 0.01, 0.2, 0.4, "", F)
 
 
 spike_times = left[[47]]
