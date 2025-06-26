@@ -17,18 +17,20 @@ left_lams = ggplot(data = left_df, aes(x = label, y = lams, color = region))+
   labs(x = "Neuron ID", y = expression(lambda)) +
   theme_minimal()+
   ggtitle("Left Trials") +
+  ylim(10,300) +
   scale_color_manual(values = c("#F8766D", "darkorange",  "olivedrab", 
                                 "#00BA38",  "#00C1A7",  "deepskyblue1", 
-                                 "dodgerblue3",  "mediumorchid1", "lightpink1"))
+                                 "dodgerblue3",  "mediumorchid1", "brown2"))
 
 right_lams = ggplot(data = right_df, aes(x = label, y = lams, color = region))+
   geom_point() +
   labs(x = "Neuron ID", y = expression(lambda)) +
   theme_minimal()+
   ggtitle("Right Trials") + 
+  ylim(10,300)+
   scale_color_manual(values = c("#F8766D", "darkorange",  "olivedrab", 
                                          "#00BA38",  "#00C1A7",  "deepskyblue1", 
-                                         "dodgerblue3",  "mediumorchid1", "lightpink1"))
+                                         "dodgerblue3",  "mediumorchid1", "brown2"))
 
 library(ggpubr)
 plt = ggarrange(left_lams, right_lams, ncol=2, common.legend = T, legend = "right")
@@ -144,7 +146,7 @@ mapping <- c(CA = 1, DG = 2, GPe = 3, MB = 4,
              MRN = 5, POL = 6,  SCm = 7,
              SCsg = 8,VISrl = 9 )
 cols = c("#F8766D", "darkorange",  "olivedrab", "#00BA38",  "#00C1A7",  
-                  "deepskyblue1", "dodgerblue3",  "mediumorchid1", "lightpink1")
+                  "deepskyblue1", "dodgerblue3",  "mediumorchid1", "brown2")
 map_cols = c(CA = cols[1], DG =cols[2], GPe = cols[3], MB = cols[4], MRN = cols[5], POL = cols[6], SCm = cols[7], 
              SCsg = cols[8] , VISrl = cols[9])
 
@@ -156,7 +158,7 @@ col_region[1] = "#F8766D"
 library(igraph)
 par(mar = c(1,1,1,1))
 plot_graph(out_left$beta_hat, 0.3, 10, col_region)
-plot_graph(out_right$beta_hat, 0.5, 10, col_region)
+plot_graph(out_right$beta_hat, 0.3, 10, col_region)
 
 # convert edges to +/- 1
 
@@ -181,8 +183,8 @@ plot_graph(beta_right,0.3, 10, col_region)
 legend("right", legend = regs, col = cols,   
        pch = 19, bty = "n", cex = 1.5)
 
-
-
+length(beta_right[beta_right!=0])
+length(beta_left[beta_left!=0])
 # Beta_0 ------------------------------------------------------------------
 
 intercept_left = out_left$beta_0_alt
@@ -230,7 +232,7 @@ plot_f(fire_left, reg_id)
 plot_f(fire_right, reg_id)
 
 par(mfrow = c(1,2))
-plot(seq(-0.2, 0.4, length.out =  length(fire_left[[2]])), fire_left[[2]])
+plot(seq(-0.2, 0.4, length.out =  length(fire_left[[8]])), fire_left[[8]])
 
 # adjusted_f = function(f_out, reg_id, beta_out){
 #   f = f_out[reg_id]
