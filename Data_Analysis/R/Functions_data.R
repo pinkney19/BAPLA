@@ -64,9 +64,10 @@ plot_right_left_psth <- function(right_times, left_times, bin_size, pre_time, po
     geom_bar(stat = "identity", position = "identity", alpha = 0.5)+
     geom_vline(xintercept = 0, color = "grey50") +
     #scale_fill_manual(values = c("blue", "red")) +
-    scale_fill_manual(values = c("white", "black")) +
+    scale_fill_manual(values = c("blue", "red")) +
     labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
-    theme_minimal()
+    theme_minimal()+
+    ylim(0, 220) 
   
   return(plot)
 }
