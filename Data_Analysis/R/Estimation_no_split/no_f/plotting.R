@@ -38,14 +38,14 @@ print(plt)
 
 
 # plot BICs ---------------------------------------------------------------
-reg_id = c(1,2,4,9, 27, 35, 48, 52, 53, 55, 56)
+reg_id = c(1,2,5,7, 27, 30, 43, 46, 48)
 #CA = 1
 ids = list();
 for(i in 1:length(reg_id)){
   ids[[i]] = seq(reg_id[i], reg_id[(i+1)]-1)
 }
 
-ids[[11]] = 56
+ids[[9]] = 48
 left_BIC = left_res$BIC
 right_BIC = right_res$BIC
 
@@ -72,11 +72,11 @@ plot_bic = function(region_no, BIC_data, title){
 
 regs = unique(region_id)
 
-par(mar = c(5.1, 4.1,4.1,2.1), mfrow = c(4,3))
+par(mar = c(5.1, 4.1,4.1,2.1), mfrow = c(3,3))
 for(i in 1:length(regs)){
   plot_bic(i, left_BIC, regs[i])
 }
-par(mar = c(5.1, 4.1,4.1,2.1), mfrow = c(4,3))
+par(mar = c(5.1, 4.1,4.1,2.1), mfrow = c(3,3))
 for(i in 1:length(regs)){
   plot_bic(i, right_BIC, regs[i])
 }
@@ -84,8 +84,8 @@ for(i in 1:length(regs)){
 
 # load results -------------------------------------------------------------
 
-est_left <- readRDS("~/luna/BAPLA/Data_Analysis/wheel/est_left_no_f.RDS")
-est_right <- readRDS("~/luna/BAPLA/Data_Analysis/wheel/est_right_no_f.RDS")
+est_left <- readRDS("~/luna/BAPLA/Data_Analysis/no_split_6_basis/est_left_no_f.RDS")
+est_right <- readRDS("~/luna/BAPLA/Data_Analysis/no_split_6_basis/est_right_no_f.RDS")
 
 # Results -----------------------------------------------------------------
 get_estimates = function(lambdas, est_res, lam_id){
@@ -94,7 +94,7 @@ get_estimates = function(lambdas, est_res, lam_id){
   #' @param est_res (list) STORM output for estimates of all lambda values and all dimensions  
 
   out_star = list();
-  p = 56
+  p = 48
   for(j in 1:p){
     print(j)
     b = length(lambdas)*j
@@ -115,12 +115,11 @@ get_estimates = function(lambdas, est_res, lam_id){
     beta_hat[i,] = betas[[i]]
   }
   
-  fs = map(out_star, 3)
-  iter = map(out_star, 6)
-  beta_0_alt = map(out_star, 5)
+
+  iter = map(out_star, 3)
   beta_0 = map(out_star, 2)
   
-  return(list(fs = fs, beta_hat = beta_hat, iter = iter, beta_0 = beta_0, beta_0_alt = beta_0_alt))
+  return(list(beta_hat = beta_hat, iter = iter, beta_0 = beta_0))
   
 }
 library(pracma)
@@ -133,7 +132,7 @@ out_right = get_estimates(lambdas, est_right, right_res$lam_id)
 
 
 # save results
-setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/no_f/results")
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/no_f/results")
 saveRDS(out_left, "left_params.RDS")
 saveRDS(out_right, "right_params.RDS")
 
@@ -144,11 +143,11 @@ image(out_right$beta_hat, main = "right trials")
 
 mapping <- c(CA = 1, DG = 2, GPe = 3, MB = 4,
              MRN = 5, POL = 6,  SCm = 7,
-             SCsg = 8,VISl = 9, VISp = 10, VISrl = 11 )
+             SCsg = 8,VISrl = 9 )
 cols = c("#F8766D", "darkorange",  "olivedrab", "#00BA38",  "#00C1A7",  
-                  "deepskyblue1", "dodgerblue3",  "mediumorchid1", "lightpink1", "deeppink", "brown2")
+                  "deepskyblue1", "dodgerblue3",  "mediumorchid1", "brown2")
 map_cols = c(CA = cols[1], DG =cols[2], GPe = cols[3], MB = cols[4], MRN = cols[5], POL = cols[6], SCm = cols[7], 
-             SCsg = cols[8] , VISl = cols[9], VISp = cols[10], VISrl = cols[11])
+             SCsg = cols[8] , VISrl = cols[9])
 
 # Use the match function to replace the strings with their corresponding numeric values
 num_region <- mapping[region_id]
@@ -172,6 +171,10 @@ convert_mat = function(mat){
 beta_right = convert_mat(out_right$beta_hat)
 beta_left = convert_mat(out_left$beta_hat)
 
+length(beta_right[beta_right!=0])
+length(beta_left[beta_left!=0])
+
+
 image(beta_left, main = "left")
 image(beta_right, main = "right")
 
@@ -189,7 +192,8 @@ legend("right", legend = regs, col = cols,
 
 intercept_left = out_left$beta_0
 intercept_right = out_right$beta_0
-#beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )[reg_id]
-#beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
+beta0_left = sapply(intercept_left, function(x) 1/(1+exp(-x))*1000 )[reg_id]
+beta0_right = sapply(intercept_right, function(x) 1/(1+exp(-x))*1000 )[reg_id]
 
+beta0_left
 
