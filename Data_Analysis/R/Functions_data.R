@@ -1179,3 +1179,228 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
   
   return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso2 = theta_lasso2))
 }
+
+
+
+# 17. Bapla single unit trial with no f -----------------------------------
+
+bapla_single_unit_trial_no_f = function(trial_data, idx, max_iter, tol, lams){
+  #'  Function to estimate coefficients of the BAPLA for a given dimension and regularization parameter
+  #'
+  #' @param data data source 
+  #' @param idx (scalar) to indicate for which data stream we want parameter estimates
+  #' @param max_iter Maximum number of iterations
+  #' @param tol tolereance level for the coordinate descent algorithm
+  #' @param lams Regularisation parameter
+  #' @export  
+  
+  ######################### obtain data for each trial ######################## 
+  trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+  for(l in 1:length(trial_data)){
+    data = trial_data[[l]]
+    y = data[idx,][2:length(data[idx,])] # use
+    X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    # standardize the data
+    x_bar = colMeans(X1) # get mean of each column
+    # X = X1
+    X = matrix(NA, ncol=ncol(X1), nrow=nrow(X1))
+    for (i in 1:p){
+      X[,i] = (X1[,i] - x_bar[i])/sd(X1[,i])
+    }
+    
+    trial_X[[l]] = X
+    
+  }
+  ############## Initialisations #################
+  # set regularisation parameter
+  lambda = lams[idx]
+  
+  # # set initial parameters 
+  beta_0 = 0
+  beta = rep(0,p)
+  
+  
+  
+  ############## Cyclical coordinate descent #############
+  
+  for(iter in 1:max_iter) {
+    #print(iter)
+    # current parameter estimates
+    beta_tilde <- beta
+    beta0_tilde <- beta_0
+    
+    
+    ls_coef = list(); ls_coef = rep(list(ls_coef), length(trial_data))
+    denom = ls_coef;
+    for(k in 1:length(trial_data)){
+      
+      X = trial_X[[k]]
+      
+      # compute p_tilde
+      p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta_tilde ) )^-1
+      # compute w
+      w = p_tilde * (1-p_tilde)
+      
+      # compute z
+      z = beta0_tilde + X %*% beta_tilde + ( (y-p_tilde)/ w )
+      
+      # Beta matrix update
+      for(j in 1:p) {
+        
+        # Compute partial residual
+        # i.e. fitted value excluding contribution from x_{ij}
+        
+        y_tilde <- beta_0 + X %*% beta - X[,j] * beta[j] 
+        
+        # compute least-squares coefficient when fitting this partial residual to x_{ij}
+        # remember to use z instead of y as the "working response"
+        
+        ls_coef[[k]][j] <- crossprod(w*X[,j], z - (y_tilde))
+        
+        denom[[k]][j] <- sum(w*(X[,j]^2))
+        
+        # Update beta coefficient
+        #beta[j] <- ( sign(ls_coef  ) * pmax(0, abs(ls_coef ) - lambda) ) / sum(w*(X[,j]^2)) #soft thresholding step
+        
+        
+      }
+      
+      
+    }
+    
+    # update beta coefficient
+    for(j2 in 1:p){
+      ls_coef_trial = sum(unlist(map(ls_coef,j2)))
+      denom_trial = sum(unlist(denom,j2))
+      beta[j2] = ( sign(ls_coef_trial) * pmax(0, abs(ls_coef_trial ) - lambda) / denom_trial ) 
+    }
+    
+    # Intercept update 
+    num = NULL; denom = NULL;
+    for (l2 in 1:length(trial_data)){
+      X = trial_X[[l2]]
+      
+      # compute p_tilde
+      p_tilde = ( 1 + exp(-beta0_tilde - X %*% beta ) )^-1
+      # compute w
+      w = p_tilde * (1-p_tilde)
+      # compute z
+      z = beta0_tilde + X %*% beta  + ( (y-p_tilde)/ w )
+      
+      num[l2] <-as.numeric(crossprod(w, z- (X%*%beta)  ))
+      denom[l2] <- sum(w)
+    }
+    
+    beta_0 <- sum(num)/sum(denom)
+    
+  
+    
+    #if there is NAs in the beta estimate - break AND set beta = beta_tilde
+    #need to set fs and betas to previous as well
+    if(sum(is.na(beta))!=0){
+      beta = beta_tilde
+      beta_0 = beta0_tilde
+      break
+    }
+    
+    # Checks for convergence
+    if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+      if( max((beta_tilde-beta)^2)<tol^2) break
+    }
+   
+  }
+  
+  #DE-STANDARDISE THE COEFFICIENTS
+  sum_term = NULL;
+  for(j in 1:p){
+    beta[j] = beta[j]/sd(X1[,j])
+    sum_term[j] = (x_bar[j]*beta[j])
+  }
+  beta_0 = beta_0 - sum(sum_term)
+  
+  
+  # Print final coefficients
+  return(list(beta0=beta_0, beta=beta, iter = iter))
+}
+
+
+
+# 18. BIC function no f -------------------------------------------------------
+
+BIC_function_no_f= function(lam_idx, unit_idx, gamma, trial_data, beta_0, betas){
+  #' Function to get BIC for real data
+  #' @param lam_idx index of lambda value
+  #' @param unit_idx index of the unit/neuron
+  #' @param gamma hyperparameter for eBIC
+  #' @param trial_data data from neuroscience experiment
+  
+  ######################### obtain data for each trial ######################## 
+  trial_X = list(); trial_X = rep(list(trial_X), length(trial_data))
+  nll = NULL;
+  for(l in 1:length(trial_data)){
+    # select data of interest to the unit_id (and trial of interest)
+    data = trial_data[[l]]
+    y = data[unit_idx,][2:length(data[unit_idx,])] # use
+    X1 = data[,(1: (length(data[unit_idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    #########################################
+    
+    term1 = y * (beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] )
+    term2 = log(1 + exp(beta_0[[lam_idx]] + X1 %*% betas[[lam_idx]] ) ) 
+    nll[l] = sum(term1-term2) 
+  }
+  
+  lik = sum(nll)
+  
+  num_non_zeroes = sum(betas[[lam_idx]] != 0)
+  n_star = 600 * 60 #36060
+  pen_term = (num_non_zeroes+1)*log(n_star)
+  eBIC_term = 2*gamma*log(p)* (num_non_zeroes+1)
+  
+  BIC = -2*lik + pen_term #+ eBIC_term
+  eBIC = BIC + eBIC_term
+  AIC = -2*lik + (2*(num_non_zeroes+1))
+  
+  return(list(BIC = BIC, AIC = AIC, eBIC = eBIC))
+}
+
+
+# 19. Regularisation parameter selection no f --------------------------------------
+
+choose_lambda_no_f = function(trial_data, p, lambdas, out_storm){
+  #' Function to select regularisation parameter based on BIC results (with no f)
+  #' 
+  BIC = NULL; BIC = rep(list(BIC), p)
+  lam_star = NULL; lam_id = NULL;
+  out = list();
+  for(j in 1:p){
+    print(j)
+    b = length(lambdas)*j
+    if(j==1){
+      # select results from storm
+      out  = out_storm[1:b]
+    }
+    if(j!=1){
+      # select results from storm
+      out = out_storm[((b-length(lambdas))+1):b]
+    }
+    betas = map(out, 1)
+    beta_0 = map(out, 2) 
+    # make betas matrix not vector
+    betas = lapply(betas, as.matrix)
+    
+    for(i in 1:length(lambdas)){
+      BIC[[j]][i] = BIC_function_no_f(i, j, 0.5, trial_data, beta_0, betas)$BIC
+    }
+    lam_id[j] = which.min(BIC[[j]])
+    lam_star[j] = lambdas[which.min(BIC[[j]])]
+    
+    
+  }
+  return(list(lam_star = lam_star, lam_id = lam_id, BIC = BIC))
+}
