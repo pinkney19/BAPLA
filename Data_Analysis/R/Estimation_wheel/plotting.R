@@ -156,7 +156,7 @@ col_region = map_cols[region_id]
 
 col_region[1] = "#F8766D"
 library(igraph)
-par(mar = c(1,1,1,1))
+par(mar = c(1,1,1,1), mfrow = c(1,2))
 plot_graph(out_left$beta_hat, 0.3, 10, col_region)
 plot_graph(out_right$beta_hat, 0.5, 10, col_region)
 
