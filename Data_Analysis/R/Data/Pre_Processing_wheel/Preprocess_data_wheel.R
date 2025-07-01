@@ -14,7 +14,7 @@ regions = names(left_binned)
 
 # Remove trials with no spikes --------------------------------------------
 
-
+# still got 1591 neurons in the dataset here
 data_left = remove_zero_trials(left_binned)
 data_right = remove_zero_trials(right_binned)
 
@@ -23,7 +23,7 @@ no_trials_right = lapply(data_right, lengths)
 
 cl = round(unlist(lapply(no_trials_left, mean)))
 cr =round(unlist(lapply(no_trials_right, mean)))
-par(mfrow = c(1,2))
+par(mfrow = c(1,2), mar = c(5,5,4,2))
 hist(cl, main = "Avg Left Trials in each Region")
 hist(cr, main = "Avg Right Trials in each Region")
 
