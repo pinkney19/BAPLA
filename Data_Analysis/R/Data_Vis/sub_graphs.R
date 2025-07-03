@@ -38,6 +38,8 @@ plot_graph_MB_POL = function(beta_matrix, arrow_size, node_size, region_col, kee
     radius <- 25
     offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
     
+    
+    
     layouts <- list()
     for (i in 1:n_regions) {
       region <- region_types[i]

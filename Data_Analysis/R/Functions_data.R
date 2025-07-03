@@ -826,13 +826,16 @@ plot_graph = function(beta_matrix, arrow_size, node_size, region_col){
 
 # 8b ----------------------------------------------------------------------
 
-plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col){
+plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col, full_layout){
   #' Function to plot the interaction matrix as an igraph plot
   #'
   #' @param beta_matrix p x p interaction matrix
   #' @param arrow_size size of arrow to be specified in igraph plot
   #' @param node_size size of node to be specified in igraph plot
   #' @export
+  
+  
+
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
   # Set edge colors based on the sign of the matrix values
@@ -855,43 +858,43 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col){
     # Plot the graph
     #plot(graph, edge.arrow.size = 0.5, vertex.label = NA, edge.width = 2, edge.curved = 0.2)
     #set.seed(123)
-    # Set the layout based on region
-    n_clusters = length(region_col)
-    #match colours to groups
-    group_map = match(V(graph)$color, region_col)
-    
-    
-    # Prepare layout list per cluster
-    layouts <- list()
-    #offsets <- expand.grid(x= seq(0, n_clusters)*0.6, y=0)  # spread vertically (adjust as needed)
-    
-    # Define 2D positions for each cluster (grid or radial layout)
-    angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
-    radius <- 25  # distance between cluster centers
-    offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
-    
-    
-    for (i in 1:n_clusters) {
-      nodes_in_group <- which(group_map == i)
-      subg <- induced_subgraph(graph, nodes_in_group)
-      l <- layout_with_fr(subg,  niter = 2000)
-      
-      # Normalize to avoid overlap within cluster
-      #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
-      
-      
-      # Offset the circle layout so clusters don't overlap
-      offset <- as.numeric(offsets[i, ])
-      l <- sweep(l, 2, offset, "+")
-      
-      layouts[[i]] <- list(nodes = nodes_in_group, layout = l)
-    }
-    
-    # Combine all layouts into one full layout
-    full_layout <- matrix(NA, nrow = vcount(graph), ncol = 2)
-    for (i in 1:n_clusters) {
-      full_layout[layouts[[i]]$nodes, ] <- layouts[[i]]$layout
-    }
+    # # Set the layout based on region
+    # n_clusters = length(region_col)
+    # #match colours to groups
+    # group_map = match(V(graph)$color, region_col)
+    # 
+    # 
+    # # Prepare layout list per cluster
+    # layouts <- list()
+    # #offsets <- expand.grid(x= seq(0, n_clusters)*0.6, y=0)  # spread vertically (adjust as needed)
+    # 
+    # # Define 2D positions for each cluster (grid or radial layout)
+    # angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
+    # radius <- 25  # distance between cluster centers
+    # offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
+    # 
+    # 
+    # for (i in 1:n_clusters) {
+    #   nodes_in_group <- which(group_map == i)
+    #   subg <- induced_subgraph(graph, nodes_in_group)
+    #   l <- layout_with_fr(subg,  niter = 2000)
+    #   
+    #   # Normalize to avoid overlap within cluster
+    #   #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
+    #   
+    #   
+    #   # Offset the circle layout so clusters don't overlap
+    #   offset <- as.numeric(offsets[i, ])
+    #   l <- sweep(l, 2, offset, "+")
+    #   
+    #   layouts[[i]] <- list(nodes = nodes_in_group, layout = l)
+    # }
+    # 
+    # # Combine all layouts into one full layout
+    # full_layout <- matrix(NA, nrow = vcount(graph), ncol = 2)
+    # for (i in 1:n_clusters) {
+    #   full_layout[layouts[[i]]$nodes, ] <- layouts[[i]]$layout
+    # }
     
     
     

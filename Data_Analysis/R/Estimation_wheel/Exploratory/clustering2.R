@@ -1,81 +1,66 @@
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 
+library(zoo)
+library(dtwclust)
+
 units_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/wheel/raw/left.RDS")
-units_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/wheel/raw/right.RDS")
-regions <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Exploratory Analysis/region_ids.RDS")
 
-library(ggplot2)
-reg_id = c(52, 35) # SCsg and POL neurons in example/motivation plots
-names(reg_id) = c("SCsg", "POL")
-plts2 = list();
+# Define the time window (e.g., -0.2s to 0.4s around the stimulus)
+time_window <- c(-0.2, 0.4)  # seconds
 
-for(i in 1:length(reg_id)){
-  plts2[[i]] = plot_right_left_psth(units_right[[reg_id[i]]], units_left[[reg_id[i]]], 0.01, 0.2, 0.4, names(reg_id)[i])
+# Define bin size for PSTH (e.g., 0.01 seconds)
+bin_size = 0.001
+
+# Create bins based on the defined time window and bin size
+time_bins <- seq(time_window[1], time_window[2], by = bin_size)
+
+firing_rate = matrix(data = NA, nrow = length(units_left), ncol = length(time_bins)-1)
+smooth_fr = matrix(data = NA, nrow = length(units_left), ncol = length(time_bins)-1)
+for(i in 1:length(units_left)){
+  firing_rate[i,] = firing_rate_func(units_left[[i]], time_bins, bin_size)
+  smooth_fr[i,] = rollmean(firing_rate[i,], k = 5, fill = NA)
 }
 
-ggarrange(plts2[[1]], plts2[[2]], common.legend = T)
-
-#plts = map(plot_list, 1)
-
-#plts2[[1]]
-
-# read in f estimates
-#f_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/results/f_left.RDS")
-
-all_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/results/left_params.RDS")
-
-f_left = all_left$fs
-beta0_left = all_left$beta_0_alt
-
-par(mfrow = c(1,1))
+xs = time_bins[-length(time_bins)]
+plot(xs, firing_rate[i,], type="n", ylim = c(0,300), main = "Firing Rates")
 
 
-f_left = list(all_left$fs[[reg_id[1]]], all_left$fs[[reg_id[2]]])
-beta0_left = list(all_left$beta_0_alt[[reg_id[1]]], all_left$beta_0_alt[[reg_id[2]]])
-
-calc_firing_rate = function(f, intercept){
-  fir_rate = list();
-  for(i in 1:length(f)){
-    fir_rate[[i]] = f[[i]] + intercept[[i]] 
-  }  
-  rate = lapply(fir_rate, function(x) exp(x)/(1+exp(x))*1000 )
-  return(rate)
+par(mfrow = c(4,3))
+for(i in 1:dim(firing_rate)[1]){
+  plot(xs, smooth_fr[i,], type='l', ylim = c(0,300))
 }
 
-fr = list();rate = list();
-for(i in 1:length(f_left)){
-  fr[[i]] = f_left[[i]] +  beta0_left[[i]]
-  rate[[i]] = exp(fr[[i]]) / (1+exp(fr[[i]]))  * 1000
+# first and last two columns are full of NAs due to smoothing
+# remove these
+mat = smooth_fr
+smooth_fr2 = mat[, -(c(1, 2, ncol(mat)-1, ncol(mat)))]
+
+# use PELT to identify changepoints in firing rate data - 
+# i.e. non-stationary vs stationary
+cpts2 =list();
+for(i in 1:dim(smooth_fr2)[1]){
+  cpts2[[i]] = cpts(cpt.var(firing_rate[i,], method = "PELT"))
 }
 
-plot(x =seq(-0.2, 0.4, length.out = length(rate[[1]])), 
-     y = seq(-5, 3, length.out = length(rate[[1]])), type ="n",
-     xlab = "Time", ylab = "Firing rate")
+non_stat_ids = which(lengths(cpts2)!=0)
+stat_ids = which(lengths(cpts2)==0)
 
-for(i in 1:length(rate)){
-  lines(x =seq(-0.2, 0.4, length.out = length(rate[[1]])),
-        y = f_left[[i]], col=i)
+par(mfrow = c(4,3))
+for(i in 1:dim(firing_rate)[1]){
+  if(i %in% non_stat_ids){
+    plot(xs, firing_rate[i,], type='l')
+  }
+}
+
+for(i in 1:dim(firing_rate)[1]){
+  if(i %in% stat_ids){
+    plot(xs, firing_rate[i,], type='l', col="blue")
+  }
 }
 
 
-
-p1 = plts2[[1]] +
-  geom_line(data = data.frame(x = seq(-0.2,0.4,length.out = length(fr[[1]])) ,
-                              y = fr[[1]]), 
-            aes(x = x, y = y), 
-            inherit.aes = F,
-            color = "black")
-
-p2 = plts2[[2]] +
-  geom_line(data = data.frame(x = seq(-0.2,0.4,length.out = length(fr[[2]])) ,
-                              y = fr[[2]]), 
-            aes(x = x, y = y), 
-            inherit.aes = F,
-            color = "black")
-                
-
-plot_wheel = ggarrange(p1,p2, ncol=2,common.legend = T)
-setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/plots")
-ggsave("plot_wheel_f_left.pdf", plot = plot_wheel, width = 4.5, height =3.5, units = "in")
-
+# save IDs of the neurons
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/combined_plots/f_v_no_f")
+saveRDS(stat_ids, "id_stationary.RDS")
+saveRDS(non_stat_ids, "id_non_stationary.RDS")
