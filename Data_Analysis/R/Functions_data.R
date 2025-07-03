@@ -847,6 +847,11 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col){
   # Set vertex label color to black
   V(graph)$label.color <- "black"
     V(graph)$size <- node_size
+    
+    edge_count <- ecount(graph)
+    print(paste("Number of edges in the graph:", edge_count))
+    
+    
     # Plot the graph
     #plot(graph, edge.arrow.size = 0.5, vertex.label = NA, edge.width = 2, edge.curved = 0.2)
     #set.seed(123)
@@ -862,20 +867,19 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col){
     
     # Define 2D positions for each cluster (grid or radial layout)
     angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
-    radius <- 20  # distance between cluster centers
+    radius <- 25  # distance between cluster centers
     offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
     
     
     for (i in 1:n_clusters) {
       nodes_in_group <- which(group_map == i)
       subg <- induced_subgraph(graph, nodes_in_group)
-      l <- layout_with_fr(subg)
+      l <- layout_with_fr(subg,  niter = 2000)
       
-      #scale layout to prevent node overlap 
-      #scale_factor <- 2 + vcount(subg) / 2
-      #l <- l * scale_factor
+      # Normalize to avoid overlap within cluster
+      #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
       
-      #l = layout_in_circle(subg)
+      
       # Offset the circle layout so clusters don't overlap
       offset <- as.numeric(offsets[i, ])
       l <- sweep(l, 2, offset, "+")
@@ -893,8 +897,12 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col){
     
     #layout <- layout_in_circle(graph)
     plot(graph, edge.arrow.size = arrow_size,
-         vertex.label = seq(1,dim(beta_matrix)[1]), edge.curved=0.2, layout = full_layout)
+         vertex.label = NA,  edge.curved=0.2, layout = full_layout, 
+         vertex.label.cex = 0.7)
 }
+
+
+
 
 
 # 9. Cut data to certain number of trials ---------------------------------

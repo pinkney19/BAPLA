@@ -9,7 +9,7 @@ region_vis <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Exploratory Analysis/re
 id_wheel <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing_wheel/60_trials_idx.RDS")
 id_vis <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Pre_Processing/60_trials_idx.RDS")
 
-
+# combine the data
 df = data.frame(neuron_id = c(id_wheel, id_vis), region = c(region_wheel, region_vis))
 # order by neuron number
 df_ordered = df[order(df$neuron_id), ]
@@ -48,24 +48,53 @@ combine_estimates = function(est, sorted_ids, p_est, id_vec){
 
   # set up empty matrix
   network_combined = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
-  # populate with original matrix
-  network_combined[1:p_est, 1:p_est] = est
-  # re-order the rows to align with sorted_id ordering
-  # set-up empty matrix to store results
-  network_combined_ordered = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
-  idx = NULL;
+  
+  x = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
+  x[1:p_est, 1:p_est] = est
+  rownames(x) = 1:82
+  
+  cols_in = 1:p_est
+  
+  flag = sorted_ids %in% id_vec
+  
+  idx = which(flag == T)
+  # target columns for output matrix
+  cols_out = idx
+  
   for(i in 1:length(sorted_ids)){
+    # identify row of matrix corresponding to this neuron in the original estimate 
+    # of the interaction matrix
+    name = which(id_vec == sorted_ids[i])
     # if neuron is in current estimate of interaction matrix (est)
     if(sorted_ids[i] %in% id_vec){
-      # identify row of matrix corresponding to this neuron in the original estimate of the interaction matrix
-      idx[i] = which(id_vec == sorted_ids[i])
-      # populate combined network with "old" estimated interaction matrix
-      network_combined_ordered[i,] = network_combined[idx[i],]
+      row_data = x[name, cols_in]
+      network_combined[i,cols_out] = row_data
     }
   }
-  return(list(mat = network_combined_ordered, idx = idx))
+  
+  return(network_combined)
 }
   
+  
+  
+#   # populate with original matrix
+#   network_combined[1:p_est, 1:p_est] = est
+#   # re-order the rows to align with sorted_id ordering
+#   # set-up empty matrix to store results
+#   network_combined_ordered = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
+#   idx = NULL;
+#   for(i in 1:length(sorted_ids)){
+#     # if neuron is in current estimate of interaction matrix (est)
+#     if(sorted_ids[i] %in% id_vec){
+#       # identify row of matrix corresponding to this neuron in the original estimate of the interaction matrix
+#       idx[i] = which(id_vec == sorted_ids[i])
+#       # populate combined network with "old" estimated interaction matrix
+#       network_combined_ordered[i,] = network_combined[idx[i],]
+#     }
+#   }
+#   return(list(mat = network_combined_ordered, idx = idx))
+# }
+#   
 
 res_vis_left = combine_estimates(beta_left_vis, sorted_ids, p_est = 48, id_vec = id_vis)
 res_wheel_left = combine_estimates(beta_left_wheel, sorted_ids, p_est = 56, id_vec = id_wheel)
@@ -73,20 +102,20 @@ res_wheel_left = combine_estimates(beta_left_wheel, sorted_ids, p_est = 56, id_v
 res_vis_right =  combine_estimates(beta_right_vis, sorted_ids, p_est = 48, id_vec = id_vis)
 res_wheel_right = combine_estimates(beta_right_wheel, sorted_ids, p_est = 56, id_vec = id_wheel)
 
-sanity_check = function(idx, network){
-  to_check = is.na(idx)
-  tc = which(to_check==T); count=NULL;
-  for(i in 1:length(tc)){
-    count[i] = sum(network[tc[i],])
-  }
-  return(sum(count))
-}
-
-
-sanity_check(res_vis_left$idx, res_vis_left$mat)
-sanity_check(res_vis_right$idx, res_vis_right$mat)
-sanity_check(res_wheel_left$idx, res_wheel_left$mat)
-sanity_check(res_wheel_right$idx, res_wheel_right$mat)
+# sanity_check = function(idx, network){
+#   to_check = is.na(idx)
+#   tc = which(to_check==T); count=NULL;
+#   for(i in 1:length(tc)){
+#     count[i] = sum(network[tc[i],])
+#   }
+#   return(sum(count))
+# }
+# 
+# 
+# sanity_check(res_vis_left$idx, res_vis_left$mat)
+# sanity_check(res_vis_right$idx, res_vis_right$mat)
+# sanity_check(res_wheel_left$idx, res_wheel_left$mat)
+# sanity_check(res_wheel_right$idx, res_wheel_right$mat)
 
 
 mapping <- c(CA1 = 1, DG = 2, GPe = 3, MB = 4,
@@ -106,32 +135,67 @@ col_region = map_cols[final_df$region]
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 library(igraph)
-par(mar = c(0,0,0,0), mfrow = c(1,2), xpd = NA)
-plot_graph(res_vis_left$mat, 0.3, 7, col_region)
-plot_graph(res_vis_right$mat, 0.3,7,col_region)
+par(mar = c(1,1,1,1), mfrow = c(1,2), xpd = NA)
+plot_graph(res_vis_left, 0.3, 7, col_region)
+plot_graph(res_vis_right, 0.3,7,col_region)
 
-plot_graph(res_wheel_left$mat, 0.3, 7, col_region)
-plot_graph(res_wheel_right$mat, 0.3,7,col_region)
-
-
+plot_graph(res_wheel_left, 0.3, 7, col_region)
+plot_graph(res_wheel_right, 0.3,7,col_region)
 
 
-mat1 = res_wheel_left$mat
-mat2 = res_wheel_right$mat
-mat3 = res_vis_left$mat
-mat4 = res_vis_right$mat
+
+
+mat1 = res_wheel_left
+mat2 = res_wheel_right
+mat3 = res_vis_left
+mat4 = res_vis_right
 
 mat1[mat1>0] = 1; mat1[mat1<0]=2;
 mat2[mat2>0] = 1; mat2[mat2<0]=2;
 mat3[mat3>0] = 1; mat3[mat3<0]=2;
 mat4[mat4>0] = 1; mat4[mat4<0]=2;
 
+par(mfrow=c(1,2), mar = c(0,0,0,0))
+set.seed(123)
+#legend("top", legend = names(map_cols), col = cols,   
+ #      pch = 19, bty = "n", cex = 1.5)
+
 plot_graph_new(mat1, 0.3, 7, col_region)
+legend("topleft", legend = names(map_cols), col = cols,   
+       pch = 19, bty = "n", cex = 1.2)
+set.seed(123)
 plot_graph_new(mat2, 0.3, 7, col_region)
+#legend("topleft", legend = names(map_cols), col = cols,   
+       #pch = 19, bty = "n", cex = 0.7)
 
 
+set.seed(123)
 plot_graph_new(mat3, 0.3, 7, col_region)
+legend("topleft", legend = names(map_cols), col = cols,   
+       pch = 19, bty = "n", cex = 1.2)
+
+
+set.seed(123)
 plot_graph_new(mat4, 0.3, 7, col_region)
+
+
+
+
+# sumary stats
+no_edgs = function(mat){
+  inhib = length(mat[mat==2]) # inhibitory edges  
+  excit = length(mat[mat==1]) # excitatory edges
+  return(list(inhib= inhib, ex = excit))
+}
+
+no_edgs(mat1)
+no_edgs(mat2)
+no_edgs(mat3)
+no_edgs(mat4)
+
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/combined_plots/f_v_no_f")
+saveRDS(mat1, "wheel_left_f.RDS")
+
 # for(i in 1:length(sorted_ids)){
 #   # only populate new matrix if the neuron is in the visual data/results
 #   if(sorted_ids[i] %in% id_vis){
@@ -142,3 +206,22 @@ plot_graph_new(mat4, 0.3, 7, col_region)
 #   }
 #   
 # }
+
+
+set.seed(123)
+p1 = plot_graph_new_ggplot(mat1, arrow_size = 0.1, node_size = 6, col_region)
+set.seed(123)
+p2 = plot_graph_new_ggplot(mat2, arrow_size = 0.1, node_size = 6, col_region)
+set.seed(123)
+p3 = plot_graph_new_ggplot(mat3, arrow_size = 0.1, node_size = 6, col_region)
+set.seed(123)
+p4 = plot_graph_new_ggplot(mat4, arrow_size = 0.1, node_size = 6, col_region)
+
+
+plot_wheel = ggarrange(p1,p2, ncol=2, common.legend = T, legend="top")
+plot_wheel
+plot_vis = ggarrange(p3,p4, ncol=2, common.legend = T, legend="left")
+plot_vis
+
+
+ggarrange(p1,p2,p3,p4,ncol=4, common.legend = T)
