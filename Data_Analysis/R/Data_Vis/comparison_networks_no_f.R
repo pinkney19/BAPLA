@@ -38,7 +38,7 @@ for (i in 1:56) {
 }
 
 mapping <- c(S = 1, NS = 2 )
-cols = c( "deepskyblue1", "deeppink")
+cols = c( "black", "white")
                   
 map_cols = c(S = cols[1], NS =cols[2])
 
@@ -59,21 +59,21 @@ mat1 = beta_left_wheel
 mat1[mat1>0] = 1; mat1[mat1<0]=2;
 
 
-par(mfrow=c(1,1), mar = c(0,0,0,0))
-set.seed(123)
-#legend("top", legend = names(map_cols), col = cols,
- #      pch = 19, bty = "n", cex = 1.5)
-
-plot_graph_new(mat1, 0.3, 7, col_region)
-legend("topleft", legend = names(map_cols), col = cols,
-       pch = 19, bty = "n", cex = 0.7)
-
-par(mfrow = c(1,2))
-
-set.seed(123)
-# plot only non-stationary edges
-plot_graph_MB_POL(mat1, arrow_size = 0.5, node_size = 5,
-                                     region_col = col_region, keep_regions = c("NS"))
+# par(mfrow=c(1,1), mar = c(0,0,0,0))
+# set.seed(123)
+# #legend("top", legend = names(map_cols), col = cols,
+#  #      pch = 19, bty = "n", cex = 1.5)
+# 
+# plot_graph_new(mat1, 0.3, 7, col_region)
+# legend("topleft", legend = names(map_cols), col = cols,
+#        pch = 19, bty = "n", cex = 0.7)
+# 
+# par(mfrow = c(1,2))
+# 
+# set.seed(123)
+# # plot only non-stationary edges
+# plot_graph_MB_POL(mat1, arrow_size = 0.5, node_size = 5,
+#                                      region_col = col_region, keep_regions = c("NS"))
 
 
 # add in with f estimate
@@ -83,83 +83,179 @@ left_params_f <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/res
 mat2 = left_params_f$beta_hat
 mat2[mat2>0] = 1; mat2[mat2<0]=2;
 set.seed(123)
-plot_graph_MB_POL(mat2, arrow_size = 0.5, node_size = 5,
-                  region_col = col_region, keep_regions = c("NS"))
-
-# compare full graphs
-
-set.seed(123)
-#legend("top", legend = names(map_cols), col = cols,   
-#      pch = 19, bty = "n", cex = 1.5)
-par(mfrow = c(1,2))
-plot_graph_new(mat1, 0.3, 7, col_region)
-legend("topleft", legend = names(map_cols), col = cols,   
-       pch = 19, bty = "n", cex = 0.7)
-set.seed(123)
-plot_graph_new(mat2, 0.3, 7, col_region)
+# plot_graph_MB_POL(mat2, arrow_size = 0.5, node_size = 5,
+#                   region_col = col_region, keep_regions = c("NS"))
+# 
+# # compare full graphs
+# 
+# set.seed(123)
+# #legend("top", legend = names(map_cols), col = cols,   
+# #      pch = 19, bty = "n", cex = 1.5)
+# par(mfrow = c(1,2))
+# plot_graph_new(mat1, 0.3, 7, col_region)
+# legend("topleft", legend = names(map_cols), col = cols,   
+#        pch = 19, bty = "n", cex = 0.7)
+# set.seed(123)
+# plot_graph_new(mat2, 0.3, 7, col_region)
 
 
 # set layout --------------------------------------------------------------
 
-set.seed(1234)
 
-ref_graph <- graph_from_adjacency_matrix(100*mat1, 
-                                         mode = "directed", weighted = T, diag = F)
+# get_fixed_layout_orig = function(beta_matrix,region_col ){
+#   ref_graph <- graph_from_adjacency_matrix(100*beta_matrix, 
+#                                            mode = "directed", weighted = T, diag = F)
+#   
+#   V(ref_graph)$color <- region_col
+#   region_col = col_region
+#   # Set the layout based on region
+#   n_clusters = length(region_col)
+#   #match colours to groups
+#   group_map = match(V(ref_graph)$color, region_col)
+#   
+#   
+#   # Prepare layout list per cluster
+#   layouts <- list()
+#   #offsets <- expand.grid(x= seq(0, n_clusters)*0.6, y=0)  # spread vertically (adjust as needed)
+#   
+#   # Define 2D positions for each cluster (grid or radial layout)
+#   angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
+#   radius <- 25  # distance between cluster centers
+#   offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
+#   
+#   
+#   for (i in 1:n_clusters) {
+#     nodes_in_group <- which(group_map == i)
+#     subg <- induced_subgraph(ref_graph, nodes_in_group)
+#     l <- layout_in_circle(subg)#,  niter = 2000)
+#     
+#     # Normalize to avoid overlap within cluster
+#     #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
+#     
+#     
+#     # Offset the circle layout so clusters don't overlap
+#     offset <- as.numeric(offsets[i, ])
+#     l <- sweep(l, 2, offset, "+")
+#     
+#     layouts[[i]] <- list(nodes = nodes_in_group, layout = l)
+#   }
+#   
+#   # Combine all layouts into one full layout
+#   full_layout <- matrix(NA, nrow = vcount(ref_graph), ncol = 2)
+#   for (i in 1:n_clusters) {
+#     full_layout[layouts[[i]]$nodes, ] <- layouts[[i]]$layout
+#   }
+#   
+#   return(full_layout)
+# }
+# 
+# fixed_layout_orig = get_fixed_layout_orig(mat1, col_region)
+# 
+# plot_graph_new(mat1, 0.3, 7, col_region, fixed_layout_orig)
+# 
+# # sumary stats
+# no_edgs = function(mat){
+#   inhib = length(mat[mat==2]) # inhibitory edges  
+#   excit = length(mat[mat==1]) # excitatory edges
+#   return(list(inhib= inhib, ex = excit))
+# }
+# 
+# no_edgs(mat1)
+# no_edgs(mat2)
+# no_edgs(mat3)
+# no_edgs(mat4)
 
-V(ref_graph)$color <- region_col
-region_col = col_region
-# Set the layout based on region
-n_clusters = length(region_col)
-#match colours to groups
-group_map = match(V(ref_graph)$color, region_col)
-
-
-# Prepare layout list per cluster
-layouts <- list()
-#offsets <- expand.grid(x= seq(0, n_clusters)*0.6, y=0)  # spread vertically (adjust as needed)
-
-# Define 2D positions for each cluster (grid or radial layout)
-angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
-radius <- 25  # distance between cluster centers
-offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
-
-
-for (i in 1:n_clusters) {
-  nodes_in_group <- which(group_map == i)
-  subg <- induced_subgraph(ref_graph, nodes_in_group)
-  l <- layout_in_circle(subg)#,  niter = 2000)
+get_fixed_layout = function(beta_matrix, region_col, split_nodes, node_size){
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
   
-  # Normalize to avoid overlap within cluster
-  #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
   
   
-  # Offset the circle layout so clusters don't overlap
-  offset <- as.numeric(offsets[i, ])
-  l <- sweep(l, 2, offset, "+")
-  
-  layouts[[i]] <- list(nodes = nodes_in_group, layout = l)
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    V(graph)$type = unname(region_col)
+    
+    V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+    
+    if(split_nodes == T){
+      types = V(graph)$type 
+      # split into groups
+      group0 = which(types==1)
+      group1 = which(types == 0)
+      
+      # For each group, split into two halves
+      group0_split <- split(group0, rep(1:2, length.out = length(group0)))
+      group1_split <- split(group1, rep(1:2, length.out = length(group1)))
+      
+      # Define positions
+      layout <- matrix(NA, nrow = vcount(graph), ncol = 2)
+      
+      # Assign x positions evenly spaced within each row
+      layout[group0_split[[1]], 1] <- seq(1, length(group0_split[[1]]))
+      layout[group0_split[[2]], 1] <- seq(1, length(group0_split[[2]]))
+      layout[group1_split[[1]], 1] <- seq(1, length(group1_split[[1]]))
+      layout[group1_split[[2]], 1] <- seq(1, length(group1_split[[2]]))
+      
+      # Assign y positions for rows
+      layout[group0_split[[1]], 2] <- 0     # bottom row 1
+      layout[group0_split[[2]], 2] <- 1     # bottom row 2
+      layout[group1_split[[1]], 2] <- 3     # top row 1
+      layout[group1_split[[2]], 2] <- 4     # top row 2
+    }
+    
+    if(split_nodes==F){
+      # layout as normal "bipartite"
+      layout = layout_as_bipartite(graph)
+    }
+    return(layout)
 }
+set.seed(123)
+fixed_layout = get_fixed_layout(mat1, col_region, F, 7)
+plot_bipartite = function(beta_matrix, arrow_size, node_size, region_col, fixed_layout){
+  # Create a graph from the matrix
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+  V(graph)$size <- node_size
+  
+  V(graph)$type = unname(region_col)
+  
+  V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+  
 
-# Combine all layouts into one full layout
-full_layout <- matrix(NA, nrow = vcount(ref_graph), ncol = 2)
-for (i in 1:n_clusters) {
-  full_layout[layouts[[i]]$nodes, ] <- layouts[[i]]$layout
-}
+    
+  edge_count <- ecount(graph)
+  print(paste("Number of edges in the graph:", edge_count))
+  
+  V(graph)$color = unname(region_col)
+  
+  
+  plot(graph, edge.arrow.size = arrow_size,
+       vertex.label = NA,  edge.curved=0.2, layout = fixed_layout, 
+       vertex.label.cex = 0.7)
+  }
+par(mfrow = c(1,2), mar=c(0,0,0,0))  
+plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
+plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)
 
-full_layout
 
-
-plot_graph_new(mat2, 0.3, 7, col_region, full_layout)
-
-# sumary stats
-no_edgs = function(mat){
-  inhib = length(mat[mat==2]) # inhibitory edges  
-  excit = length(mat[mat==1]) # excitatory edges
-  return(list(inhib= inhib, ex = excit))
-}
-
-no_edgs(mat1)
-no_edgs(mat2)
-no_edgs(mat3)
-no_edgs(mat4)
-
+set.seed(123)
+fixed_layout = get_fixed_layout(mat1, col_region, T, 7)
+plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
+plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)

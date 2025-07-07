@@ -155,24 +155,90 @@ mat2[mat2>0] = 1; mat2[mat2<0]=2;
 mat3[mat3>0] = 1; mat3[mat3<0]=2;
 mat4[mat4>0] = 1; mat4[mat4<0]=2;
 
+
+# graph layout ------------------------------------------------------------
+
+get_fixed_layout_all = function(beta_matrix, region_col, node_size){
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+  V(graph)$size <- node_size
+    
+  # Set the layout based on region
+  n_clusters = length(region_col)
+  #match colours to groups
+  group_map = match(V(graph)$color, region_col)
+
+
+  # Prepare layout list per cluster
+  layouts <- list()
+  #offsets <- expand.grid(x= seq(0, n_clusters)*0.6, y=0)  # spread vertically (adjust as needed)
+
+  # Define 2D positions for each cluster (grid or radial layout)
+  angle <- seq(0, 2 * pi, length.out = n_clusters + 1)[-1]  # spread in a circle
+  radius <- 25  # distance between cluster centers
+  offsets <- data.frame(x = cos(angle) * radius, y = sin(angle) * radius)
+
+
+  for (i in 1:n_clusters) {
+    nodes_in_group <- which(group_map == i)
+    subg <- induced_subgraph(graph, nodes_in_group)
+    l <- layout_with_fr(subg,  niter = 2000)
+
+    # Normalize to avoid overlap within cluster
+    #l <- norm_coords(l, xmin = -5, xmax = 5, ymin = -5, ymax = 5)
+
+
+    # Offset the circle layout so clusters don't overlap
+    offset <- as.numeric(offsets[i, ])
+    l <- sweep(l, 2, offset, "+")
+
+    layouts[[i]] <- list(nodes = nodes_in_group, layout = l)
+  }
+
+  # Combine all layouts into one full layout
+  full_layout <- matrix(NA, nrow = vcount(graph), ncol = 2)
+  for (i in 1:n_clusters) {
+    full_layout[layouts[[i]]$nodes, ] <- layouts[[i]]$layout
+  }
+    
+  
+  return(full_layout)
+}
+
+
+# -------------------------------------------------------------------------
+set.seed(123)
+full_layout = get_fixed_layout_all(mat1, col_region, 7)
+
+
 par(mfrow=c(1,2), mar = c(0,0,0,0))
 set.seed(123)
 #legend("top", legend = names(map_cols), col = cols,   
  #      pch = 19, bty = "n", cex = 1.5)
 
-plot_graph_new(mat1, 0.3, 7, col_region)
+plot_graph_new(mat1, 0.3, 7, col_region, full_layout)
 legend("topleft", legend = names(map_cols), col = cols,   
        pch = 19, bty = "n", cex = 0.7)
 set.seed(123)
-plot_graph_new(mat2, 0.3, 7, col_region)
+plot_graph_new(mat2, 0.3, 7, col_region, full_layout)
 #legend("topleft", legend = names(map_cols), col = cols,   
        #pch = 19, bty = "n", cex = 0.7)
 
 
 set.seed(123)
-plot_graph_new(mat3, 0.3, 7, col_region)
+plot_graph_new(mat3, 0.3, 7, col_region, full_layout)
 set.seed(123)
-plot_graph_new(mat4, 0.3, 7, col_region)
+plot_graph_new(mat4, 0.3, 7, col_region, full_layout)
 
 
 
@@ -189,9 +255,11 @@ no_edgs(mat2)
 no_edgs(mat3)
 no_edgs(mat4)
 
-
-
-
+par(mfrow= c(1,3))
+set.seed(123)
+plot_graph_new(mat1, 0.3, 7, col_region, full_layout)
+legend("topleft", legend = names(map_cols), col = cols,   
+       pch = 19, bty = "n", cex = 1.2)
 
 # for(i in 1:length(sorted_ids)){
 #   # only populate new matrix if the neuron is in the visual data/results
