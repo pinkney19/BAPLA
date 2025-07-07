@@ -155,28 +155,33 @@ mat2[mat2>0] = 1; mat2[mat2<0]=2;
 mat3[mat3>0] = 1; mat3[mat3<0]=2;
 mat4[mat4>0] = 1; mat4[mat4<0]=2;
 
+# layout
+set.seed(123)
+fixed_layout = get_fixed_layout_all(mat1, col_region, 7)
+  
+
 par(mfrow=c(1,2), mar = c(0,0,0,0))
 set.seed(123)
 #legend("top", legend = names(map_cols), col = cols,   
  #      pch = 19, bty = "n", cex = 1.5)
 
-plot_graph_new(mat1, 0.3, 7, col_region)
+plot_graph_new(mat1, 0.3, 7, col_region, fixed_layout)
 legend("topleft", legend = names(map_cols), col = cols,   
        pch = 19, bty = "n", cex = 1.2)
 set.seed(123)
-plot_graph_new(mat2, 0.3, 7, col_region)
+plot_graph_new(mat2, 0.3, 7, col_region, fixed_layout)
 #legend("topleft", legend = names(map_cols), col = cols,   
        #pch = 19, bty = "n", cex = 0.7)
 
 
 set.seed(123)
-plot_graph_new(mat3, 0.3, 7, col_region)
+plot_graph_new(mat3, 0.3, 7, col_region, fixed_layout)
 legend("topleft", legend = names(map_cols), col = cols,   
        pch = 19, bty = "n", cex = 1.2)
 
 
 set.seed(123)
-plot_graph_new(mat4, 0.3, 7, col_region)
+plot_graph_new(mat4, 0.3, 7, col_region,fixed_layout)
 
 
 
