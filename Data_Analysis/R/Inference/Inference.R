@@ -3,6 +3,8 @@
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 
+library(glmnet)
+
 # load data
 
 data_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Trials/binned/left.RDS")
@@ -46,11 +48,11 @@ res = list();
 
 for(i in 1:p){
   print(i)
-  set.seed(456) #reproducibility
+  set.seed(123) #reproducibility
   res[[i]] = despars_lasso_trial(i, data_right, p, beta_0, beta_hat, f_hat, alpha)
 }
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference")
-saveRDS(res, "res_right.RDS")
+saveRDS(res, "res_right_vis.RDS")
 
 
 

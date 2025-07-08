@@ -1274,20 +1274,23 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
     # use glmnet for regression problem for each j
     
     # address issue with glmnet
-    #retry = T
-    #while(retry){
+    lambda = NULL; gamma_j.fit = NULL;
      tryCatch({
     gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
-        # if succeeds -> exit loop
-        retry = F
-     }, error = function(e){
+    }, error = function(e){
       #print error message
-        cat("An error occurred:", e$message, "\n")
-      },
-    finally =  {gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+      cat("An error occurred:", e$message, "\n")
+       # if fails , manually set value of lambda
+       lambda <<- sqrt(log(p)/600)
       })
-    #s}
-    gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
+    # Use glmnet with appropraite lambda - either theoretical or cross-validated
+    if (!is.null(gamma_j.fit)) {
+      gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,intercept = FALSE, standardize = TRUE,lambda = gamma_j.fit$lambda.min)
+    } else {
+      gamma_j <- glmnet(x = w_minus_j, y = w_j, family = "gaussian", alpha = 1, intercept = FALSE, standardize = TRUE,lambda = lambda)
+    }
+    
+    #gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
     gamma_j = as.vector(gamma_j$beta)
     # populate "phi" matrix
     C[j,-j] = (-1)*t(gamma_j) # i.e. update all but diagonal entry
