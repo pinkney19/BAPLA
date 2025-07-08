@@ -131,6 +131,9 @@ map_cols = c(CA1 = cols[1], DG =cols[2], GPe = cols[3], MB = cols[4], MRN = cols
 final_df$region[1:2]
 num_region <- mapping[final_df$region]
 col_region = map_cols[final_df$region]
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats")
+saveRDS(col_region, "col_region.RDS")
+
 
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
@@ -155,34 +158,67 @@ mat2[mat2>0] = 1; mat2[mat2<0]=2;
 mat3[mat3>0] = 1; mat3[mat3<0]=2;
 mat4[mat4>0] = 1; mat4[mat4<0]=2;
 
+# save data for summary stats
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA")
+saveRDS(mat1, "wheel_left.RDS")
+saveRDS(mat2, "wheel_right.RDS")
+saveRDS(mat3, "vis_left.RDS")
+saveRDS(mat4, "vis_right.RDS")
+
+
+# neurons to shade in visual plots
+x_vis = which(final_df$neuron_id %in% id_vis==F)
+# neurons to shade in wheel plots
+x_wheel = which(final_df$neuron_id %in% id_wheel==F)
+
+
 # layout
 set.seed(123)
 fixed_layout = get_fixed_layout_all(mat1, col_region, 7)
-  
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/combined_plots/fr")
+saveRDS(fixed_layout, "layout.RDS")
 
 par(mfrow=c(1,2), mar = c(0,0,0,0))
 set.seed(123)
 #legend("top", legend = names(map_cols), col = cols,   
  #      pch = 19, bty = "n", cex = 1.5)
 
-plot_graph_new(mat1, 0.3, 7, col_region, fixed_layout)
+plot_graph_new(mat1, 0.5, 7, col_region, fixed_layout, x_wheel)
 legend("topleft", legend = names(map_cols), col = cols,   
        pch = 19, bty = "n", cex = 1.2)
 set.seed(123)
-plot_graph_new(mat2, 0.3, 7, col_region, fixed_layout)
+plot_graph_new(mat2, 0.5, 7, col_region, fixed_layout, x_wheel)
 #legend("topleft", legend = names(map_cols), col = cols,   
        #pch = 19, bty = "n", cex = 0.7)
 
-
+#fixed_layout = get_fixed_layout_all(mat3, col_region, 7)
 set.seed(123)
-plot_graph_new(mat3, 0.3, 7, col_region, fixed_layout)
+plot_graph_new(mat3, 0.5, 7, col_region, fixed_layout, x_vis)
 legend("topleft", legend = names(map_cols), col = cols,   
        pch = 19, bty = "n", cex = 1.2)
 
 
 set.seed(123)
-plot_graph_new(mat4, 0.3, 7, col_region,fixed_layout)
+plot_graph_new(mat4, 0.5, 7, col_region,fixed_layout, x_vis)
 
+
+# checks
+sanity_check= function(x_id, res){
+  count=NULL;
+  for(i in 1:length(x_id)){
+    count[i] = sum(res[x_id[i],])
+  }
+  return(count)
+}
+
+sanity_check(x_wheel, res_wheel_left)
+sanity_check(x_wheel, res_wheel_left)
+sanity_check(x_vis, res_vis_left)
+sanity_check(x_vis, res_vis_left)
+
+# check non-zero entries are due to overlap:
+df$neuron_id[which(sanity_check(x_vis, res_vis_left)!=0)] %in% id_vis
+df$neuron_id[which(sanity_check(x_wheel, res_wheel_left)!=0)] %in% id_wheel
 
 
 
@@ -230,3 +266,6 @@ plot_vis
 
 
 ggarrange(p1,p2,p3,p4,ncol=4, common.legend = T)
+
+
+

@@ -1,4 +1,17 @@
-plot_graph_MB_POL = function(beta_matrix, arrow_size, node_size, region_col, keep_regions = c("MB", "POL")) {
+
+# Summary_statistics ------------------------------------------------------
+
+# Data
+
+vis_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA/vis_left.RDS")
+vis_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA/vis_right.RDS")
+wheel_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA/wheel_left.RDS")
+wheel_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA/wheel_right.RDS")
+
+
+# functions ---------------------------------------------------------------
+
+plot_sub_graph = function(beta_matrix, arrow_size, node_size, region_col, keep_regions = c("MB", "POL")) {
   #' Plot interaction matrix for specific brain regions only (e.g., MB and POL)
   #'
   #' @param beta_matrix p x p interaction matrix
@@ -64,6 +77,25 @@ plot_graph_MB_POL = function(beta_matrix, arrow_size, node_size, region_col, kee
          edge.curved = 0.2,
          layout = full_layout)
 }
+no_edgs = function(mat){
+  inhib = length(mat[mat==2]) # inhibitory edges  
+  excit = length(mat[mat==1]) # excitatory edges
+  
+  p_in = round((inhib/(inhib+excit))*100, 2)
+  p_ex = round((excit/(inhib+excit))*100, 2)
+  return(list(inhib= p_in, ex = p_ex))
+}
+
+
+r1 = no_edgs(vis_left); r2 = no_edgs(vis_right)
+r3 = no_edgs(wheel_left); r4 = no_edgs(wheel_right)
+
+df = data.frame(inhibitory = c(r1$inhib, r2$inhib, r3$inhib, r4$inhib),
+                excitatory = c(r1$ex, r2$ex, r3$ex, r4$ex))
+
+
+regions = c()
+
 par(mfrow = c(1,1))
-plot_graph_MB_POL(mat3, arrow_size = 0.5, node_size = 10,
-               region_col = col_region, keep_regions = c("MB", "POL"))
+plot_graph_MB_POL(mat3, arrow_size = 0.5, node_size = 2,
+               region_col = col_region, keep_regions = c("MB"))

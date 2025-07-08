@@ -250,12 +250,77 @@ plot_bipartite = function(beta_matrix, arrow_size, node_size, region_col, fixed_
        vertex.label = NA,  edge.curved=0.2, layout = fixed_layout, 
        vertex.label.cex = 0.7)
   }
-par(mfrow = c(1,2), mar=c(0,0,0,0))  
-plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
-plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)
+# par(mfrow = c(1,2), mar=c(0,0,0,0))  
+# plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
+# plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)
+# 
+# 
+# set.seed(123)
+# fixed_layout = get_fixed_layout(mat1, col_region, T, 7)
+# plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
+# plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)
 
 
-set.seed(123)
-fixed_layout = get_fixed_layout(mat1, col_region, T, 7)
-plot_bipartite(mat1, 0.3, 7, col_region, fixed_layout)
-plot_bipartite(mat2, 0.3, 7, col_region, fixed_layout)
+
+# Check edges -------------------------------------------------------------
+plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, node_size, region_col, fixed_layout){
+  # Create a graph from the matrix
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Create a graph from the comparison_matrix
+  comparison_graph <- graph_from_adjacency_matrix(100 * comparison_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  
+  # Identify edges in both graphs
+  edges_beta <- as_edgelist(graph)
+  edges_comparison <- as_edgelist(comparison_graph)
+  
+  # Count matching edges
+  matching_edges_count <- sum(apply(edges_beta, 1, function(edge) {
+    any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
+  }))
+  
+  # Set edge colors: red for edges in both graphs, black otherwise
+  E(graph)$color <- apply(edges_beta, 1, function(edge) {
+    if (any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))) {
+    "blue2"
+    } else {
+      "black"
+    }
+  })
+  
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    V(graph)$type = unname(region_col)
+    
+    V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+    
+    
+    
+    edge_count <- ecount(graph)
+    print(paste("Number of edges in the graph:", edge_count))
+    print(paste("Number of matching edges:", matching_edges_count))
+    
+    V(graph)$color = unname(region_col)
+    
+    
+    plot(graph, edge.arrow.size = arrow_size,
+         vertex.label = NA,  edge.curved=0.2, layout = fixed_layout, 
+         vertex.label.cex = 0.7)
+}
+
+
+plot_bipartite_compar(mat1, mat2, 0.3, 7, col_region, fixed_layout)
+plot_bipartite_compar(mat2, mat1, 0.3, 7, col_region, fixed_layout)
+
