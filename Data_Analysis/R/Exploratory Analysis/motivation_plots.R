@@ -25,7 +25,7 @@ ggsave("plot_stim2.pdf", plot = plot_stim, width = 4.5, height =3.5, units = "in
 ggsave("plot_wheel2.pdf", plot = plot_wheel, width = 4.5, height =3.5, units = "in")
 
 
-spike_times = left[[47]]
+spike_times = right[[47]]
 # # Create an empty plot
 # par(mfrow = c(1,1))
 # plot(NULL, xlim = c(-0.2, 0.4), ylim = c(0, length(spike_times) + 0.5),
@@ -51,4 +51,7 @@ ggplot(spike_df, aes(x = time, y = trial)) +
   geom_segment(aes(xend = time, yend = trial + 0.4), size = 0.5) +
   labs(x = "Time (s)", y = "Trial", title = "") +
   geom_vline(xintercept = 0, color = "deepskyblue") +
-  theme_minimal()
+  theme_minimal()+
+  theme(legend.position = "none",
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size=12))

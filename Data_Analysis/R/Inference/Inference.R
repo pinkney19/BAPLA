@@ -29,6 +29,38 @@ setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference")
 saveRDS(res, "res_left.RDS")
 
 
+# left wheel data ---------------------------------------------------------
+setwd("~/Downloads/BAPLA/Data_Analysis/R")
+source("Functions_data.R")
+
+library(glmnet)
+
+# load data
+
+data_left <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/wheel/left.RDS")
+left_params <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/results/left_params.RDS")
+
+beta_hat= left_params$beta_hat
+beta_0 = unlist(left_params$beta_0_alt)
+f_hat = left_params$fs
+
+# Initialize parameters
+p = 56; alpha=0.05;
+
+# Get desparsified estimates and CIs
+res = list();
+
+for(i in 1:p){
+  print(i)
+  set.seed(123) #reproducibility
+  res[[i]] = despars_lasso_trial(i, data_left, p, beta_0, beta_hat, f_hat, alpha)
+}
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference")
+saveRDS(res, "res_left_wheel.RDS")
+
+
+
+
 
 # right -------------------------------------------------------------------
 setwd("~/Downloads/BAPLA/Data_Analysis/R")

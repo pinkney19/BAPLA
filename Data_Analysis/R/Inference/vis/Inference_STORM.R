@@ -34,7 +34,7 @@ res_vis_left <- foreach(k=unit_seq, .packages = c("splines","LaplacesDemon", "pu
   unit_idx = k
   
   # Get desparsified estimates and CIs
-  res = despars_lasso_trial(unit_idx, data_left, p, beta_0, beta_hat, f_hat, alpha)
+  res = despars_lasso_trial_bic(unit_idx, data_left, p, beta_0, beta_hat, f_hat, alpha)
   
   # return values of interests
   
@@ -82,7 +82,7 @@ res_vis_right <- foreach(k=unit_seq, .packages = c("splines","LaplacesDemon", "p
   unit_idx = k
   
   # Get desparsified estimates and CIs
-  res = despars_lasso_trial(unit_idx, data_right, p, beta_0, beta_hat, f_hat, alpha)
+  res = despars_lasso_trial_bic(unit_idx, data_right, p, beta_0, beta_hat, f_hat, alpha)
   
   # return values of interests
   

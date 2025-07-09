@@ -122,7 +122,9 @@ plot_psth_one <- function(right_times, left_times, bin_size, pre_time, post_time
     scale_fill_manual(values = c(colour, colour)) +
     labs(x = "Time (s)", y = "Firing Rate (Hz)", title = title) +
     theme_minimal() +
-    theme(legend.position = "none")
+    theme(legend.position = "none",
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size=12))
   
   return(plot)
 }
@@ -878,6 +880,79 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col, full_l
 }
 
 
+# 8d. inference graph -----------------------------------------------------
+
+plot_graph_inference = function(beta_matrix, comparison_matrix, arrow_size, node_size, region_col, full_layout, highlight_rows){
+  #' Function to plot the interaction matrix as an igraph plot
+  #'
+  #' @param beta_matrix p x p interaction matrix
+  #' @param arrow_size size of arrow to be specified in igraph plot
+  #' @param node_size size of node to be specified in igraph plot
+  #' @param region_col colours for specific regions
+  #' @param full_layout fixed layout for igraph plot
+  #' @param highlight_rows nodes not used in the estimation step - highlight in grey
+  #' @export
+  
+  
+  
+  # Create a graph from the matrix
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  # Create a graph from the comparison_matrix
+  comparison_graph <- graph_from_adjacency_matrix(100 * comparison_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  
+  # Identify edges in both graphs
+  edges_beta <- as_edgelist(graph)
+  edges_comparison <- as_edgelist(comparison_graph)
+  
+  # Count matching edges
+  matching_edges_count <- sum(apply(edges_beta, 1, function(edge) {
+    any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
+  }))
+  
+  # Set edge colors: red for edges in both graphs, black otherwise
+  E(graph)$color <- apply(edges_beta, 1, function(edge) {
+    if (any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))) {
+      "black"
+    } else {
+      "darkgrey"
+    }
+  })
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  
+  # shade edges not used in estimation in a different colour
+  V(graph)$color[highlight_rows] <- "white"  # Shade highlighted nodes in grey
+    
+  # Count edges between nodes of each color
+  edge_color_counts <- table(sapply(as_edgelist(graph), function(edge) {
+    paste(V(graph)$color[edge[1]], V(graph)$color[edge[2]], sep = "-")
+  }))
+  
+  # Print edge count and edge color counts
+  edge_count <- ecount(graph)
+  print(paste("Number of edges in the graph:", edge_count))
+  print("Edge counts by color group:")
+  print(edge_color_counts)
+  
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    
+    
+    #layout <- layout_in_circle(graph)
+    plot(graph, edge.arrow.size = arrow_size,
+         vertex.label = NA,  edge.curved=0.2, layout = full_layout, 
+         vertex.label.cex = 0.7)
+}
+
 
 # 8c - fixed layout for igraph --------------------------------------------
 
@@ -1271,7 +1346,18 @@ despars_lasso_trial = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alph
     #print(j)
     w_minus_j = W[[i]][,-j]
     w_j = W[[i]][,j]
-    # use glmnet for regression problem for each j
+   
+    #  # use glmnet for regression problem for each j
+    # tryCatch({
+    #   gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+    #   # if succeeds -> exit loop
+    #   retry = F
+    # }, error = function(e){
+    #   #print error message
+    #   cat("An error occurred:", e$message, "\n")
+    # },
+    # finally =  {gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+    # })
     
     # address issue with glmnet
     lambda = NULL; gamma_j.fit = NULL;
@@ -1542,4 +1628,113 @@ choose_lambda_no_f = function(trial_data, p, lambdas, out_storm){
     
   }
   return(list(lam_star = lam_star, lam_id = lam_id, BIC = BIC))
+}
+
+
+
+# -------------------------------------------------------------------------
+
+despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alpha){
+  #' Function to obtain debiased lasso estimates and confidence intervals
+  #'
+  #' @param idx index of unit of interest, i.e., idx in 1,dots,p
+  #' @param trial_data list of trial times, each entry in list is matrix (dxn)
+  #' @param p no of dimensions
+  #' @param beta_0 vector of intercept estimates 
+  #' @param beta_hat estimate of interaction matrix
+  #' @param f_hat estimate of nonparametric function
+  #' @export  
+  
+  
+  first_deriv = list(); 
+  sigma_hat = matrix(NA, p,p);  
+  sigma_hat = rep(list(sigma_hat), length(trial_data));
+  sigma_hat_check = matrix(NA, p,p);  
+  sigma_hat_check = rep(list(sigma_hat_check), length(trial_data));
+  theta_lasso = matrix(NA, p,p);
+  theta_lasso = rep(list(theta_lasso, length(trial_data)))
+  
+  W = matrix(NA, p,p);  
+  W = rep(list(W), length(trial_data));
+  for(i in 1:length(trial_data)){
+    print(i)
+    data = trial_data[[i]]
+    y = data[idx,][2:length(data[idx,])] 
+    X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    
+    p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
+    first_deriv[[i]] = as.numeric( - ( t(y-p_t) %*% X1 )  ) # / length(y) ## (1 x p)
+    vec_pt = as.vector(p_t)
+    
+    for(l in 1:p){
+      for(k in 1:p){
+        sigma_hat_check[[i]][l,k] = sum( (vec_pt*(1-vec_pt))*X1[,l]*X1[,k] )
+      }
+    }
+    
+    D = diag(vec_pt * (1-vec_pt))
+    sigma_hat[[i]] = ( t(X1) %*% D %*% X1 )  #/length(y) #p x p
+    
+    W[[i]] = sqrt(D) %*% X1
+    
+    
+    
+    # use W as input to standard glmnet
+    #library(glmnet)
+    # nodewise lasso 
+    C = diag(p); tau = NULL; tau2=NULL
+    for (j in 1:p){
+      #print(j)
+      w_minus_j = W[[i]][,-j]
+      w_j = W[[i]][,j]
+      # use glmnet for regression problem for each j
+      #gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+      
+      fit = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
+                   standardize = T)
+      n = 600;
+      bic_values <- sapply(1:length(fit$lambda), function(i) {
+        pred <- predict(fit, w_minus_j, s = fit$lambda[i])
+        rss <- sum((w_j - pred)^2)
+        df <- fit$df[i]
+        bic <- n * log(rss/n) + log(n) * df
+        return(bic)
+      })
+      
+      
+      bic_lam = fit$lambda[which.min(bic_values)]
+      #cv_lam = gamma_j.fit$lambda.min
+      
+      gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
+                       standardize = T, lambda = bic_lam)
+      
+      gamma_j = as.vector(gamma_j$beta)
+      # populate "phi" matrix
+      C[j,-j] = (-1)*t(gamma_j) # i.e. update all but diagonal entry
+      tau[j] = as.numeric ( ( t(w_j-w_minus_j%*%as.matrix(gamma_j)) %*% as.matrix(w_j) )) # /length(y) )
+      tau2[j] = as.numeric( sigma_hat[[i]][j,j] - sigma_hat[[i]][j,-j] %*% as.matrix(gamma_j) )
+    }
+    theta_lasso[[i]] = diag(1/tau) %*% C
+  }
+  
+  n_eff = length(trial_data)*600
+  first_pn = Reduce("+", first_deriv) / n_eff
+  second_pn1 = Reduce("+", sigma_hat_check)/n_eff
+  second_pn2 = Reduce("+",sigma_hat)/n_eff
+  
+  theta_lasso2 = Reduce("+", theta_lasso)/n_eff
+  
+  beta_deb = beta_hat[idx,] - theta_lasso2%*%as.matrix(first_pn)
+  beta_deb = as.numeric(beta_deb)
+  
+  sigma = sqrt(diag(theta_lasso2 %*% second_pn1 %*% t(theta_lasso2)))
+  
+  ci_lower = beta_deb - qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  
+  
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso2 = theta_lasso2))
 }
