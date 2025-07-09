@@ -60,6 +60,19 @@ for(i in 1:dim(firing_rate)[1]){
 }
 
 
+plot_fs = function(check_ids){
+  
+  i = 1
+  #par(mfrow = c(1,1))
+  plot(xs,firing_rate[i,], type="n", ylim= c(0,300), 
+       xlab = "Time", ylab ="Firing rate")
+  for(i in 1:length(check_ids)){
+    lines(xs,firing_rate[i,] )
+  }
+}
+par(mfrow=c(1,1))
+plot_fs(non_stat_ids)
+
 # save IDs of the neurons
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/combined_plots/f_v_no_f")
 saveRDS(stat_ids, "id_stationary.RDS")

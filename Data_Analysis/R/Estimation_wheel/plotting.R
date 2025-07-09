@@ -71,7 +71,7 @@ plot_bic = function(region_no, BIC_data, title){
 }
 
 regs = unique(region_id)
-
+library(pracma)
 par(mar = c(5.1, 4.1,4.1,2.1), mfrow = c(4,3))
 for(i in 1:length(regs)){
   plot_bic(i, left_BIC, regs[i])
@@ -119,8 +119,9 @@ get_estimates = function(lambdas, est_res, lam_id){
   iter = map(out_star, 6)
   beta_0_alt = map(out_star, 5)
   beta_0 = map(out_star, 2)
+  c = map(out_star, 4)
   
-  return(list(fs = fs, beta_hat = beta_hat, iter = iter, beta_0 = beta_0, beta_0_alt = beta_0_alt))
+  return(list(fs = fs, beta_hat = beta_hat, iter = iter, beta_0 = beta_0, beta_0_alt = beta_0_alt, c=c))
   
 }
 library(pracma)

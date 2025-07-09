@@ -55,7 +55,17 @@ p2 = plts2[[2]] +
             color = "black")
                 
 
-plot_wheel = ggarrange(p1,p2, ncol=2,common.legend = T)
+plot_wheel = ggarrange(p1,p2, ncol=2,common.legend = T)#
+plot_wheel
+
+
+
+
+
+
+
+
+
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/plots")
 ggsave("plot_wheel_f_left.pdf", plot = plot_wheel, width = 4.5, height =3.5, units = "in")
 
