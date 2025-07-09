@@ -1696,16 +1696,52 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       fit = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
                    standardize = T)
       n = 600;
+      
+      # Compute BIC safely
       bic_values <- sapply(1:length(fit$lambda), function(i) {
-        pred <- predict(fit, w_minus_j, s = fit$lambda[i])
-        rss <- sum((w_j - pred)^2)
-        df <- fit$df[i]
-        bic <- n * log(rss/n) + log(n) * df
+        lambda_val <- fit$lambda[i]
+        
+        # handling NA error
+        preds <- tryCatch({
+          predict(fit, newx = w_minus_j, s = lambda_val)
+        }, error = function(e) {
+          warning(paste("Prediction failed at lambda index", i, ":", e$message))
+          return(rep(NA, n))
+        })
+        
+        if (anyNA(preds)) {
+          return(NA)  # Skip this lambda if prediction failed
+        }
+        
+        # Compute log-likelihood and BIC
+        mse <- mean((w_j - preds)^2)
+        log_likelihood <- -0.5 * n * log(mse)
+        k <- sum(fit$beta[, i] != 0)
+        bic <- -2 * log_likelihood + k * log(n)
         return(bic)
       })
       
+      # Check if we have at least one valid BIC
+      if (all(is.na(bic_values))) {
+        stop("All BIC values are NA — model fitting or prediction failed.")
+      }
       
-      bic_lam = fit$lambda[which.min(bic_values)]
+      # Select lambda with minimum BIC
+      best_lambda_index <- which.min(bic_values)
+      bic_lam <- fit$lambda[best_lambda_index]
+      
+      # check for NAs
+      # non_NA_lams = which(!is.na(fit$lambda))
+      # 
+      # bic_values <- sapply(1:length(fit$lambda), function(i) {
+      #   log_likelihood <- -0.5 * n * log(mean((w_j - predict(fit, w_minus_j, s = fit$lambda[i]))^2))
+      #   k <- sum(fit$beta[, i] != 0)  # Number of non-zero coefficients
+      #   bic <- -2 * log_likelihood + k * log(n)
+      #   return(bic)
+      # })
+      # 
+      # 
+      # bic_lam = fit$lambda[which.min(bic_values)]
       #cv_lam = gamma_j.fit$lambda.min
       
       gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
