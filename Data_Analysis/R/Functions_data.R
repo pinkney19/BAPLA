@@ -1632,7 +1632,9 @@ choose_lambda_no_f = function(trial_data, p, lambdas, out_storm){
 
 
 
-# -------------------------------------------------------------------------
+
+# 20. Desparsified lasso for trial data with BIC --------------------------
+
 
 despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alpha){
   #' Function to obtain debiased lasso estimates and confidence intervals
@@ -1772,3 +1774,69 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
   
   return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso2 = theta_lasso2))
 }
+
+
+# 21. Combine interaction matrix estimates for plotting purposes ----------
+
+combine_estimates = function(est, sorted_ids, p_est, id_vec){
+  #' Function to combine estimates from visual stimulus and wheel experiments
+  #' @param est Estimate of the interaction matrix of dimension p_est x p_est
+  #' @param sorted_ids neuron ids used in both visual and wheel experiments
+  #' @param p_est dimension of the estimated interaction matrix
+  #' @param id_vec vector of neuron ids corresponding to the estimated interaction matrix "est"
+  
+  # set up empty matrix
+  network_combined = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
+  
+  x = matrix(data = 0, nrow = length(sorted_ids), ncol=length(sorted_ids))
+  x[1:p_est, 1:p_est] = est
+  rownames(x) = 1:82
+  
+  cols_in = 1:p_est
+  
+  flag = sorted_ids %in% id_vec
+  
+  idx = which(flag == T)
+  # target columns for output matrix
+  cols_out = idx
+  
+  for(i in 1:length(sorted_ids)){
+    # identify row of matrix corresponding to this neuron in the original estimate 
+    # of the interaction matrix
+    name = which(id_vec == sorted_ids[i])
+    # if neuron is in current estimate of interaction matrix (est)
+    if(sorted_ids[i] %in% id_vec){
+      row_data = x[name, cols_in]
+      network_combined[i,cols_out] = row_data
+    }
+  }
+  
+  return(network_combined)
+}
+
+
+# 22. Results for inference procedure -------------------------------------
+
+inference_results = function(res, beta_hat){
+  #' Function to format results from inference procedure
+  #' @param res list of results (of length p) from STORM containing debiased estimate and upper/lower CI values 
+  #' @param beta_hat estimate of the interaction matrix obtained from the regularised estimator 
+  non_zero_indices = list(); mat = matrix(NA, nrow=dim(beta_hat)[1], ncol=dim(beta_hat)[1]);
+  for(i in 1:length(res)){
+    check_0 = ifelse(res[[i]]$lower < 0 & res[[i]]$upper>0, T, F)
+    non_zero_indices[[i]] = which(check_0==F)
+    if(length(non_zero_indices[[i]])!=0){
+      # set non zero entries to 1
+      mat[i, non_zero_indices[[i]]] = 1
+    }
+  }
+  # put into adjacency matrix format
+  beta_hat[beta_hat!=0]=1
+  # set NAs to zero
+  mat[is.na(mat)]=0
+  out = mat == beta_hat
+  ids = which(out == F) # edges to be  greyed out in final plots
+  id_mat = arrayInd(ids, dim(beta_hat))
+  return(list(ids=ids, mat=mat, beta_hat = beta_hat, n_inds= non_zero_indices, id_mat = id_mat))
+}
+
