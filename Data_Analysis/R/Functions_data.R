@@ -1687,7 +1687,7 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
     # nodewise lasso 
     C = diag(p); tau = NULL; tau2=NULL
     for (j in 1:p){
-      #print(j)
+      print(j)
       w_minus_j = W[[i]][,-j]
       w_j = W[[i]][,j]
       # use glmnet for regression problem for each j
@@ -1695,6 +1695,9 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       
       fit = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
                    standardize = T)
+      
+      #if()
+        
       n = 600;
       
       # Compute BIC safely
@@ -1721,28 +1724,17 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
         return(bic)
       })
       
-      # Check if we have at least one valid BIC
-      if (all(is.na(bic_values))) {
-        stop("All BIC values are NA — model fitting or prediction failed.")
+      # check: if no issue with this particular trial then continue:
+      if (all(is.na(bic_values)) ) {
+        # exit loop
+        break
       }
+        #stop("All BIC values are NA — model fitting or prediction failed.")
+      #}
       
       # Select lambda with minimum BIC
       best_lambda_index <- which.min(bic_values)
       bic_lam <- fit$lambda[best_lambda_index]
-      
-      # check for NAs
-      # non_NA_lams = which(!is.na(fit$lambda))
-      # 
-      # bic_values <- sapply(1:length(fit$lambda), function(i) {
-      #   log_likelihood <- -0.5 * n * log(mean((w_j - predict(fit, w_minus_j, s = fit$lambda[i]))^2))
-      #   k <- sum(fit$beta[, i] != 0)  # Number of non-zero coefficients
-      #   bic <- -2 * log_likelihood + k * log(n)
-      #   return(bic)
-      # })
-      # 
-      # 
-      # bic_lam = fit$lambda[which.min(bic_values)]
-      #cv_lam = gamma_j.fit$lambda.min
       
       gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, 
                        standardize = T, lambda = bic_lam)
@@ -1752,15 +1744,21 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       C[j,-j] = (-1)*t(gamma_j) # i.e. update all but diagonal entry
       tau[j] = as.numeric ( ( t(w_j-w_minus_j%*%as.matrix(gamma_j)) %*% as.matrix(w_j) )) # /length(y) )
       tau2[j] = as.numeric( sigma_hat[[i]][j,j] - sigma_hat[[i]][j,-j] %*% as.matrix(gamma_j) )
-    }
-    theta_lasso[[i]] = diag(1/tau) %*% C
+      }
+    if(length(tau2)==p){
+      theta_lasso[[i]] = diag(1/tau) %*% C
+    } else{
+      theta_lasso[[i]]=NA}
   }
+  
   
   n_eff = length(trial_data)*600
   first_pn = Reduce("+", first_deriv) / n_eff
   second_pn1 = Reduce("+", sigma_hat_check)/n_eff
   second_pn2 = Reduce("+",sigma_hat)/n_eff
   
+  # remove trials which had NAs
+  theta_lasso = theta_lasso[!is.na(theta_lasso)]
   theta_lasso2 = Reduce("+", theta_lasso)/n_eff
   
   beta_deb = beta_hat[idx,] - theta_lasso2%*%as.matrix(first_pn)
