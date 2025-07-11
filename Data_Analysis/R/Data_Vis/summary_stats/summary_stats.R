@@ -11,7 +11,7 @@ wheel_right <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats
 
 # functions ---------------------------------------------------------------
 
-count_edges = function(beta_matrix, arrow_size, node_size, region_col, keep_regions = c("MB", "POL")) {
+count_edges = function(beta_matrix, arrow_size, node_size, region_col, keep_regions) {
   #' Plot interaction matrix for specific brain regions only (e.g., MB and POL)
   #'
   #' @param beta_matrix p x p interaction matrix

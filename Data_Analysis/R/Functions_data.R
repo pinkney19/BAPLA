@@ -1840,3 +1840,51 @@ inference_results = function(res, beta_hat){
   return(list(ids=ids, mat=mat, beta_hat = beta_hat, n_inds= non_zero_indices, id_mat = id_mat))
 }
 
+
+
+count_edges = function(beta_matrix, arrow_size, node_size, region_col, keep_regions) {
+  #' Plot interaction matrix for specific brain regions only (e.g., MB and POL)
+  #'
+  #' @param beta_matrix p x p interaction matrix
+  #' @param arrow_size arrow size in igraph plot
+  #' @param node_size node size in igraph plot
+  #' @param region_col vector of region names for each node
+  #' @param keep_regions character vector of regions to retain (e.g., c("MB", "POL"))
+  #' @export
+  
+  # Create full graph
+  graph <- graph_from_adjacency_matrix(100 * beta_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  
+  # Set edge and node properties
+  V(graph)$region <- region_col
+  V(graph)$color <- region_col
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+    E(graph)$lty <- ifelse(E(graph)$weight < 200 & E(graph)$weight != 0, "solid", "dashed")
+    
+    # Filter: keep only nodes in MB or POL
+    keep_nodes <- which(names(region_col) %in% keep_regions)
+    subgraph <- induced_subgraph(graph, keep_nodes)
+    
+    edge_count <- ecount(subgraph)
+    return(edge_count)
+}
+no_edgs = function(mat){
+  inhib = length(mat[mat==2]) # inhibitory edges  
+  excit = length(mat[mat==1]) # excitatory edges
+  
+  p_in = round((inhib/(inhib+excit))*100, 2)
+  p_ex = round((excit/(inhib+excit))*100, 2)
+  return(list(inhib= p_in, ex = p_ex, total = inhib+excit))
+}
+count_within_edges = function(mat, regions, col_region){
+  edges = NULL;
+  for(i in 1:length(regions)){
+    edges[i] = count_edges(mat, arrow_size = 0.5, node_size = 2,
+                           region_col = col_region, keep_regions = c(regions[i]))
+  }
+  names(edges) = regions
+  return(edges)
+}

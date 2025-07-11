@@ -285,7 +285,7 @@ plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, no
     any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
   }))
   
-  # Set edge colors: red for edges in both graphs, black otherwise
+  # Set edge colors: blue for edges in both graphs, black otherwise
   E(graph)$color <- apply(edges_beta, 1, function(edge) {
     if (any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))) {
     "blue2"
@@ -324,3 +324,60 @@ plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, no
 plot_bipartite_compar(mat1, mat2, 0.3, 7, col_region, fixed_layout)
 plot_bipartite_compar(mat2, mat1, 0.3, 7, col_region, fixed_layout)
 
+count_within_edges(mat1, unique(names(col_region)), col_region)
+count_within_edges(mat2, unique(names(col_region)), col_region)
+
+
+w1  = round((sum(count_within_edges(mat1, unique(names(col_region)), col_region)) / 80 ) *100 ,2)
+w2 = round((sum(count_within_edges(mat2, unique(names(col_region)), col_region)) / 38 ) * 100, 2)
+
+df2 = data.frame(within =c(w1,w2))
+
+df2$between = c(100-w1, 100-w2)
+df2
+
+
+# checks ------------------------------------------------------------------
+
+plot_bipartite_compar_check <- function(beta_matrix, comparison_matrix, arrow_size, node_size, region_col, fixed_layout) {
+  # Create a graph from beta_matrix
+  graph <- graph_from_adjacency_matrix(100 * beta_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  E(graph)$lty <- ifelse(E(graph)$weight < 200 & E(graph)$weight != 0, "solid", "dashed")
+  
+  # Assign node types based on region_col
+  V(graph)$type <- ifelse(region_col == "black", "black", "white")
+  
+  # Create a graph from comparison_matrix
+  comparison_graph <- graph_from_adjacency_matrix(100 * comparison_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  
+  # Identify edges in beta_matrix but not in comparison_matrix
+  edges_beta <- as_edgelist(graph)
+  edges_comparison <- as_edgelist(comparison_graph)
+  unique_edges <- edges_beta[!apply(edges_beta, 1, function(edge) {
+    any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
+  }), ]
+  
+  # Filter edges between black and white nodes
+  edges_bw <- unique_edges[apply(unique_edges, 1, function(edge) {
+    (V(graph)[edge[1]]$type == "black" && V(graph)[edge[2]]$type == "white") ||
+      (V(graph)[edge[1]]$type == "white" && V(graph)[edge[2]]$type == "black")
+  }), ]
+  
+  # Count edges and determine their types
+  bw_edges_count <- nrow(edges_bw)
+  edge_types <- ifelse(E(graph)[edges_bw]$weight < 200 & E(graph)[edges_bw]$weight != 0, "solid", "dashed")
+  
+  print(paste("Number of edges between black and white nodes:", bw_edges_count))
+  print(paste("Edge types:", paste(edge_types, collapse = ", ")))
+  
+  # Plot the graph
+  V(graph)$color <- region_col
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    plot(graph, edge.arrow.size = arrow_size, vertex.label = NA, edge.curved = 0.2, layout = fixed_layout)
+    return(edge_types)
+}
+
+
+plot_bipartite_compar_check(mat1, mat2, 0.3, 7, col_region, fixed_layout)
