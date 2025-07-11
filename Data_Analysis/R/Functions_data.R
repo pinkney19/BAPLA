@@ -10,13 +10,12 @@ firing_rate_func = function(spike_train_data, time_bins, bin_size){
       spike_counts[i, j] <- sum(trial_spikes >= time_bins[j] & trial_spikes < time_bins[j + 1])
     }
   }
-  
+  # Calculate the average spike count per bin across trials
   avg_spike_counts <- colMeans(spike_counts)
   
-  # Calculate the average spike count per bin across trials
+ 
   # Convert spike count to firing rate (Hz = spikes per second)
-  # Firing rate = spike count / (number of trials * bin size)
-  firing_rate1 <- avg_spike_counts  /  bin_size
+  firing_rate1 <- avg_spike_counts  /   bin_size
   return(firing_rate1)
 }
 
@@ -1888,3 +1887,60 @@ count_within_edges = function(mat, regions, col_region){
   names(edges) = regions
   return(edges)
 }
+
+
+
+# 23. Function to get firing rates and changepoints for raw data ----------
+
+
+get_firing_rate_matrix = function(units, time_bins){
+  #' Function to calculate firing rate (in Hz) from raw spikes
+  #' @param units (list) nested list of spike times for each neuron. Each neuron has 60 trials
+  #' @param time_bins (numeric) bins for downsampling spike times
+  #' #' @return A list with the following components:
+  #' \describe{
+  #'   \item{firing_rate}{Matrix of firing rates of dimension p x n - each row gives firing rate for particular neuron}
+  #'   \item{cpts}{List of detected change points in the firing rate for each neuron.}
+  #'   \item{stat_ids}{Indices of `stationary' neurons}
+  #'   \item{non_stat_ids}{Indices of `non-stationary' neurons.}
+  #' }
+  
+  # calculate firing rate
+  firing_rate = matrix(data = NA, nrow = length(units), ncol = length(time_bins)-1)
+  smooth_fr = matrix(data = NA, nrow = length(units), ncol = length(time_bins)-1)
+  # place holder for change points
+  cpts = list();
+  for(i in 1:length(units)){
+    firing_rate[i,] = firing_rate_func(units[[i]], time_bins, bin_size)
+    smooth_fr[i,] = rollmean(firing_rate[i,], k = 5, fill = NA)
+    cpts[[i]] = cpts(cpt.var(firing_rate[i,], method = "PELT"))
+  }
+  
+  # get IDs of statioary and non-stationary neurons
+  non_stat_ids = which(lengths(cpts)!=0) # i.e. which neurons have `changepoints`
+  stat_ids = which(lengths(cpts)==0)
+  
+  return(list(firing_rate = firing_rate, cpts = cpts,
+              stat_ids = stat_ids, non_stat_ids = non_stat_ids))
+}
+
+
+# 24. Function to plot firing rates and changepoint of example neu --------
+
+plot_example_with_cpts = function(unit_id, time_bins, out_left, out_right){
+  #' Function to plot firing rates and change points of example neurons
+  #' @param unit_id (numeric) ID of neuron to plot
+  #' @param time_bins (numeric) bins for downsampling spike times
+  #' @param out_left (list) result from get_firing_rate_matrix function for left trials.
+  #' @param out_right (list) result from get_firing_rate_matrix function for right trials.
+  par(mfrow = c(1,2))
+  xs = time_bins[-length(time_bins)]
+  plot(xs, out_left$firing_rate[unit_id,], type="l", ylim = c(0,150), 
+       main = paste("Unit", unit_id, " - Left Trials"), ylab = "Firing rate (Hz)", xlab = "Time (ms)")
+  abline(v = c(time_bins[out_left$cpts[[unit_id]]]), col="red", lty = "dashed", lwd = 2)
+  plot(xs, out_right$firing_rate[unit_id,], type="l", ylim = c(0,150), 
+       main = paste("Unit", unit_id, " - Right Trials"), 
+       ylab = "Firing rate (Hz)", xlab = "Time (ms)")
+  abline(v = c(time_bins[out_right$cpts[[unit_id]]]), col="red", lty = "dashed", lwd = 2)
+}
+
