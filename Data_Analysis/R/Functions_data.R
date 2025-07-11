@@ -1944,3 +1944,163 @@ plot_example_with_cpts = function(unit_id, time_bins, out_left, out_right){
   abline(v = c(time_bins[out_right$cpts[[unit_id]]]), col="red", lty = "dashed", lwd = 2)
 }
 
+
+# 25. Function to get fixed layout for bipartite graph --------------------
+
+get_fixed_layout_bi = function(beta_matrix, region_col, split_nodes=F, node_size){
+  #' Function to get fixed layout for bipartite graph
+  #' @param beta_matrix (numeric) d x d interaction matrix to be plotted
+  #' @param region_col (character) vector of colours associated with each neuron ("black" or "white)
+  #' @param split_nodes (logical) Default is False. If true, will split nodes across two lines
+  #' @param node_size (numeric) size of nodes in igraph plot (usually 7-10 appropriate)
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    V(graph)$type = unname(region_col)
+    
+    V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+    
+    if(split_nodes == T){
+      types = V(graph)$type 
+      # split into groups
+      group0 = which(types==1)
+      group1 = which(types == 0)
+      
+      # For each group, split into two halves
+      group0_split <- split(group0, rep(1:2, length.out = length(group0)))
+      group1_split <- split(group1, rep(1:2, length.out = length(group1)))
+      
+      # Define positions
+      layout <- matrix(NA, nrow = vcount(graph), ncol = 2)
+      
+      # Assign x positions evenly spaced within each row
+      layout[group0_split[[1]], 1] <- seq(1, length(group0_split[[1]]))
+      layout[group0_split[[2]], 1] <- seq(1, length(group0_split[[2]]))
+      layout[group1_split[[1]], 1] <- seq(1, length(group1_split[[1]]))
+      layout[group1_split[[2]], 1] <- seq(1, length(group1_split[[2]]))
+      
+      # Assign y positions for rows
+      layout[group0_split[[1]], 2] <- 0     # bottom row 1
+      layout[group0_split[[2]], 2] <- 1     # bottom row 2
+      layout[group1_split[[1]], 2] <- 3     # top row 1
+      layout[group1_split[[2]], 2] <- 4     # top row 2
+    }
+    
+    if(split_nodes==F){
+      # layout as normal "bipartite"
+      layout = layout_as_bipartite(graph)
+    }
+    return(layout)
+}
+
+
+# 26. Function to plot bipartite graph ------------------------------------
+
+plot_bipartite = function(beta_matrix, arrow_size, node_size, region_col, fixed_layout){
+  # Create a graph from the matrix
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    V(graph)$type = unname(region_col)
+    
+    V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+    
+    
+    
+    edge_count <- ecount(graph)
+    print(paste("Number of edges in the graph:", edge_count))
+    
+    V(graph)$color = unname(region_col)
+    
+    
+    plot(graph, edge.arrow.size = arrow_size,
+         vertex.label = NA,  edge.curved=0.2, layout = fixed_layout, 
+         vertex.label.cex = 0.7)
+}
+
+
+# 27. Function to plot bipartite graph with comparison edges colou --------
+plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, node_size, region_col, fixed_layout){
+  
+  #' Function to plot bipartite graph with comparison matrix. Edges common to both matrices will be coloured in blue.
+  #' @param beta_matrix d x d interaction matrix (e.g. glm estimate)
+  #' @param comparison_matrix d x d comparison matrix (e.g. BAPLA esitmate)
+  
+  # Create a graph from the matrix
+  graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
+  # Set edge colors based on the sign of the matrix values
+  E(graph)$color <- ifelse(E(graph)$weight > 0, "black", "black")
+  
+  # Set edge type based on sign of the matrix values
+  E(graph)$lty <- ifelse(E(graph)$weight <200 & E(graph)$weight!=0 , "solid", "dashed")
+  
+  
+  # Create a graph from the comparison_matrix
+  comparison_graph <- graph_from_adjacency_matrix(100 * comparison_matrix, mode = "directed", weighted = TRUE, diag = FALSE)
+  
+  # Identify edges in both graphs
+  edges_beta <- as_edgelist(graph)
+  edges_comparison <- as_edgelist(comparison_graph)
+  
+  # Count matching edges
+  matching_edges_count <- sum(apply(edges_beta, 1, function(edge) {
+    any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
+  }))
+  
+  # Set edge colors: blue for edges in both graphs, black otherwise
+  E(graph)$color <- apply(edges_beta, 1, function(edge) {
+    if (any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))) {
+      "blue2"
+    } else {
+      "black"
+    }
+  })
+  
+  
+  
+  # Set vertex color to white
+  V(graph)$color <- region_col
+  # Set vertex label color to black
+  V(graph)$label.color <- "black"
+    V(graph)$size <- node_size
+    
+    V(graph)$type = unname(region_col)
+    
+    V(graph)$type = ifelse(V(graph)$type=="black", 1, 0)
+    
+    
+    
+    edge_count <- ecount(graph)
+    print(paste("Number of edges in the graph:", edge_count))
+    print(paste("Number of matching edges:", matching_edges_count))
+    
+    V(graph)$color = unname(region_col)
+    
+    
+    plot(graph, edge.arrow.size = arrow_size,
+         vertex.label = NA,  edge.curved=0.2, layout = fixed_layout, 
+         vertex.label.cex = 0.7)
+}
+
