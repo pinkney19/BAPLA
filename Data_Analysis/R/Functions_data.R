@@ -2178,7 +2178,7 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
       # address issue with glmnet
       lambda = NULL; gamma_j.fit = NULL;
       tryCatch({
-        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1)
+        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept = F)
       }, error = function(e){
         #print error message
         cat("An error occurred:", e$message, "\n")
@@ -2187,7 +2187,7 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
       })
       # Use glmnet with appropraite lambda - either theoretical or cross-validated
       if (!is.null(gamma_j.fit)) {
-        gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,lambda = gamma_j.fit$lambda.min)
+        gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,lambda = gamma_j.fit$lambda.min, intercept = F)
       
       #gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
       gamma_j = as.vector(gamma_j$beta)
@@ -2248,8 +2248,8 @@ inference_results_new = function(res, beta_hat){
       mat[i, non_zero_indices[[i]]] = 1
     }
     
-    no_trials_removed[i] = length(res[[i]]$rm_trials[[60]])
-    id_removed_trials[[i]] = res[[i]]$rm_trials[[60]]
+    no_trials_removed[i] = length(res[[i]]$rm_trials)
+    id_removed_trials[[i]] = res[[i]]$rm_trials
     
   }
   # put into adjacency matrix format

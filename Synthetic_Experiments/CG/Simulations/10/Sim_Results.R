@@ -28,6 +28,7 @@ out_zero_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulation
 
 # new way -----------------------------------------------------------------
 library(pROC)
+library(pracma)
 res_50_1000 =metrics_new(out_50_1000, beta, 1e-5)
 res_50_2000 =metrics_new(out_50_2000, beta,1e-5)
 res_50_5000 =metrics_new(out_50_5000, beta,1e-5)

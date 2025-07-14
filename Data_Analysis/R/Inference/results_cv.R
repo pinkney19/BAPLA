@@ -18,8 +18,8 @@ beta_hat_wheel_right = right_params2$beta_hat
 vis_left_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/vis_left_desparsified.RDS")
 vis_right_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/vis_right_desparsified.RDS")
 
-wheel_left_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/old/wheel_left_desparsified.RDS")
-wheel_right_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/old/wheel_right_desparsified.RDS")
+wheel_left_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/wheel_left_desparsified.RDS")
+wheel_right_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results/wheel_right_desparsified.RDS")
 
 
 
@@ -58,7 +58,7 @@ beta_hat_vis_right[out_vis_right$ids] = 0
 beta_hat_wheel_left[out_wheel_left$ids] = 0
 beta_hat_wheel_right[out_wheel_right$ids] = 0
 
-setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference/bic_results")
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference/cv_results")
 saveRDS(beta_hat_vis_left, "beta_vis_left.RDS")
 saveRDS(beta_hat_vis_right, "beta_vis_right.RDS")
 saveRDS(beta_hat_wheel_left, "beta_wheel_left.RDS")
