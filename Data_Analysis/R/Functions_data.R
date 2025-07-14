@@ -1654,6 +1654,7 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
   sigma_hat_check = rep(list(sigma_hat_check), length(trial_data));
   theta_lasso = matrix(NA, p,p);
   theta_lasso = rep(list(theta_lasso, length(trial_data)))
+  removed_trial_ids = list();
   
   W = matrix(NA, p,p);  
   W = rep(list(W), length(trial_data));
@@ -1728,6 +1729,7 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       # check: if no issue with this particular trial then continue:
       if (all(is.na(bic_values)) ) {
         # exit loop
+        print(paste("There is a problem with estimation at trial", j))
         break
       }
         #stop("All BIC values are NA — model fitting or prediction failed.")
@@ -1752,14 +1754,17 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       theta_lasso[[i]]=NA}
   }
   
+  removed_trial_ids[[i]] = which(is.na(theta_lasso))
   
-  n_eff = length(trial_data)*600
+  # remove trials which had NAs
+  theta_lasso = theta_lasso[!is.na(theta_lasso)]
+  # update effective sample size to removed trials which were removed
+  n_eff = length(theta_lasso)*600
   first_pn = Reduce("+", first_deriv) / n_eff
   second_pn1 = Reduce("+", sigma_hat_check)/n_eff
   second_pn2 = Reduce("+",sigma_hat)/n_eff
   
-  # remove trials which had NAs
-  theta_lasso = theta_lasso[!is.na(theta_lasso)]
+  
   theta_lasso2 = Reduce("+", theta_lasso)/n_eff
   
   beta_deb = beta_hat[idx,] - theta_lasso2%*%as.matrix(first_pn)
@@ -1771,7 +1776,8 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
   ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
   
   
-  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso2 = theta_lasso2))
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, 
+              ci_upper = ci_upper, theta_lasso2 = theta_lasso2, rm_trials = removed_trial_ids))
 }
 
 
@@ -2104,3 +2110,120 @@ plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, no
          vertex.label.cex = 0.7)
 }
 
+
+
+# 28. Desparsified lasso with cross-validation lambda selection -----------
+
+despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alpha){
+  #' Function to obtain debiased lasso estimates and confidence intervals
+  #'
+  #' @param idx index of unit of interest, i.e., idx in 1,dots,p
+  #' @param trial_data list of trial times, each entry in list is matrix (dxn)
+  #' @param p no of dimensions
+  #' @param beta_0 vector of intercept estimates 
+  #' @param beta_hat estimate of interaction matrix
+  #' @param f_hat estimate of nonparametric function
+  #' @export  
+  
+  
+  first_deriv = list(); 
+  sigma_hat = matrix(NA, p,p);  
+  sigma_hat = rep(list(sigma_hat), length(trial_data));
+  sigma_hat_check = matrix(NA, p,p);  
+  sigma_hat_check = rep(list(sigma_hat_check), length(trial_data));
+  theta_lasso = matrix(NA, p,p);
+  theta_lasso = rep(list(theta_lasso, length(trial_data)))
+  
+  removed_trial_ids = list();
+  
+  W = matrix(NA, p,p);  
+  W = rep(list(W), length(trial_data));
+  for(i in 1:length(trial_data)){
+    print(i)
+    data = trial_data[[i]]
+    y = data[idx,][2:length(data[idx,])] 
+    X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    
+    p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
+    first_deriv[[i]] = as.numeric( - ( t(y-p_t) %*% X1 )  ) # / length(y) ## (1 x p)
+    vec_pt = as.vector(p_t)
+    
+    for(l in 1:p){
+      for(k in 1:p){
+        sigma_hat_check[[i]][l,k] = sum( (vec_pt*(1-vec_pt))*X1[,l]*X1[,k] )
+      }
+    }
+    
+    D = diag(vec_pt * (1-vec_pt))
+    sigma_hat[[i]] = ( t(X1) %*% D %*% X1 )  #/length(y) #p x p
+    
+    W[[i]] = sqrt(D) %*% X1
+    
+    
+    # use W as input to standard glmnet
+    #library(glmnet)
+    # nodewise lasso 
+    C = diag(p); tau = NULL; tau2=NULL
+    for (j in 1:p){
+      #print(j)
+      w_minus_j = W[[i]][,-j]
+      w_j = W[[i]][,j]
+
+      
+      # address issue with glmnet
+      lambda = NULL; gamma_j.fit = NULL;
+      tryCatch({
+        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+      }, error = function(e){
+        #print error message
+        cat("An error occurred:", e$message, "\n")
+        # if fails , manually set value of lambda
+        # lambda <<- sqrt(log(p)/600)
+      })
+      # Use glmnet with appropraite lambda - either theoretical or cross-validated
+      if (!is.null(gamma_j.fit)) {
+        gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,intercept = FALSE, standardize = TRUE,lambda = gamma_j.fit$lambda.min)
+      
+      #gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
+      gamma_j = as.vector(gamma_j$beta)
+      # populate "phi" matrix
+      C[j,-j] = (-1)*t(gamma_j) # i.e. update all but diagonal entry
+      tau[j] = as.numeric ( ( t(w_j-w_minus_j%*%as.matrix(gamma_j)) %*% as.matrix(w_j) )) # /length(y) )
+      tau2[j] = as.numeric( sigma_hat[[i]][j,j] - sigma_hat[[i]][j,-j] %*% as.matrix(gamma_j) )
+      } else{tau[j]=NA}
+      
+    }
+    # if failed for any p - remove trial
+    if(any(is.na(tau)) == F){
+      theta_lasso[[i]] = diag(1/tau) %*% C
+    } else{theta_lasso[[i]] = NA}
+  }
+  
+  removed_trial_ids[[i]] = which(is.na(theta_lasso))
+  
+  # remove trials which had NAs
+  theta_lasso = theta_lasso[!is.na(theta_lasso)]
+  # update effective sample size to removed trials which were removed
+  n_eff = length(theta_lasso)*600
+  
+  first_pn = Reduce("+", first_deriv) / n_eff
+  second_pn1 = Reduce("+", sigma_hat_check)/n_eff
+  second_pn2 = Reduce("+",sigma_hat)/n_eff
+  
+  theta_lasso2 = Reduce("+", theta_lasso)/n_eff
+  
+  beta_deb = beta_hat[idx,] - theta_lasso2%*%as.matrix(first_pn)
+  beta_deb = as.numeric(beta_deb)
+  
+  sigma = sqrt(diag(theta_lasso2 %*% second_pn1 %*% t(theta_lasso2)))
+  
+  ci_lower = beta_deb - qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  
+  
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, 
+              ci_upper = ci_upper, theta_lasso2 = theta_lasso2, rm_trials = removed_trial_ids))
+}

@@ -53,7 +53,7 @@ res = list();
 for(i in 1:p){
   print(i)
   set.seed(123) #reproducibility
-  res[[i]] = despars_lasso_trial(i, data_left, p, beta_0, beta_hat, f_hat, alpha)
+  res[[i]] = despars_lasso_trial_cv(i, data_left, p, beta_0, beta_hat, f_hat, alpha)
 }
 setwd("~/Downloads/BAPLA/Data_Analysis/R/Inference")
 saveRDS(res, "res_left_wheel.RDS")

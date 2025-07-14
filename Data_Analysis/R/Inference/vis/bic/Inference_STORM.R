@@ -38,7 +38,8 @@ res_vis_left <- foreach(k=unit_seq, .packages = c("splines","LaplacesDemon", "pu
   
   # return values of interests
   
-  return(list(beta_deb = res$beta_deb, sigma = res$sigma, lower = res$ci_lower, upper = res$ci_upper, theta_lasso = res$theta_lasso2)) 
+  return(list(beta_deb = res$beta_deb, sigma = res$sigma, lower = res$ci_lower, 
+              upper = res$ci_upper, theta_lasso = res$theta_lasso2, rm_trials = res$rm_trials )) 
   
 }
 
@@ -86,7 +87,8 @@ res_vis_right <- foreach(k=unit_seq, .packages = c("splines","LaplacesDemon", "p
   
   # return values of interests
   
-  return(list(beta_deb = res$beta_deb, sigma = res$sigma, lower = res$ci_lower, upper = res$ci_upper, theta_lasso = res$theta_lasso2)) 
+  return(list(beta_deb = res$beta_deb, sigma = res$sigma, lower = res$ci_lower, upper = res$ci_upper, 
+              theta_lasso = res$theta_lasso2, rm_trials = res$rm_trials)) 
   
 }
 
