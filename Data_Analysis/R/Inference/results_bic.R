@@ -23,6 +23,16 @@ wheel_left_desparsified <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/
 wheel_right_desparsified <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/wheel/theoretical/wheel_right_desparsified.RDS")
 
 
+
+# load new results --------------------------------------------------------
+vis_left_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/BIC_results_new/vis_left_desparsified.RDS")
+vis_right_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/BIC_results_new/vis_right_desparsified.RDS")
+
+wheel_left_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/BIC_results_new/wheel_left_desparsified.RDS")
+wheel_right_desparsified2 <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Inference/BIC_results_new/wheel_right_desparsified.RDS")
+
+
+
 # results -----------------------------------------------------------------
 
 

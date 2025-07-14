@@ -1729,7 +1729,7 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       # check: if no issue with this particular trial then continue:
       if (all(is.na(bic_values)) ) {
         # exit loop
-        print(paste("There is a problem with estimation at trial", j))
+        print(paste("There is a problem with estimation at trial", i, "- Neuron", j))
         break
       }
         #stop("All BIC values are NA — model fitting or prediction failed.")
@@ -1754,7 +1754,7 @@ despars_lasso_trial_bic = function(idx, trial_data, p, beta_0, beta_hat, f_hat, 
       theta_lasso[[i]]=NA}
   }
   
-  removed_trial_ids[[i]] = which(is.na(theta_lasso))
+  removed_trial_ids = which(is.na(theta_lasso))
   
   # remove trials which had NAs
   theta_lasso = theta_lasso[!is.na(theta_lasso)]
@@ -2136,7 +2136,7 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
   
   removed_trial_ids = list();
   
-  W = matrix(NA, p,p);  
+  W = matrix(NA,p,p);  
   W = rep(list(W), length(trial_data));
   for(i in 1:length(trial_data)){
     print(i)
@@ -2170,13 +2170,15 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
     for (j in 1:p){
       #print(j)
       w_minus_j = W[[i]][,-j]
+      # centre:
+      #w_minus_j_centred = scale(w_minus_j, center=T, scale = F)
       w_j = W[[i]][,j]
 
       
       # address issue with glmnet
       lambda = NULL; gamma_j.fit = NULL;
       tryCatch({
-        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T)
+        gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1)
       }, error = function(e){
         #print error message
         cat("An error occurred:", e$message, "\n")
@@ -2185,7 +2187,7 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
       })
       # Use glmnet with appropraite lambda - either theoretical or cross-validated
       if (!is.null(gamma_j.fit)) {
-        gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,intercept = FALSE, standardize = TRUE,lambda = gamma_j.fit$lambda.min)
+        gamma_j <- glmnet(x = w_minus_j, y = w_j,  family = "gaussian", alpha = 1,lambda = gamma_j.fit$lambda.min)
       
       #gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, intercept=F, standardize = T, lambda = gamma_j.fit$lambda.min)
       gamma_j = as.vector(gamma_j$beta)
@@ -2202,7 +2204,7 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
     } else{theta_lasso[[i]] = NA}
   }
   
-  removed_trial_ids[[i]] = which(is.na(theta_lasso))
+  removed_trial_ids = which(is.na(theta_lasso))
   
   # remove trials which had NAs
   theta_lasso = theta_lasso[!is.na(theta_lasso)]
@@ -2227,3 +2229,37 @@ despars_lasso_trial_cv = function(idx, trial_data, p, beta_0, beta_hat, f_hat, a
   return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, 
               ci_upper = ci_upper, theta_lasso2 = theta_lasso2, rm_trials = removed_trial_ids))
 }
+
+
+
+# updated inference results -----------------------------------------------
+
+inference_results_new = function(res, beta_hat){
+  #' Function to format results from inference procedure
+  #' @param res list of results (of length p) from STORM containing debiased estimate and upper/lower CI values 
+  #' @param beta_hat estimate of the interaction matrix obtained from the regularised estimator 
+  non_zero_indices = list(); mat = matrix(NA, nrow=dim(beta_hat)[1], ncol=dim(beta_hat)[1]);
+  no_trials_removed = NULL; id_removed_trials = list();
+  for(i in 1:length(res)){
+    check_0 = ifelse(res[[i]]$lower < 0 & res[[i]]$upper>0, T, F)
+    non_zero_indices[[i]] = which(check_0==F)
+    if(length(non_zero_indices[[i]])!=0){
+      # set non zero entries to 1
+      mat[i, non_zero_indices[[i]]] = 1
+    }
+    
+    no_trials_removed[i] = length(res[[i]]$rm_trials[[60]])
+    id_removed_trials[[i]] = res[[i]]$rm_trials[[60]]
+    
+  }
+  # put into adjacency matrix format
+  beta_hat[beta_hat!=0]=1
+  # set NAs to zero
+  mat[is.na(mat)]=0
+  out = mat == beta_hat
+  ids = which(out == F) # edges to be  greyed out in final plots
+  id_mat = arrayInd(ids, dim(beta_hat))
+  return(list(ids=ids, mat=mat, beta_hat = beta_hat, n_inds= non_zero_indices, id_mat = id_mat,
+              id_removed_trials = id_removed_trials, no_trials_removed = no_trials_removed))
+}
+
