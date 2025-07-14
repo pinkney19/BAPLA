@@ -1721,7 +1721,65 @@ get_debiased_est = function(out_storm, p, N_samp){
 }
 
 
+# 22. New desparsified lasso  ---------------------------------------------
 
+despars_lasso_new = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
+  #' Function to obtain debiased lasso estimates and confidence intervals
+  #'
+  #' @param idx index of unit of interest, i.e., idx in 1,dots,p
+  #' @param data sample of data used in simulation study
+  #' @param p no of dimensions
+  #' @param beta_0 vector of intercept estimates 
+  #' @param beta_hat estimate of interaction matrix
+  #' @param f_hat estimate of nonparametric function
+  #' @export  
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  
+  p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
+  
+  
+  first_deriv = - ( t(y-p_t) %*% X1 ) / length(y) ## (1 x p)
+  vec_pt = as.vector(p_t)
+  D = diag(vec_pt * (1-vec_pt))
+  sigma_hat = ( t(X1) %*% D %*% X1 ) /length(y) #p x p
+  
+  # checks
+  W = sqrt(D) %*% X1
+  #check = (t(W) %*% W )/length(y)
+  #round(check,8) == round(sigma_hat,8)
+  
+  # use W as input to standard glmnet
+  library(glmnet)
+  # nodewise lasso 
+  C = diag(p); tau = NULL; tau2=NULL
+  for (j in 1:p){
+    w_minus_j = W[,-j]
+    w_j = W[,j]
+    # use glmnet for regression problem for each j
+    gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1)
+    gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, lambda = gamma_j.fit$lambda.min)
+    gamma_j = as.vector(gamma_j$beta)
+    C[j,-j] = (-1)*t(gamma_j)
+    tau[j] = as.numeric ( ( t(w_j-w_minus_j%*%as.matrix(gamma_j)) %*% as.matrix(w_j) ) /length(y) )
+    tau2[j] = as.numeric( sigma_hat[j,j] - sigma_hat[j,-j] %*% as.matrix(gamma_j) )
+  }
+  theta_lasso = diag(1/tau) %*% C
+  beta_deb = beta_hat[idx,] - theta_lasso%*%t(first_deriv)
+  beta_deb = as.numeric(beta_deb)
+  
+  sigma = sqrt(diag(theta_lasso %*% sigma_hat %*% t(theta_lasso)))
+  
+  ci_lower = beta_deb - qnorm(1-alpha/2)*sigma/sqrt(length(y))
+  ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(y))
+  
+  
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso = theta_lasso))
+}
 
 
 
