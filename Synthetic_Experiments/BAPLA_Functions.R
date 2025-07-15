@@ -465,10 +465,10 @@ Format_results = function(true_beta, out, n_samp, p,model_type){
   
   
   par(mfrow=c(1,4))
-  boxplot(df_50_1000, main = paste0(model_type, " - 1000"), ylim =c(0.85, 0.99))
-  boxplot(df_50_2000, main = paste0(model_type, " - 2000"), ylim =c(0.85, 0.99))
-  boxplot(df_50_5000, main = paste0(model_type, " - 5000"), ylim =c(0.85, 0.99))
-  boxplot(df_50_10000, main = paste0(model_type, " - 10000"), ylim =c(0.85, 0.99))
+  boxplot(df_50_1000, main = paste0(model_type, " - 1000"), ylim =c(0.65, 0.99))
+  boxplot(df_50_2000, main = paste0(model_type, " - 2000"), ylim =c(0.65, 0.99))
+  boxplot(df_50_5000, main = paste0(model_type, " - 5000"), ylim =c(0.65, 0.99))
+  boxplot(df_50_10000, main = paste0(model_type, " - 10000"), ylim =c(0.65, 0.99))
   
   
   out_1000 = c(res_50_1000$s_cov_mean, res_50_1000$sc_cov_mean, res_50_1000$av_len_s, res_50_1000$av_len_sc)

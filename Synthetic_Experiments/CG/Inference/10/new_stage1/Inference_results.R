@@ -15,10 +15,10 @@ beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/beta_10.RDS")
 # Stage 1 Results ---------------------------------------------------------
 
 # Read 50/50 data from STORM 
-out_50_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_50_1000_desparsified.RDS")
-out_50_2000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_50_2000_desparsified.RDS")
-out_50_5000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_50_5000_desparsified.RDS")
-out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_50_10000_desparsified.RDS")
+out_50_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_50_1000_desparsified.RDS")
+out_50_2000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_50_2000_desparsified.RDS")
+out_50_5000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_50_5000_desparsified.RDS")
+out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_50_10000_desparsified.RDS")
 
 
 # Results for 50/50 data
@@ -26,17 +26,17 @@ out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_des
 res_50_s1 = Format_results(true_beta, out50, n_samp, p, "stage 1 - 50")
 
 # zero results 
-out_zero_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_zero_1000_desparsified.RDS")
-out_zero_2000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_zero_2000_desparsified.RDS")
-out_zero_5000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_zero_5000_desparsified.RDS")
-out_zero_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new/out_zero_10000_desparsified.RDS")
+out_zero_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_zero_1000_desparsified.RDS")
+out_zero_2000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_zero_2000_desparsified.RDS")
+out_zero_5000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_zero_5000_desparsified.RDS")
+out_zero_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1/out_zero_10000_desparsified.RDS")
 
 
 outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_5000_desparsified, out_zero_10000_desparsified)
 
 res_zero_s1 = Format_results(true_beta, outzero, n_samp, p, "stage 1 - zero")
 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Inference/10/new")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage1")
 saveRDS(res_50_s1, "res_50_s1.RDS")
 saveRDS(res_zero_s1, "res_zero_s1.RDS")
 
