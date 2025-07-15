@@ -391,7 +391,7 @@ coverage = function(active, true_beta, out_storm, n_samp, unit_id){
     res = out_storm[((b-length(n_samp))+1):b]
   }
   
-  true_beta = beta[unit_id,]
+  true_beta = true_beta[unit_id,]
   if(active==T){
     s = which(true_beta!=0) # active set#
   }
