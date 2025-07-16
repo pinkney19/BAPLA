@@ -10,7 +10,7 @@ source("BAPLA_Functions.R")
 n_samp = seq(1,100)
 p = 50; 
 
-beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_50.RDS")
+true_beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/ER/beta_50.RDS")
 
 # Stage 1 Results ---------------------------------------------------------
 

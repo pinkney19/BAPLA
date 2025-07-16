@@ -393,7 +393,7 @@ coverage = function(active, true_beta, out_storm, n_samp, unit_id){
   
   true_beta = true_beta[unit_id,]
   if(active==T){
-    s = which(true_beta!=0) # active set#
+    s = which(true_beta!=0 & true_beta!=1) # active set - excludes diagonal entries
   }
   if(active==F){
     s_c = which(true_beta==0)
@@ -406,18 +406,24 @@ coverage = function(active, true_beta, out_storm, n_samp, unit_id){
   if(sum(s)!=0){
     truth = true_beta[s]
     s_count = rep(0,length(truth)); s_count = rep(list(s_count), length(n_samp))
+    #zero_count = rep(0,length(truth)); zero_count = rep(list(zero_count), length(n_samp))
     length_ci = rep(0, length(truth)); length_ci = rep(list(length_ci), length(n_samp))
     for(i in 1:length(n_samp)){
       lower_vals = lower[[i]][s]
       upper_vals = upper[[i]][s]
       for(j in 1:length(truth)){
-        if(truth[j]>lower_vals[j] & truth[j]<upper_vals[j]){s_count[[i]][j] = s_count[[i]][j] + 1}
+        if(truth[j]>=lower_vals[j] & truth[j]<=upper_vals[j]){s_count[[i]][j] = s_count[[i]][j] + 1}
+        # check if zero in CIs
+       # if(0>=lower_vals[j] & 0<=upper_vals[j]){zero_count[[i]][j] = zero_count[[i]][j] + 1}
       }
       # get lengths of CI
       length_ci[[i]] = upper_vals-lower_vals
     }
     totals = unlist(lapply(s_count, sum))
     avg_cov = sum(totals)/(length(n_samp)*length(s))
+    
+    #totals_zero = unlist(lapply(zero_count, sum))
+    #avg_zeroes = sum(totals_zero)/(length(n_samp)*length(s))
     
     # lengths
     t_length = unlist(lapply(length_ci, sum))
@@ -428,7 +434,7 @@ coverage = function(active, true_beta, out_storm, n_samp, unit_id){
     avg_cov = av_length = NA
   }
   
-  return(list(cov = avg_cov, len = av_length))
+  return(list(cov = avg_cov, len = av_length  ))
 }
 
 # 8. Average coverage function --------------------------------------------
@@ -436,14 +442,19 @@ coverage = function(active, true_beta, out_storm, n_samp, unit_id){
 get_avg_cov = function(true_beta, out, n_samp, p){
   s_cov = NULL; sc_cov = NULL;
   s_len = NULL; sc_len = NULL;
+  zero_s = NULL; zero_sc = NULL;
   for(i in 1:p){
     s_cov[i] = coverage(T, true_beta, out, n_samp, i)$cov                
     sc_cov[i] = coverage(F, true_beta, out, n_samp, i)$cov
     s_len[i] = coverage(T, true_beta, out, n_samp, i)$len  
     sc_len[i] = coverage(F, true_beta, out, n_samp, i)$len  
+    #zero_s[i] = coverage(T, true_beta, out, n_samp, i)$zero
+    #zero_sc[i] = coverage(F, true_beta, out, n_samp, i)$zero
   }
   
-  return(list(s_cov_mean = mean(s_cov, na.rm=T), sc_cov_mean = mean(sc_cov, na.rm=T), s_all = s_cov, sc_all = sc_cov, av_len_s = mean(s_len, na.rm=T), av_len_sc = mean(sc_len, na.rm=T)))
+  return(list(s_cov_mean = mean(s_cov, na.rm=T), sc_cov_mean = mean(sc_cov, na.rm=T), s_all = s_cov, 
+              sc_all = sc_cov, av_len_s = mean(s_len, na.rm=T), av_len_sc = mean(sc_len, na.rm=T)))#, 
+              #zero_s_mean = mean(zero_s, na.rm=T), zero_sc_mean = mean(zero_sc, na.rm=T)))
 }
 
 
@@ -1769,6 +1780,68 @@ despars_lasso_new = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
     tau2[j] = as.numeric( sigma_hat[j,j] - sigma_hat[j,-j] %*% as.matrix(gamma_j) )
   }
   theta_lasso = diag(1/tau) %*% C
+  beta_deb = beta_hat[idx,] - theta_lasso%*%t(first_deriv)
+  beta_deb = as.numeric(beta_deb)
+  
+  sigma = sqrt(diag(theta_lasso %*% sigma_hat %*% t(theta_lasso)))
+  
+  ci_lower = beta_deb - qnorm(1-alpha/2)*sigma/sqrt(length(y))
+  ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(y))
+  
+  
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, ci_upper = ci_upper, theta_lasso = theta_lasso))
+}
+
+
+
+# invert matrix -----------------------------------------------------------
+
+despars_lasso_invert = function(idx, data, p, beta_0, beta_hat, f_hat, alpha){
+  #' Function to obtain debiased lasso estimates and confidence intervals
+  #'
+  #' @param idx index of unit of interest, i.e., idx in 1,dots,p
+  #' @param data sample of data used in simulation study
+  #' @param p no of dimensions
+  #' @param beta_0 vector of intercept estimates 
+  #' @param beta_hat estimate of interaction matrix
+  #' @param f_hat estimate of nonparametric function
+  #' @export  
+  
+  y = data[idx,][2:length(data[idx,])] # use
+  X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+  X1 = t(X1)
+  p = dim(data)[1]
+  
+  
+  p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
+  
+  
+  first_deriv = - ( t(y-p_t) %*% X1 ) / length(y) ## (1 x p)
+  vec_pt = as.vector(p_t)
+  D = diag(vec_pt * (1-vec_pt))
+  sigma_hat = ( t(X1) %*% D %*% X1 ) /length(y) #p x p
+  
+  # checks
+  W = sqrt(D) %*% X1
+  #check = (t(W) %*% W )/length(y)
+  #round(check,8) == round(sigma_hat,8)
+  
+  # use W as input to standard glmnet
+  # library(glmnet)
+  # # nodewise lasso 
+  # C = diag(p); tau = NULL; tau2=NULL
+  # for (j in 1:p){
+  #   w_minus_j = W[,-j]
+  #   w_j = W[,j]
+  #   # use glmnet for regression problem for each j
+  #   gamma_j.fit = cv.glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1)
+  #   gamma_j = glmnet(x=w_minus_j, y = w_j, family="gaussian", alpha=1, lambda = gamma_j.fit$lambda.min)
+  #   gamma_j = as.vector(gamma_j$beta)
+  #   C[j,-j] = (-1)*t(gamma_j)
+  #   tau[j] = as.numeric ( ( t(w_j-w_minus_j%*%as.matrix(gamma_j)) %*% as.matrix(w_j) ) /length(y) )
+  #   tau2[j] = as.numeric( sigma_hat[j,j] - sigma_hat[j,-j] %*% as.matrix(gamma_j) )
+  # }
+  theta_lasso = solve(sigma_hat)#diag(1/tau) %*% C
   beta_deb = beta_hat[idx,] - theta_lasso%*%t(first_deriv)
   beta_deb = as.numeric(beta_deb)
   

@@ -66,6 +66,6 @@ outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_
 
 res_zero_s2 = Format_results(true_beta, outzero, n_samp, p, "stage 2 - zero")
 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Inference/10/stage2")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Inference/10/new_stage2")
 saveRDS(res_50_s2, "res_50_s2.RDS")
 saveRDS(res_zero_s2, "res_zero_s2.RDS")

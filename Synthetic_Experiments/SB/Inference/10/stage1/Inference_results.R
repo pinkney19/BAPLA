@@ -10,7 +10,7 @@ source("BAPLA_Functions.R")
 n_samp = seq(1,100)
 p = 10; 
 
-beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/SB/beta_10.RDS")
+true_beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/SB/beta_10.RDS")
 
 # Stage 1 Results ---------------------------------------------------------
 
@@ -23,7 +23,7 @@ out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/Infe
 
 # Results for 50/50 data
 out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_desparsified, out_50_10000_desparsified)
-res_50_s1 = Format_results(true_beta = beta, out50, n_samp, p, "stage 1 - 50")
+res_50_s1 = Format_results(true_beta, out50, n_samp, p, "stage 1 - 50")
 
 # zero results 
 out_zero_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/Inference/10/stage1/out_zero_1000_desparsified.RDS")
@@ -34,7 +34,7 @@ out_zero_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/In
 
 outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_5000_desparsified, out_zero_10000_desparsified)
 
-res_zero_s1 = Format_results(true_beta = beta, outzero, n_samp, p, "stage 1 - zero")
+res_zero_s1 = Format_results(true_beta, outzero, n_samp, p, "stage 1 - zero")
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB/Inference/10/stage1")
 saveRDS(res_50_s1, "res_50_s1.RDS")
@@ -55,7 +55,7 @@ out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/Infe
 
 # Results for 50/50 data
 out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_desparsified, out_50_10000_desparsified)
-res_50_s2 = Format_results(true_beta = beta, out50, n_samp, p, "stage 2 - 50")
+res_50_s2 = Format_results(true_beta, out50, n_samp, p, "stage 2 - 50")
 
 # zero results 
 out_zero_1000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/Inference/10/stage2/out_zero_1000_desparsified.RDS")
@@ -66,7 +66,7 @@ out_zero_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/SB/In
 
 outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_5000_desparsified, out_zero_10000_desparsified)
 
-res_zero_s2 = Format_results(true_beta = beta, outzero, n_samp, p, "stage 2 - zero")
+res_zero_s2 = Format_results(true_beta, outzero, n_samp, p, "stage 2 - zero")
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB/Inference/10/stage2")
 saveRDS(res_50_s2, "res_50_s2.RDS")
