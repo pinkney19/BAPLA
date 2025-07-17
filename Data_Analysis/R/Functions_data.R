@@ -2263,3 +2263,79 @@ inference_results_new = function(res, beta_hat){
               id_removed_trials = id_removed_trials, no_trials_removed = no_trials_removed))
 }
 
+
+# 28. Desparsified lasso with cross-validation lambda selection -----------
+
+despars_lasso_trial_invert = function(idx, trial_data, p, beta_0, beta_hat, f_hat, alpha){
+  #' Function to obtain debiased lasso estimates and confidence intervals
+  #'
+  #' @param idx index of unit of interest, i.e., idx in 1,dots,p
+  #' @param trial_data list of trial times, each entry in list is matrix (dxn)
+  #' @param p no of dimensions
+  #' @param beta_0 vector of intercept estimates 
+  #' @param beta_hat estimate of interaction matrix
+  #' @param f_hat estimate of nonparametric function
+  #' @export  
+  
+  
+  first_deriv = list(); 
+  sigma_hat = matrix(NA, p,p);  
+  sigma_hat = rep(list(sigma_hat), length(trial_data));
+  sigma_hat_check = matrix(NA, p,p);  
+  sigma_hat_check = rep(list(sigma_hat_check), length(trial_data));
+  theta_hat = matrix(NA, p,p);
+  theta_hat = rep(list(theta_hat, length(trial_data)))
+  
+  removed_trial_ids = list();
+  
+  W = matrix(NA,p,p);  
+  W = rep(list(W), length(trial_data));
+  for(i in 1:length(trial_data)){
+    print(i)
+    data = trial_data[[i]]
+    y = data[idx,][2:length(data[idx,])] 
+    X1 = data[,(1: (length(data[idx,])-1) )] #i.e. y_{t-1} - matrix of predictors (for all p - p x N matrix)
+    X1 = t(X1)
+    p = dim(data)[1]
+    
+    
+    p_t = (1+exp(-beta_0[idx] - X1 %*% beta_hat[idx,] - f_hat[[idx]]))^(-1)
+    first_deriv[[i]] = as.numeric( - ( t(y-p_t) %*% X1 )  ) # / length(y) ## (1 x p)
+    vec_pt = as.vector(p_t)
+    
+    for(l in 1:p){
+      for(k in 1:p){
+        sigma_hat_check[[i]][l,k] = sum( (vec_pt*(1-vec_pt))*X1[,l]*X1[,k] )
+      }
+    }
+    
+    D = diag(vec_pt * (1-vec_pt))
+    sigma_hat[[i]] = ( t(X1) %*% D %*% X1 )  #/length(y) #p x p
+    
+    theta_hat[[i]] = solve(sigma_hat[[i]])
+    
+    }
+  removed_trial_ids = which(is.na(theta_hat))
+  # remove trials which had NAs
+  theta_hat = theta_hat[!is.na(theta_hat)]
+  # update effective sample size to removed trials which were removed
+  n_eff = length(theta_hat)*600
+  
+  first_pn = Reduce("+", first_deriv) / n_eff
+  second_pn1 = Reduce("+", sigma_hat_check)/n_eff
+  second_pn2 = Reduce("+",sigma_hat)/n_eff
+  
+  theta_hat2 = Reduce("+", theta_hat)/n_eff
+  
+  beta_deb = beta_hat[idx,] - theta_hat2%*%as.matrix(first_pn)
+  beta_deb = as.numeric(beta_deb)
+  
+  sigma = sqrt(diag(theta_hat2 %*% second_pn1 %*% t(theta_hat2)))
+  
+  ci_lower = beta_deb - qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  ci_upper = beta_deb + qnorm(1-alpha/2)*sigma/sqrt(length(n_eff))
+  
+  
+  return(list(beta_deb = beta_deb, sigma = sigma, ci_lower = ci_lower, 
+              ci_upper = ci_upper, theta_hat2 = theta_hat2, rm_trials = removed_trial_ids))
+}
