@@ -50,11 +50,11 @@ plot_example_with_cpts = function(unit_id, time_bins, out_left, out_right){
        ylab = "Firing rate (Hz)", xlab = "Time (ms)")
   abline(v = c(time_bins[out_right$cpts[[unit_id]]]), col="red", lty = "dashed", lwd = 2)
 }
-
+par(mar = c(5,4,4,2))
 # non-stationary example
 plot_example_with_cpts(35, time_bins, out_left, out_right)
 # stationary example
-plot_example_with_cpts(17, time_bins, out_left, out_right)
+plot_example_with_cpts(52, time_bins, out_left, out_right)
 
 
 left_stat_ids = out_left$stat_ids

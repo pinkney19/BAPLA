@@ -43,6 +43,47 @@ get_results = function(p, model_type, inf){
   
 }
 
+get_ses = function(p, model_type, inf){
+  # standard errors for interaction matrix
+  ses_50 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/ses_50.RDS"))
+  ses_zero <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/ses_zero.RDS"))
+  
+  # standard errors for intercept
+  int_ses_50 = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/int_ses_50.RDS"))
+  int_ses_zero = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/int_ses_zero.RDS"))
+  
+  # se for f
+  f_ses_50 = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/f_ses_50.RDS"))
+  f_ses_zero = readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/f_ses_zero.RDS"))
+  
+  # se AUROC
+  AUC_ses_50 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/AUC_se_50.RDS"))
+  AUC_ses_zero <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Simulations/",p,"/AUC_se_zero.RDS"))
+  
+  # Inference
+  if(inf==T){
+    res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1.RDS"))
+    res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1.RDS"))
+  }
+  
+  if(inf==F){
+    res_50_s1 = matrix(NA, 4, 4)
+    res_zero_s1 = matrix(NA, 4, 4)
+  }
+  
+  out_50 = cbind(as.numeric(ses_50), as.numeric(int_ses_50), as.numeric(f_ses_50), as.numeric(AUC_ses_50), 
+                 as.numeric(res_50_s1[,1]), as.numeric(res_50_s1[,2]), as.numeric(res_50_s1[,3]), as.numeric(res_50_s1[,4]))
+  
+  
+  out_zero = cbind(as.numeric(ses_zero), as.numeric(int_ses_zero), as.numeric(f_ses_zero), as.numeric(AUC_ses_zero), as.numeric(res_zero_s1[,1]), 
+                   as.numeric(res_zero_s1[,2]), as.numeric(res_zero_s1[,3]), as.numeric(res_zero_s1[,4]))
+  
+  
+  out = round(rbind(out_50, out_zero),2)
+  return(out)
+  
+}
+
 
 CG_10 = get_results(10, "CG", inf = T)
 CG_50 = get_results(50, "CG", inf = T)
@@ -86,6 +127,51 @@ xtable(tbl)
 
 
 # standard errors ---------------------------------------------------------
+CG_10 = get_ses(10, "CG", inf = F)
+CG_50 = get_ses(50, "CG", inf = F)
+
+ER_10 = get_ses(10, "ER", inf = F)
+ER_50 = get_ses(50, "ER", inf = F)
+
+
+SB_10 = get_ses(10, "SB", inf=F)
+SB_50 = get_ses(50, "SB", inf=F)
+
+table = rbind(CG_10, CG_50, ER_10, ER_50, SB_10, SB_50)
+
+
+tbl = as.data.frame(table)
+
+n=c(1000,2000, 5000, 10000)
+n= rep(n,12)
+beta_0 = c(rep(0.1,4), rep(-2.6,4))
+beta_0 = rep(beta_0, 6) 
+d = c(rep(10,8), rep(50,8))
+d = rep(d, 3)
+library(dplyr)
+
+tbl <- tbl %>% mutate(n = n)
+# reorder 
+tbl <- tbl %>% select(n, everything())
+
+tbl <- tbl %>% mutate(beta_0 = beta_0)
+# reorder 
+tbl <- tbl %>% select(beta_0, everything())
+
+tbl <- tbl %>% mutate(d = d)
+# reorder 
+tbl <- tbl %>% select(d, everything())
+tbl
+library(xtable)
+xtable(tbl)
+
+
+
+
+
+
+
+
 
 # Model a
 # p = 10

@@ -26,11 +26,11 @@ m5 = round(get_results_2(5) ,2)
 m10 = round(get_results_2(10) ,2)
 m15 = round(get_results_2(15), 2)
 m20 = round(get_results_2(20), 2)
-
 m25 = round(get_results_2(25) ,2)
 m30 = round(get_results_2(30) ,2)
 m35 = round(get_results_2(35), 2)
 m40 = round(get_results_2(40), 2)
+
 
 rmse0 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/sims_no_f/formatted_res/rmse.RDS")
 
@@ -79,7 +79,11 @@ p2 = ggplot(data2, aes(x = m, y = MSE_f, color = n)) +
   theme_minimal()
 
 p2
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/plots")
+
+saveRDS(p1, "plot_errs_interaction_normal.RDS")
+saveRDS(p2, "plot_errs_normal_f.RDS")
+
 ggsave("plot_errs_interaction_normal.pdf", plot = p1, width = 4, height =3, units = "in")
 
 ggsave("plot_errs_normal_f.pdf", plot = p2, width = 4, height =3, units = "in")

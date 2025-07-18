@@ -63,14 +63,14 @@ p1 = plts2[[1]] +
             inherit.aes = F,
             color = "black")
 
-p2 = plts2[[2]] +
-  geom_line(data = data.frame(x = seq(-0.2,0.4,length.out = length(fr[[2]])) ,
-                              y = fr[[2]]), 
+p2 = plts2[[13]] +
+  geom_line(data = data.frame(x = seq(-0.2,0.4,length.out = length(fr[[13]])) ,
+                              y = fr[[13]]), 
             aes(x = x, y = y), 
             inherit.aes = F,
             color = "black")
                 
-
+p2
 plot_wheel = ggarrange(p1,p2, ncol=2,common.legend = T)#
 plot_wheel
 
