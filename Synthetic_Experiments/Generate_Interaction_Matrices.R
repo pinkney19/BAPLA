@@ -46,7 +46,6 @@ sum(beta_SB_50_mat)
 
 # image plots -------------------------------------------------------------
 par(mfrow = c(1,2),mar=c(5,4,4,2))
-
 image(as.matrix(as.matrix(beta_SB)))
 image(as.matrix(as.matrix(beta_SB_50)))
 mtext("Stochastic Block Model", side = 3, line = -2, outer = T)
@@ -131,4 +130,54 @@ set.seed(12) #2
 plot_graph(SB_10, 0.5, 10)
 set.seed(2)
 plot_graph(ER_10, 0.5, 10)
+
+
+
+# Add on for 100 nodes ----------------------------------------------------
+library(igraph)
+setwd("~/Downloads/BAPLA/Synthetic_Experiments")
+source("BAPLA_Functions.R")
+# chain graph
+set.seed(123)
+CG_100 = chain_graph(100,0.3)
+# check how many edges for comparison reasons
+length(CG_100[CG_100!=0]) # 298
+set.seed(123)
+beta_ER_100 = erdos.renyi.game(100, 0.0295, directed = T) #300
+par(mar = c(0.1,0.1,0.1,0.1))
+plot(beta_ER_100)
+beta_mat_ER_100 = as.matrix(beta_ER_100)
+sum(beta_mat_ER_100)
+
+set.seed(123)
+pm100 = diag(0.75, nrow = 20, ncol=20)
+pm100[pm100==0]=0.00052
+beta_SB_100 <- sample_sbm(100, pref.matrix=pm100, block.sizes=rep(5,20) , directed = T)
+plot(beta_SB_100)
+beta_SB_100_mat = as.matrix(beta_SB_100)
+sum(beta_SB_100_mat)
+
+# add in weights
+set.seed(123)
+ER_100 = add_weights(beta_mat_ER_100, 0.3)
+set.seed(123)
+SB_100 = add_weights(as.matrix(as.matrix(beta_SB_100)), 0.3)
+
+par(mfrow=c(1,3), mar = c(5,4,4,2))
+image(CG_100, main = "Chain Graph")
+image(SB_100, main = "Stochastic Block")
+image(as.matrix(ER_100), main = "Erdos Renyi")
+
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG")
+saveRDS(CG_100, "beta_100.RDS")
+
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/ER")
+saveRDS(as.matrix(ER_100), "beta_100.RDS")
+
+
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB")
+saveRDS(as.matrix(SB_100), "beta_100.RDS")
+
 

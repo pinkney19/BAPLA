@@ -115,6 +115,12 @@ setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/plots")
 saveRDS(p3, "plot_errs_gamma_AUC.RDS")
 ggsave("plot_errs_gamma_AUC.pdf", plot = p3, width = 4, height =3, units = "in")
 
+# arrange plots
+
+library(ggpubr)
+all_plots = ggarrange(p1, p3, p2, common.legend = T, legend="top", ncol=3)
+
+ggsave("all_plots_gamma.pdf", plot=  all_plots, width =8, height=3, units ="in")
 
 # consistency plot
 m_star = 10;
