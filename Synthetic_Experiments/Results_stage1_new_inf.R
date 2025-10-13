@@ -62,8 +62,8 @@ get_ses = function(p, model_type, inf){
   
   # Inference
   if(inf==T){
-    res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1.RDS"))
-    res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1.RDS"))
+    res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1_ses.RDS"))
+    res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1_ses.RDS"))
   }
   
   if(inf==F){
@@ -127,15 +127,14 @@ xtable(tbl)
 
 
 # standard errors ---------------------------------------------------------
-CG_10 = get_ses(10, "CG", inf = F)
-CG_50 = get_ses(50, "CG", inf = F)
+CG_10 = get_ses(10, "CG", inf = T)
+CG_50 = get_ses(50, "CG", inf = T)
 
-ER_10 = get_ses(10, "ER", inf = F)
-ER_50 = get_ses(50, "ER", inf = F)
+ER_10 = get_ses(10, "ER", inf = T)
+ER_50 = get_ses(50, "ER", inf = T)
 
-
-SB_10 = get_ses(10, "SB", inf=F)
-SB_50 = get_ses(50, "SB", inf=F)
+SB_10 = get_ses(10, "SB", inf=T)
+SB_50 = get_ses(50, "SB", inf=T)
 
 table = rbind(CG_10, CG_50, ER_10, ER_50, SB_10, SB_50)
 
@@ -147,6 +146,7 @@ n= rep(n,12)
 beta_0 = c(rep(0.1,4), rep(-2.6,4))
 beta_0 = rep(beta_0, 6) 
 d = c(rep(10,8), rep(50,8))
+
 d = rep(d, 3)
 library(dplyr)
 

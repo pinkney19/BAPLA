@@ -452,8 +452,12 @@ get_avg_cov = function(true_beta, out, n_samp, p){
     #zero_sc[i] = coverage(F, true_beta, out, n_samp, i)$zero
   }
   
+
+  
   return(list(s_cov_mean = mean(s_cov, na.rm=T), sc_cov_mean = mean(sc_cov, na.rm=T), s_all = s_cov, 
-              sc_all = sc_cov, av_len_s = mean(s_len, na.rm=T), av_len_sc = mean(sc_len, na.rm=T)))#, 
+              sc_all = sc_cov, av_len_s = mean(s_len, na.rm=T), av_len_sc = mean(sc_len, na.rm=T),
+              s_cov_std = std_err(s_cov[!is.na(s_cov)]), sc_cov_std = std_err(sc_cov[!is.na(sc_cov)]), std_len_s = std_err(s_len[!is.na(s_len)]),
+              std_len_sc = std_err(sc_len[!is.na(sc_len)])))#, 
               #zero_s_mean = mean(zero_s, na.rm=T), zero_sc_mean = mean(zero_sc, na.rm=T)))
 }
 
@@ -481,15 +485,24 @@ Format_results = function(true_beta, out, n_samp, p,model_type){
   boxplot(df_50_5000, main = paste0(model_type, " - 5000"), ylim =c(0.65, 0.99))
   boxplot(df_50_10000, main = paste0(model_type, " - 10000"), ylim =c(0.65, 0.99))
   
-  
+  # average
   out_1000 = c(res_50_1000$s_cov_mean, res_50_1000$sc_cov_mean, res_50_1000$av_len_s, res_50_1000$av_len_sc)
   out_2000 = c(res_50_2000$s_cov_mean, res_50_2000$sc_cov_mean, res_50_2000$av_len_s, res_50_2000$av_len_sc)
   out_5000 = c(res_50_5000$s_cov_mean, res_50_5000$sc_cov_mean, res_50_5000$av_len_s, res_50_5000$av_len_sc)
   out_10000 = c(res_50_10000$s_cov_mean, res_50_10000$sc_cov_mean, res_50_10000$av_len_s, res_50_10000$av_len_sc)
   
+  #std errors 
+  out2_1000 = c(res_50_1000$s_cov_std, res_50_1000$sc_cov_std, res_50_1000$std_len_s, res_50_1000$std_len_sc)
+  out2_2000 = c(res_50_2000$s_cov_std, res_50_2000$sc_cov_std, res_50_2000$std_len_s, res_50_2000$std_len_sc)
+  out2_5000 = c(res_50_5000$s_cov_std, res_50_5000$sc_cov_std, res_50_5000$std_len_s, res_50_5000$std_len_sc)
+  out2_10000 = c(res_50_10000$s_cov_std, res_50_10000$sc_cov_std, res_50_10000$std_len_s, res_50_10000$std_len_sc)
+  
   out2 = rbind(out_1000, out_2000, out_5000, out_10000)
+  
+  out3 = rbind(out2_1000, out2_2000, out2_5000, out2_10000)
   colnames(out2) = c("Avcov_s", "Avcov_sc", "Avlen_s", "Avlen_sc")
-  return(out2)
+  colnames(out3) = c("std_s", "std_sc", "std_len_s", "std_len_sc")
+  return(list(avg = out2, std = out3))
 }
 # 11. Function to obtain performance measures for interaction matr --------
 

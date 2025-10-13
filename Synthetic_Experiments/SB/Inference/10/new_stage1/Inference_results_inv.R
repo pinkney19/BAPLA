@@ -37,7 +37,9 @@ outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_
 res_zero_s1 = Format_results(true_beta, outzero, n_samp, p, "stage 1 - zero")
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/SB/Inference/10/new_stage1")
-saveRDS(res_50_s1, "res_50_s1.RDS")
-saveRDS(res_zero_s1, "res_zero_s1.RDS")
+saveRDS(res_50_s1$avg, "res_50_s1.RDS")
+saveRDS(res_zero_s1$avg, "res_zero_s1.RDS")
 
+saveRDS(res_50_s1$std, "res_50_s1_ses.RDS")
+saveRDS(res_zero_s1$std, "res_zero_s1_ses.RDS")
 
