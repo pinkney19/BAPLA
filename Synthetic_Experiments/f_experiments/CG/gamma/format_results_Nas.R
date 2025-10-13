@@ -38,12 +38,14 @@ rmse0 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/gamma
 
 m_seq = c(3,5,10,15,20, 25, 30, 35, 40)
 n = c(1000,2000,5000,10000)
-x_beta = NULL; x_beta = list(rep(x_beta), length(n)); x_f = x_beta
+x_beta = NULL; x_beta = list(rep(x_beta), length(n)); x_f = x_beta; x_AUC = x_beta;
 for(i in 1:length(n)){
   x_beta[[i]] = c(rmse0[[i]],m3$rmse[[i]], m5$rmse[[i]], m10$rmse[[i]],m15$rmse[[i]], m20$rmse[[i]],
                   m25$rmse[[i]], m30$rmse[[i]],m35$rmse[[i]], m40$rmse[[i]])
   x_f[[i]] = c(m3$f_mse[[i]], m5$f_mse[[i]], m10$f_mse[[i]],m15$f_mse[[i]], m20$f_mse[[i]],
                m25$f_mse[[i]], m30$f_mse[[i]],m35$f_mse[[i]], m40$f_mse[[i]])
+  x_AUC[[i]] = c(AUC0[[i]], m3$AUC[[i]], m5$AUC[[i]], m10$AUC[[i]],m15$AUC[[i]], m20$AUC[[i]],
+                m25$AUC[[i]], m30$AUC[[i]],m35$AUC[[i]], m40$AUC[[i]])
 }
 
 # plot(m_seq, x_beta[[1]], ylim =c(0,0.3), type='l', ylab = "Average RMSE", xlab = "m", main = expression(Gamma))
