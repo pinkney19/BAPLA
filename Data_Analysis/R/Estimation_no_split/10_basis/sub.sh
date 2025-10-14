@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -J Data_Analysis
-#SBATCH -c 20
-#SBATCH --array=1-4%4
+#SBATCH -J Data_Analysis10
+#SBATCH -c 41
+#SBATCH --array=1-2%2
 #SBATCH -e mb%.e
 #SBATCH -o mb%.out
 #SBATCH --mem-per-cpu=3G
@@ -11,4 +11,4 @@
 
 x=$SLURM_ARRAY_TASK_ID
 
-srun Rscript ~/BAPLA2/Data_Analysis/Estimation_STORM.R $x
+srun Rscript ~/BAPLA2/DA_no_split/10_basis/Estimation_STORM.R $x

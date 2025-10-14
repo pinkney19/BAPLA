@@ -86,7 +86,8 @@ plot_wheel
 
 p2
 
-
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/10_basis/results")
+ggsave("FR_POL_10_basis.pdf", plot =p2, width = 4, height =4, units = "in")
 
 
 

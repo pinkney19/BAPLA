@@ -1,14 +1,10 @@
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 # Read in files -----------------------------------------------------------
-est_left1 <- readRDS("~/luna/BAPLA/Data_Analysis/6_basis/est_left1.RDS")
-est_left2 <- readRDS("~/luna/BAPLA/Data_Analysis/6_basis/est_left2.RDS")
-est_right1 <- readRDS("~/luna/BAPLA/Data_Analysis/6_basis/est_right1.RDS")
-est_right2 <- readRDS("~/luna/BAPLA/Data_Analysis/6_basis/est_right2.RDS")
-# combine files -----------------------------------------------------------
 
-est_left <- c(est_left1, est_left2)
-est_right = c(est_right1, est_right2) 
+est_left <- readRDS("~/luna/BAPLA/Data_Analysis/vis/10_basis/est_left.RDS")
+est_right <- readRDS("~/luna/BAPLA/Data_Analysis/vis/10_basis/est_right.RDS")
+
 
 
 # BIC ---------------------------------------------------------------------
@@ -25,10 +21,10 @@ right_data <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data/Estimation/60_Tria
 # output ------------------------------------------------------------------
 
 library(purrr)
-left_res = choose_lambda(trial_data = left_data, p = 48, lambdas, est_left)
-right_res = choose_lambda(trial_data = right_data, p = 48, lambdas, est_right)
+left_res = choose_lambda(trial_data = left_data, p = 48, lambdas, est_left, m=10)
+right_res = choose_lambda(trial_data = right_data, p = 48, lambdas, est_right, m = 10)
 
 # save results
-setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_6_basis/results")
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/3_basis/results")
 saveRDS(left_res, "left_res.RDS")
 saveRDS(right_res, "right_res.RDS")
