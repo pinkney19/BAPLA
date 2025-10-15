@@ -25,6 +25,6 @@ left_res = choose_lambda(trial_data = left_data, p = 48, lambdas, est_left, m=10
 right_res = choose_lambda(trial_data = right_data, p = 48, lambdas, est_right, m = 10)
 
 # save results
-setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/3_basis/results")
+setwd("~/Downloads/BAPLA/Data_Analysis/R/Estimation_no_split/10_basis/results")
 saveRDS(left_res, "left_res.RDS")
 saveRDS(right_res, "right_res.RDS")
