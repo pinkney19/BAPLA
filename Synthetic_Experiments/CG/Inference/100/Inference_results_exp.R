@@ -36,7 +36,7 @@ outzero = list(out_zero_1000_desparsified, out_zero_2000_desparsified, out_zero_
 
 res_zero_s1 = Format_results(true_beta, outzero, n_samp, p, "stage 1")
 
-setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/100/inference/new_stage1")
+setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Inference/100")
 
 
 
