@@ -21,8 +21,14 @@ get_results = function(p, model_type, inf){
   
   # Inference
   if(inf==T){
-  res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1.RDS"))
-  res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1.RDS"))
+    if(p!=100){
+    res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1.RDS"))
+    res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1.RDS"))
+    }
+    if(p==100){
+      res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/res_50_s1.RDS"))
+      res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/res_zero_s1.RDS"))
+    }
   }
   
   if(inf==F){
@@ -62,9 +68,15 @@ get_ses = function(p, model_type, inf){
   
   # Inference
   if(inf==T){
-    res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1_ses.RDS"))
-    res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1_ses.RDS"))
-  }
+    if(p!=100){
+      res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_50_s1_ses.RDS"))
+      res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/new_stage1/res_zero_s1_ses.RDS"))
+    }
+    if(p==100){
+      res_50_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/res_50_s1_ses.RDS"))
+      res_zero_s1 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/",model_type,"/Inference/",p,"/res_zero_s1_ses.RDS"))
+    }
+      }
   
   if(inf==F){
     res_50_s1 = matrix(NA, 4, 4)
@@ -87,19 +99,24 @@ get_ses = function(p, model_type, inf){
 
 CG_10 = get_results(10, "CG", inf = T)
 CG_50 = get_results(50, "CG", inf = T)
+CG_100 = get_results(100, "CG", T)
+
 
 ER_10 = get_results(10, "ER", inf = T)
 ER_50 = get_results(50, "ER", inf = T)
-
+ER_100 = get_results(100,"ER", T)
 
 SB_10 = get_results(10, "SB", inf=T)
 SB_50 = get_results(50, "SB", inf=T)
+SB_100 = get_results(100,"SB", T)
 
 
 table = rbind(CG_10, CG_50, ER_10, ER_50, SB_10, SB_50)
 
 
 tbl = as.data.frame(table)
+
+
 
 n=c(1000,2000, 5000, 10000)
 n= rep(n,12)
@@ -129,12 +146,15 @@ xtable(tbl)
 # standard errors ---------------------------------------------------------
 CG_10 = get_ses(10, "CG", inf = T)
 CG_50 = get_ses(50, "CG", inf = T)
+CG_100 = get_ses(100, "CG", T)
 
 ER_10 = get_ses(10, "ER", inf = T)
 ER_50 = get_ses(50, "ER", inf = T)
+ER_100 = get_ses(100,"ER", T)
 
 SB_10 = get_ses(10, "SB", inf=T)
 SB_50 = get_ses(50, "SB", inf=T)
+SB_100 = get_ses(100, "SB", T)
 
 table = rbind(CG_10, CG_50, ER_10, ER_50, SB_10, SB_50)
 

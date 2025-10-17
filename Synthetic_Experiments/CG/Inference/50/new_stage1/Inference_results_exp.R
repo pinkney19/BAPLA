@@ -22,7 +22,7 @@ out_50_10000_desparsified <- readRDS("~/luna/BAPLA/Synthetic_Experiments/CG/Infe
 
 
 # Results for 50/50 data
-out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_desparsified, out_50_1000_desparsified)
+out50 = list(out_50_1000_desparsified, out_50_2000_desparsified, out_50_5000_desparsified, out_50_10000_desparsified)
 res_50_s1 = Format_results(true_beta, out50, n_samp, p, "stage 1 ")
 
 # zero results 
