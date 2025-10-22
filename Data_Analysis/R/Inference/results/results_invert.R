@@ -48,6 +48,7 @@ length(out_vis_left$ids)
 length(out_vis_right$ids)
 
 length(out_wheel_left$ids)
+
 length(out_wheel_right$ids)
 
 
@@ -78,6 +79,7 @@ res_wheel_left = combine_estimates(beta_hat_wheel_left, sorted_ids, p_est = 56, 
 
 res_vis_right =  combine_estimates(beta_hat_vis_right, sorted_ids, p_est = 48, id_vec = id_vis)
 res_wheel_right = combine_estimates(beta_hat_wheel_right, sorted_ids, p_est = 56, id_vec = id_wheel)
+
 
 setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")

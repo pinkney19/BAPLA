@@ -892,7 +892,8 @@ plot_graph_inference = function(beta_matrix, comparison_matrix, arrow_size, node
   #' @param highlight_rows nodes not used in the estimation step - highlight in grey
   #' @export
   
-  
+  beta_matrix = t(beta_matrix)
+  comparison_matrix = t(comparison_matrix)
   
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
@@ -914,7 +915,7 @@ plot_graph_inference = function(beta_matrix, comparison_matrix, arrow_size, node
     any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))
   }))
   
-  # Set edge colors: red for edges in both graphs, black otherwise
+  # Set edge colors: black for edges in both graphs, grey otherwise
   E(graph)$color <- apply(edges_beta, 1, function(edge) {
     if (any(apply(edges_comparison, 1, function(comp_edge) all(comp_edge == edge)))) {
       "black"
