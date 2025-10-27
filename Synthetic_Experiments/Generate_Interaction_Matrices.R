@@ -84,10 +84,11 @@ CG_50 = chain_graph(50, 0.3)
 # plot graphs -------------------------------------------------------------
 library(igraph)
 
-par(mfrow=c(1,3),mar = c(0.1,0.1,0.1,0.1))
-plot_graph(CG_10, 0.5, 10)
-plot_graph(SB_10, 0.5, 10)
-plot_graph(ER_10, 0.5, 10)
+par(mfrow=c(1,1),mar = c(0.1,0.1,0.1,0.1))
+plot_graph(CG_10, 0.4, 10)
+plot_graph(as.matrix(ER_10), 0.4, 10)
+plot_graph(SB_10, 0.4, 10)
+
 
 par(mfrow=c(1,3),mar = c(0.1,0.1,0.1,0.1))
 plot_graph(CG_50, 0.5, 10)

@@ -54,6 +54,9 @@ plot_graph = function(beta_matrix, arrow_size, node_size){
   #' @param arrow_size size of arrow to be specified in igraph plot
   #' @param node_size size of node to be specified in igraph plot
   #' @export
+  #
+  #
+  beta_matrix = t(beta_matrix)
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
   # Set edge colors based on the sign of the matrix values

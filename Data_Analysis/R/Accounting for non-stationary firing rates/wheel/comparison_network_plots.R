@@ -122,7 +122,7 @@ plot_comparison_f_no_f = function(dataset_type, trial_type, interaction_matrix, 
   plot_graph_new(combined_estimate, 0.5, 7, col_region_all, full_layout, get(paste0("x_",dataset_type)))
   legend("topleft", legend = unique(names(col_region_all)), 
          col = unique((col_region_all)),   
-         pch = 19, bty = "n", cex = 1.5)
+         pch = 19, bty = "n", cex = 1.2)
   plot_bipartite_compar(mat1, mat2, 0.3, 7, col_region, fixed_layout)
   plot_bipartite_compar(mat2, mat1, 0.3, 7, col_region, fixed_layout)
   

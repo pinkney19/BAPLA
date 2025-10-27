@@ -839,7 +839,7 @@ plot_graph_new = function(beta_matrix, arrow_size, node_size, region_col, full_l
   #' @export
   
   
-
+  beta_matrix = t(beta_matrix);
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
   # Set edge colors based on the sign of the matrix values
@@ -2054,6 +2054,9 @@ plot_bipartite_compar = function(beta_matrix, comparison_matrix,  arrow_size, no
   #' Function to plot bipartite graph with comparison matrix. Edges common to both matrices will be coloured in blue.
   #' @param beta_matrix d x d interaction matrix (e.g. glm estimate)
   #' @param comparison_matrix d x d comparison matrix (e.g. BAPLA esitmate)
+  
+  beta_matrix = t(beta_matrix)
+  comparison_matrix = t(comparison_matrix)
   
   # Create a graph from the matrix
   graph <- graph_from_adjacency_matrix(100*beta_matrix, mode = "directed", weighted = T, diag = F)
