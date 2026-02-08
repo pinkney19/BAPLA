@@ -224,6 +224,7 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
   #print(p)
   beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
   c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL; beta0_alt = NULL;
+  r=list();
   for (i in 1:p){
     print(i)
     res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m)
@@ -233,9 +234,11 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
     c_hat[[i]] = res$c
     iter[i] = res$iter
     beta0_alt[i] = res$beta_alt
+    r[[i]] = res$r
   }
   
-  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, iter = iter, beta_alt = beta0_alt))
+  return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, 
+              iter = iter, beta_alt = beta0_alt, r=r))
 }
 # 6. Estimation for single unit ---------------------------------------------
 Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
@@ -285,6 +288,7 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   
   
   # Perform cyclical coordinate descent
+  r = NULL;
   for(iter in 1:max_iter) {
     #print(iter)
     # current parameter estimates
@@ -361,8 +365,10 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
 
     # Checks for convergence
     if(sum(is.na(beta))==0){ #if no na's in the beta estimate
+      r[iter] = max((beta_tilde-beta)^2)
       if( max((beta_tilde-beta)^2)<tol^2) break
     }
+    
   }
   
   #DE-STANDARDISE THE COEFFICIENTS
@@ -378,7 +384,7 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   
   
   # Print final coefficients
-  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_0_alt))
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_0_alt, r=r))
 }
 
 # 7. Coverage for confidence intervals ------------------------------------

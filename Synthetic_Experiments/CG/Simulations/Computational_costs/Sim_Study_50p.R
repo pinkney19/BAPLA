@@ -41,8 +41,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             beta_alt = res$beta_alt
                                             iter = res$iter
                                             
+                                            r = res$r
+                                            
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                           }
 
 end <-Sys.time() 
@@ -88,9 +90,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r))  
                                           }
 
 end <-Sys.time() 
@@ -136,9 +139,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                           }
 
 end <-Sys.time() 
@@ -185,9 +189,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                           }
 
 end <-Sys.time() 

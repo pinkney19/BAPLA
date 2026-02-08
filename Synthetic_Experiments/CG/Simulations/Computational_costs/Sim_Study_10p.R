@@ -10,7 +10,7 @@ library(doRNG)
 data_zero = readRDS("data_50_1000.RDS")
 # only do for 10 replications
 data_zero = data_zero[1:10]
-cl <- makeCluster(40) 
+cl <- makeCluster(4) 
 start <- Sys.time()
 registerDoParallel(cl)
 registerDoRNG(seed = 123)
@@ -25,6 +25,7 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             max_iter = 1000; tol=1e-5; 
                                             #setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Tuning/10")
                                             lams_zero <- readRDS("lams_50_1000.RDS")
+                                            
                                             m = 10
                                             
                                             # Estimate coefficients with own function
@@ -38,9 +39,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                             
                                           }
 
@@ -87,8 +89,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
+                                            
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat,beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                             
                                           }
 
@@ -134,9 +138,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat,beta_alt = beta_alt, time = counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                             
                                           }
 
@@ -183,9 +188,10 @@ out <- foreach(k=data_zero, .packages = c("purrr", "splines",
                                             c_hat = res$c_hat
                                             beta_alt = res$beta_alt
                                             iter = res$iter
+                                            r = res$r
                                             
                                             return(list(beta_hat = beta_hat, beta_0_hat=beta_0_hat, f_hat = f_hat, 
-                                                        c_hat = c_hat,beta_alt = beta_alt, time= counter, iter = iter)) 
+                                                        c_hat = c_hat, beta_alt = beta_alt, time = counter, iter = iter, r=r)) 
                                             
                                           }
 
