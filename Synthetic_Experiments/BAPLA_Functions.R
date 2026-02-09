@@ -224,7 +224,7 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
   #print(p)
   beta0_hat=NULL; beta_hat = matrix(NA, p ,p); f = list(); f_hat = rep(list(f), p); 
   c_hat = list(); c_hat = rep(list(c_hat), p); iter = NULL; beta0_alt = NULL;
-  r=list();
+  r=list();c_r = list(); b_r=list();
   for (i in 1:p){
     print(i)
     res = Estimate_coefficients_with_rate(data_source, i, max_iter, tol, lams, m)
@@ -235,10 +235,12 @@ Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
     iter[i] = res$iter
     beta0_alt[i] = res$beta_alt
     r[[i]] = res$r
+    c_r[[i]] = res$c_r
+    b_r[[i]] = res$b_r
   }
   
   return(list(beta0_hat=beta0_hat, beta_hat=beta_hat, f = f_hat, c_hat = c_hat, 
-              iter = iter, beta_alt = beta0_alt, r=r))
+              iter = iter, beta_alt = beta0_alt, r=r, c_r=c_r, b_r = b_r))
 }
 # 6. Estimation for single unit ---------------------------------------------
 Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
@@ -288,7 +290,7 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   
   
   # Perform cyclical coordinate descent
-  r = NULL;
+  r = NULL; c_r = NULL; b_r = NULL;
   for(iter in 1:max_iter) {
     #print(iter)
     # current parameter estimates
@@ -360,13 +362,16 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
       beta_0 = beta0_tilde
       f = f_tilde
       c = c_tilde
+      print(paste("investigate issue at iteration", iter))
       break
     }
 
     # Checks for convergence
     if(sum(is.na(beta))==0){ #if no na's in the beta estimate
       r[iter] = max((beta_tilde-beta)^2)
-      if( max((beta_tilde-beta)^2)<tol^2) break
+      c_r[iter] = max(abs(c_tilde-c))
+      b_r[iter] = max(abs(beta0_tilde-beta_0))
+      if( r[iter]<tol^2 ) break#& c_r[iter]<tol & b_r[iter]<tol) break
     }
     
   }
@@ -384,7 +389,8 @@ Estimate_coefficients_with_rate = function(data, idx, max_iter, tol, lams, m){
   
   
   # Print final coefficients
-  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_0_alt, r=r))
+  return(list(beta0=beta_0, beta=beta, f=f, c=c, iter = iter, beta_alt = beta_0_alt, r=r,
+              c_r = c_r, b_r = b_r))
 }
 
 # 7. Coverage for confidence intervals ------------------------------------
