@@ -208,6 +208,47 @@ Simulate_data_add_gamma_norm = function(p, N, beta, beta_0, cut_off, shape, scal
   #new_y = y[, -(1:500)]
   return(y)
 }
+
+
+# Simulate data RL --------------------------------------------------------
+# 4d. simulate data with no f
+Simulate_data_RL = function(p, N, beta, beta_0, cut_off){
+  
+  #' Simualte binary time series according to BAPLA model with f as a normal.
+  #'
+  #' @param p Number of dimensions
+  #' @param N Number of time points
+  #' @param beta p x p linear coefficient matrix  
+  #' @param beta_0 1 x p vector of intercept terms
+  #' @param cut_off (scalar). Number of samples to discard as "burn in" period. 
+  #' @param mu (scalar) mean for normal f
+  #' @param sigma (scalar) sd for normal f
+  #' @export  
+  
+  # Set up empty matrix to store data in
+  y = matrix(data=NA, nrow=p, ncol=N)
+  # Each column represents data from each "unit" at a given time point
+  for(i in 1:p){
+    # generate y_0 for each unit using independent bernoullis'
+    # store output in first columns of Y matrix
+    y[i,1] = rbinom(1, 1, invlogit(beta_0[i])) 
+  }
+  # simulate data based on model parameters
+  # Loop over time points
+  for(j in 2:N){
+    # Loop over dimensions
+    for(i in 1:p){
+      # extract vector of previous values (i.e. y_{t-1} values)
+      y_minus = as.matrix(y[,j-1])
+      y[i,j] = rbinom(1, 1 , prob = invlogit(beta_0[i]+t(beta[i,])%*%y_minus))  
+    }
+  }
+  
+  # get rid of first 100 samples => "burn in"
+  #new_y = y[, -(1:cut_off)]
+  return(y)
+}
+
 # 5. Estimation for all units --------------------------------------
 
 Estimate_coefficients_logit <- function(data_source, p, max_iter, tol, lams, m){
@@ -541,22 +582,17 @@ metrics_new = function(res, gt, threshold){
   est_beta_vec = lapply(beta_list, as.vector)
   
   # make into 0 1 vectors
+  
   true_beta[true_beta!=0]=1
+  scores=list();
+  
   for(i in 1:length(est_beta_vec)){
-    est_beta_vec[[i]][est_beta_vec[[i]]!=0]=1
+    scores[[i]] = abs(est_beta_vec[[i]])
     
   }
   
-  # Check if the response has more than two levels
-  if (length(unique(true_beta)) > 2) {
-    
-    roc_obj = lapply(est_beta_vec, function(x){multiclass.roc(true_beta, x, direction="<")})
-    auc_list = lapply(roc_obj, auc)
-  } else {
-    # Use roc for binary classification
-    roc_obj = lapply(est_beta_vec, function(x){roc(true_beta, x, direction="<")})
-    auc_list = lapply(roc_obj, auc)
-  }
+  roc_obj = lapply(scores, function(x) roc(true_beta, x))
+  auc_list = lapply(roc_obj, auc)
   
   auc_obj = mean(unlist(auc_list))
   se_auc = std_err(unlist(auc_list))
