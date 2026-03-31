@@ -817,6 +817,42 @@ plot_f_cis_gamma <- function(f, unit_id, title, N) {
 }
 
 
+# plots for zero f --------------------------------------------------------
+plot_f_cis_RL <- function(f, unit_id, title, N) {
+  check <- list_to_matrix(f)
+  median_vals <- colQuantiles(check, probs = 0.5)
+  upper_vals <- colQuantiles(check, probs = 0.975)
+  lower_vals <- colQuantiles(check, probs = 0.025)
+  
+  
+  xs <- rep(0, length.out=N-1)
+  
+  data <- data.frame(
+    t = 1:length(median_vals),
+    median = median_vals,
+    upper = upper_vals,
+    lower = lower_vals,
+    xs = xs
+  )
+  
+  ggplot(data, aes(x = t/N)) +
+    geom_line(aes(y = median), color = "black") +
+    # geom_line(aes(y = upper), color = "red") +
+    # geom_line(aes(y = lower), color = "red") +
+    # geom_line(aes(y = xs), color = "blue", linetype = "dashed", size = 1) +
+    geom_line(aes(y = upper), color = "black", linetype = "dashed") +
+    geom_line(aes(y = lower), color = "black", linetype="dashed") +
+    geom_line(aes(y = xs), color = "deepskyblue", linetype = "dashed", size = 1) +
+    labs(x = "t", y = expression(hat(f)(t)), title = title) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(limits = c(-2, 2)) +
+    theme(legend.position = "topright") +
+    guides(color = guide_legend(override.aes = list(linetype = c("solid", "solid", "dashed"), size = c(1, 1, 1))))
+}
+
+
+
 # 17. Function to do refitting only on support of the regularised  estimate (single unit) --------
 
 

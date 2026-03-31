@@ -46,6 +46,12 @@ saveRDS(ses, "ses.RDS")
 saveRDS(aurocs,"AUC.RDS")
 saveRDS(aurocs_se, "AUC_se.RDS")
   
+
+# Times 
+time_1000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_RL/times/time_1000.RDS")
+time_2000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_RL/times/time_2000.RDS")
+time_5000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_RL/times/time_5000.RDS")
+time_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_RL/times/time_10000.RDS")
   
 
 # Intercept estimates -----------------------------------------------------

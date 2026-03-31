@@ -24,6 +24,10 @@ out_2000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiment
 out_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/m_",m,"out_5000.RDS"))
 out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/m_",m,"out_10000.RDS"))
 
+time_1000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/time_1000.RDS"))
+time_2000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/time_2000.RDS"))
+time_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/time_5000.RDS"))
+time_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/RL/Sims_BAPLA/results/time_10000.RDS"))
 
 
 library(pROC)
@@ -96,12 +100,14 @@ library(ggplot2)
 library(matrixStats)
 
 
-# f1 = plot_f_cis_gamma(f_hat_50_1000, 1, "n = 1000",1000)
-# f2 = plot_f_cis_gamma(f_hat_50_2000, 1, "n = 2000",2000)
-# f3 = plot_f_cis_gamma(f_hat_50_5000, 1, "n = 5000",5000)
-# f4 = plot_f_cis_gamma(f_hat_50_10000, 1, "n = 10000",10000)
-# 
-# print(ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T))
+ f1 = plot_f_cis_RL(f_hat_50_1000, 1, "n = 1000",1000)
+ f2 = plot_f_cis_RL(f_hat_50_2000, 1, "n = 2000",2000)
+ f3 = plot_f_cis_RL(f_hat_50_5000, 1, "n = 5000",5000)
+ f4 = plot_f_cis_RL(f_hat_50_10000, 1, "n = 10000",10000)
+
+ # 
+ library(ggpubr)
+ print(ggarrange(f1,f2,f3,f4, ncol=4, common.legend =T))
 
 
 
