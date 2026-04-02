@@ -2,8 +2,9 @@ setwd("~/Downloads/BAPLA/Data_Analysis/R")
 source("Functions_data.R")
 
 # chosen lambdas ----------------------------------------------------------
-
-region_id <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Exploratory Analysis/wheel/region_ids.RDS")
+region_wheel <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Data_Vis/summary_stats/BAPLA/region_wheel.RDS")
+region_id = region_wheel
+#region_id <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Exploratory Analysis/wheel/region_ids.RDS")
 left_res <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/results/left_res.RDS")
 right_res <- readRDS("~/Downloads/BAPLA/Data_Analysis/R/Estimation_wheel/results/right_res.RDS")
 
