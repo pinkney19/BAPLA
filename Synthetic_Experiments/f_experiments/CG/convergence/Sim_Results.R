@@ -38,6 +38,7 @@ save_results = function(p, m , beta){
   out_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_5000.RDS"))
   out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_10000.RDS"))
   
+  out_list = list(out_1000, out_2000, out_5000, out_10000)
   
   # divergence diagnostics
   d1000 = get_divergence_diagnostics(out_1000)
@@ -45,135 +46,89 @@ save_results = function(p, m , beta){
   d5000 = get_divergence_diagnostics(out_5000)
   d10000 = get_divergence_diagnostics(out_10000)
   
-  d = c(d1000$sample_idx, d2000$sample_idx, d5000$sample_idx, d10000$sample_idx)
-  
-  if(length(d)==0){
+  d = list(d1000$sample_idx, d2000$sample_idx, d5000$sample_idx, d10000$sample_idx)
+  n = c(1000, 2000, 5000, 10000);
+  RMSEs = NULL; ses =NULL; aurocs = NULL; aurocs_se = NULL;
+  mses_50 = NULL; std_50 = NULL; f_mses_50 = NULL; f_std_50 = NULL;
+  num_diverged = numeric(length(out_list)); avg_time = NULL; avg_iter=NULL;
+  for(j in 1:length(d)){
+    if(length(d[[j]])==0){
+      
+      res = metrics_new(out_list[[j]], beta, 1e-5)
+      RMSEs[j] = res$av_mse; ses[j] = res$se;
+      aurocs[j] = res$av_AUC; aurocs_se = res$auc_se;
+      
+      # Intercept estimates -----------------------------------------------------
+      mses_50[j] = est_intercept(out_list[[j]], p, 0.1)$mse
+      std_50[j] = est_intercept(out_list[[j]], p, 0.1)$err
+      # F estimates -------------------------------------------------------------
+      f_mses_50[j] = err_normal_f(out_list[[j]], p, n[j], m)$mse
+      f_std_50[j] = err_normal_f(out_list[[j]], p,n[j],m)$err
+      
+      # iterations to convergence
+      conv_iter = map(out_list[[j]], 7)
+      avg_iter[j] = mean(Reduce("+", conv_iter)/length(conv_iter))
+      
+      # run-time/computational cost
+      times = map(out_list[[j]], 6)
+      avg_time[j] = mean(unlist(times))
+      
+      
+    }
     
-    res_1000 =metrics_new(out_1000, beta, 1e-5)
-    res_2000 =metrics_new(out_2000, beta,1e-5)
-    res_5000 =metrics_new(out_5000, beta,1e-5)
-    res_10000 =metrics_new(out_10000, beta,1e-5)
-    
-    
-    RMSEs = c(res_1000$av_mse, res_2000$av_mse,res_5000$av_mse, res_10000$av_mse)
-    ses = c(res_1000$se, res_2000$se,res_5000$se, res_10000$se)
-    aurocs = c(res_1000$av_AUC, res_2000$av_AUC,res_5000$av_AUC, res_10000$av_AUC)
-    aurocs_se = c(res_1000$auc_se, res_2000$auc_se,res_5000$auc_se, res_10000$auc_se)
+    if(length(d[[j]]!=0)){
+      num_diverged[j] = length(d[[j]])
+      # use only samples which did not diverge
+      out = out_list[[j]][(-d[[j]])]
+      # calculate results as normal
+      res = metrics_new(out, beta, 1e-5)
+      RMSEs[j] = res$av_mse; ses[j] = res$se;
+      aurocs[j] = res$av_AUC; aurocs_se = res$auc_se;
+      # Intercept estimates -----------------------------------------------------
+      mses_50[j] = est_intercept(out, p, 0.1)$mse
+      std_50[j] = est_intercept(out, p, 0.1)$err
+      # F estimates -------------------------------------------------------------
+      f_mses_50[j] = err_normal_f(out, p, n[j], m)$mse
+      f_std_50[j] = err_normal_f(out, p,n[j],m)$err
+
+      # iterations/timings ------------------------------------------------------
+      # iterations to convergence
+      conv_iter = map(out, 7)
+      avg_iter[j] = mean(Reduce("+", conv_iter)/length(conv_iter))
+      
+      # run-time/computational cost
+      times = map(out, 6)
+      avg_time[j] = mean(unlist(times)) 
+      
+    }
   }
+    
+    
+    setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/formatted_res")
   
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/formatted_res")
-  
-  saveRDS(RMSEs, paste0("rmse_",m,"m.RDS"))
-  saveRDS(ses, paste0("ses_",m,"m.RDS"))
-  saveRDS(aurocs, paste0("AUC_",m, "m.RDS"))
-  saveRDS(aurocs_se, paste0("AUC_se",m,"m.RDS"))
-  
+    saveRDS(RMSEs, paste0("rmse_",m,"m.RDS"))
+    saveRDS(ses, paste0("ses_",m,"m.RDS"))
+    saveRDS(aurocs, paste0("AUC_",m, "m.RDS"))
+    saveRDS(aurocs_se, paste0("AUC_se",m,"m.RDS"))
+    saveRDS(num_diverged, paste0("div_",m,"m.RDS" ))
+    
+    # intercept
+    saveRDS(mses_50, paste0("int_mses_",m,"m.RDS"))
+    saveRDS(std_50, paste0("int_ses_",m ,"m.RDS"))
+    # f
+    saveRDS(f_mses_50, paste0("f_mses_",m,"m.RDS"))
+    saveRDS(f_std_50, paste0("f_ses_", m, "m.RDS"))
+    # iterations/timings
+    saveRDS(avg_iter, paste0("avg_iter", m, "m.RDS"))
+    saveRDS(avg_time, paste0("avg_time", m, "m.RDS"))
+  return(num_diverged)
 }
-save_results(3, 3, beta)
-save_results(5, 3, beta)
-save_results(10, 3, beta)
-save_results(15, 3, beta)
-save_results(20, 3, beta)
-save_results(25, 3, beta)
-  # Intercept estimates -----------------------------------------------------
-  
-  # Errors
-  
-  mses_50 = c(est_intercept(out_1000, p, 0.1)$mse, est_intercept(out_2000, p, 0.1)$mse, 
-              est_intercept(out_5000, p, 0.1)$mse, est_intercept(out_10000, p, 0.1)$mse)
-  mses_50
-  std_50 = c(est_intercept(out_1000, p, 0.1)$err, est_intercept(out_2000, p, 0.1)$err, 
-             est_intercept(out_5000, p, 0.1)$err, est_intercept(out_10000, p, 0.1)$err)
-  std_50
-  
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/formatted_res")
-  
-  saveRDS(mses_50, paste0("int_mses_",m,"m.RDS"))
-  saveRDS(std_50, paste0("int_ses_",m ,"m.RDS"))
-  
-  
-  # F estimates -------------------------------------------------------------
-  
-
-  f_mses_50 = c(err_normal_f(out_1000, p, 1000, m)$mse, err_normal_f(out_2000, p, 2000,m)$mse, 
-                err_normal_f(out_5000, p, 5000,m)$mse, err_normal_f(out_10000, p, 10000,m)$mse)
-  f_mses_50
-  f_std_50 = c(err_normal_f(out_1000, p,1000,m)$err, err_normal_f(out_2000, p, 2000,m)$err, 
-               err_normal_f(out_5000, p, 5000,m)$err, err_normal_f(out_10000, p, 10000,m)$err)
-  f_std_50
-  
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/formatted_res")
-  
-  saveRDS(f_mses_50, paste0("f_mses_",m,"m.RDS"))
-  saveRDS(f_std_50, paste0("f_ses_", m, "m.RDS"))
-
-}
-
-save_results(10, 3, beta)
-save_results(10, 5, beta)
-save_results(10, 10, beta)
-save_results(10, 15, beta)
-save_results(10, 20, beta)
-
-save_results(10, 25, beta)
-save_results(10, 30, beta)
-save_results(10, 35, beta)
-save_results(10, 40, beta)
-
-
-# Save all ----------------------------------------------------------------
-
-save_all_res = function(p, m , beta){
-  
-  out_1000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_1000.RDS"))
-  out_2000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_2000.RDS"))
-  out_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_5000.RDS"))
-  out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_10000.RDS"))
-  
-  
-  
-  
-  res_1000 =metrics_new(out_1000, beta, 1e-5)
-  res_2000 =metrics_new(out_2000, beta,1e-5)
-  res_5000 =metrics_new(out_5000, beta,1e-5)
-  res_10000 =metrics_new(out_10000, beta,1e-5)
-  
-  
-  RMSEs = list(res_1000$all, res_2000$all,res_5000$all, res_10000$all)
-
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/formatted_res")
-  
-  saveRDS(RMSEs, paste0("rmse_all",m,"m.RDS"))
-  
-
-  
-  
-  # F estimates -------------------------------------------------------------
-  
-  
-  f_mses_50 = list(err_normal_f(out_1000, p, 1000, m)$all, err_normal_f(out_2000, p, 2000,m)$all, 
-                err_normal_f(out_5000, p, 5000,m)$all, err_normal_f(out_10000, p, 10000,m)$all)
-  f_mses_50
-
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/formatted_res")
-  
-  saveRDS(f_mses_50, paste0("f_mses_all",m,"m.RDS"))
-  
-}
-
-
-save_all_res(10, 3, beta)
-save_all_res(10, 5, beta)
-save_all_res(10, 10, beta)
-save_all_res(10, 15, beta)
-save_all_res(10, 20, beta)
-
-save_all_res(10, 25, beta)
-save_all_res(10, 30, beta)
-save_all_res(10, 35, beta)
-save_all_res(10, 40, beta)
+save_results(p, 3, beta)
+save_results(p, 5, beta)
+save_results(p, 10, beta)
+save_results(p, 15, beta)
+save_results(p, 20, beta)
+save_results(p, 25, beta)
+save_results(p, 30, beta)
+save_results(p, 35, beta)
+save_results(p, 40, beta)

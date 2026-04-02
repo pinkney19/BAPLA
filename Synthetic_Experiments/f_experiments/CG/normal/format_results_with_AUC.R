@@ -94,6 +94,7 @@ p3 = ggplot(data3, aes(x = m, y = AUC, color = n)) +
   geom_vline(xintercept = 10, color = "black", linetype = "dashed") +
   labs(y = "Average AUROC", x = expression(m), title = "") +
   theme_minimal()
+
 p3
 
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/plots")

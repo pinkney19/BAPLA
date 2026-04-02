@@ -84,6 +84,8 @@ p2 = ggplot(df, aes(x = n, y = log_times, group = d, color = d))+
   theme_minimal()+
   ylab("log(Runtime)")+xlab("n")+
   theme(legend.position="top")
+
+
 library(ggpubr)
 both_p = ggarrange(p1,p2,ncol=2, common.legend = T)
 both_p
