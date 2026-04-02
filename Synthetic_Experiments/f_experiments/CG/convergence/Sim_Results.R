@@ -16,41 +16,66 @@ source("BAPLA_Functions.R")
 
 p = 10; 
 beta <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/beta_10.RDS")
-
+library(purrr)
 
 # Function -------------------------------------------------
 
+get_divergence_diagnostics = function(out){
+  #' Function to obtain divergence diagnostics
+  div = map(out, 9); all_div = list();
+  for(i in 1:length(div)){
+    all_div[[i]] = sapply(div[[i]], sum)
+  }
+  num_div = sapply(all_div, sum)
+  iter_idx = which(sapply(all_div, sum)!=0)
+  return(list(num_div = num_div, sample_idx = iter_idx))
+}
+
 save_results = function(p, m , beta){
 
-  out_1000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_1000.RDS"))
-  out_2000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_2000.RDS"))
-  out_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_5000.RDS"))
-  out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/results/m_",m,"out_10000.RDS"))
+  out_1000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_1000.RDS"))
+  out_2000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_2000.RDS"))
+  out_5000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_5000.RDS"))
+  out_10000 <- readRDS(paste0("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/results/m_",m,"out_10000.RDS"))
   
   
+  # divergence diagnostics
+  d1000 = get_divergence_diagnostics(out_1000)
+  d2000 = get_divergence_diagnostics(out_2000)
+  d5000 = get_divergence_diagnostics(out_5000)
+  d10000 = get_divergence_diagnostics(out_10000)
+  
+  d = c(d1000$sample_idx, d2000$sample_idx, d5000$sample_idx, d10000$sample_idx)
+  
+  if(length(d)==0){
+    
+    res_1000 =metrics_new(out_1000, beta, 1e-5)
+    res_2000 =metrics_new(out_2000, beta,1e-5)
+    res_5000 =metrics_new(out_5000, beta,1e-5)
+    res_10000 =metrics_new(out_10000, beta,1e-5)
+    
+    
+    RMSEs = c(res_1000$av_mse, res_2000$av_mse,res_5000$av_mse, res_10000$av_mse)
+    ses = c(res_1000$se, res_2000$se,res_5000$se, res_10000$se)
+    aurocs = c(res_1000$av_AUC, res_2000$av_AUC,res_5000$av_AUC, res_10000$av_AUC)
+    aurocs_se = c(res_1000$auc_se, res_2000$auc_se,res_5000$auc_se, res_10000$auc_se)
+  }
   
   
-  res_1000 =metrics_new(out_1000, beta, 1e-5)
-  res_2000 =metrics_new(out_2000, beta,1e-5)
-  res_5000 =metrics_new(out_5000, beta,1e-5)
-  res_10000 =metrics_new(out_10000, beta,1e-5)
-  
-  
-  RMSEs = c(res_1000$av_mse, res_2000$av_mse,res_5000$av_mse, res_10000$av_mse)
-  ses = c(res_1000$se, res_2000$se,res_5000$se, res_10000$se)
-  aurocs = c(res_1000$av_AUC, res_2000$av_AUC,res_5000$av_AUC, res_10000$av_AUC)
-  aurocs_se = c(res_1000$auc_se, res_2000$auc_se,res_5000$auc_se, res_10000$auc_se)
-  
-  
-  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/normal/simulations/formatted_res")
+  setwd("~/Downloads/BAPLA/Synthetic_Experiments/f_experiments/CG/convergence/formatted_res")
   
   saveRDS(RMSEs, paste0("rmse_",m,"m.RDS"))
   saveRDS(ses, paste0("ses_",m,"m.RDS"))
   saveRDS(aurocs, paste0("AUC_",m, "m.RDS"))
   saveRDS(aurocs_se, paste0("AUC_se",m,"m.RDS"))
   
-  
-  
+}
+save_results(3, 3, beta)
+save_results(5, 3, beta)
+save_results(10, 3, beta)
+save_results(15, 3, beta)
+save_results(20, 3, beta)
+save_results(25, 3, beta)
   # Intercept estimates -----------------------------------------------------
   
   # Errors
