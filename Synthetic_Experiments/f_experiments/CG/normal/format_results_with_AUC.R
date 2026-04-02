@@ -69,6 +69,7 @@ p1 = ggplot(data, aes(x = m, y = RMSE, color = n)) +
   theme_minimal()
 p1
 
+
 data2 <- data.frame(m = rep(m_seq, times = length(x_beta)),
                     MSE_f = unlist(x_f),
                     n = factor(rep(n, each = length(m_seq))))

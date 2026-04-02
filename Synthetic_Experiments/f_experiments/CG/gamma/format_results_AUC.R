@@ -119,7 +119,7 @@ ggsave("plot_errs_gamma_AUC.pdf", plot = p3, width = 4, height =3, units = "in")
 
 library(ggpubr)
 all_plots = ggarrange(p1, p3, p2, common.legend = T, legend="top", ncol=3)
-
+all_plots
 ggsave("all_plots_gamma.pdf", plot=  all_plots, width =8, height=3, units ="in")
 
 # consistency plot
