@@ -58,7 +58,7 @@ out_10000 <- readRDS("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/Com
 all_res_100p = list(out_1000, out_2000, out_5000, out_10000)
 
 res_100 = get_results(all_res_100p)
-# n= 1000 is seconds, rest is minutes> convert time into seconds?
+# n= 1000 is seconds, rest is minutes> convert time into seconds
 times_100 = res_100$time
 times_100[2:4] = times_100[2:4]*60
 times_100
@@ -71,6 +71,10 @@ df = data.frame(log_times = c(log(times_10), log(times_50), log(times_100)),
                 d = c(rep("10", length(times_10)), rep("50", length(times_50)), rep("100",length(times_100))), 
                 col = c(rep("p=10", length(times_10)), rep("p=50", length(times_50)), rep("p=100", length(times_100)) ),
                 n = rep(c(1000,2000,5000,10000), 3))
+
+# add column with time in minues
+df$times_min = df$times/60
+
 library(ggplot2)
 p1 = ggplot(df, aes(x = n, y = times, group = d, color = d))+
   geom_point()+
@@ -78,6 +82,14 @@ p1 = ggplot(df, aes(x = n, y = times, group = d, color = d))+
   theme_minimal()+
   ylab("Runtime (seconds)")+xlab("n")+
   theme(legend.position="top")
+
+p1_mins = ggplot(df, aes(x = n, y = times_min, group = d, color = d))+
+  geom_point()+
+  geom_line()+
+  theme_minimal()+
+  ylab("Runtime (mins)")+xlab("n")+
+  theme(legend.position="top")
+p1_mins
 p2 = ggplot(df, aes(x = n, y = log_times, group = d, color = d))+
   geom_point()+
   geom_line()+
@@ -104,12 +116,12 @@ p3 = ggplot(df_iter, aes(x = n, y = iterations, group = d, color = d))+
 time_iter = ggarrange(p2,p3, ncol=2, common.legend = T)
 setwd("~/Downloads/BAPLA/Synthetic_Experiments/CG/Simulations/Computational_costs/results")
 ggsave("comp_cost_plot.pdf", plot = time_iter, width = 8, height = 4, units = "in" )
-
 ggsave("log_runtime.pdf", p2, width = 4, height = 4, units ="in")
 ggsave("convergence.pdf", p3, width = 4, height = 4, units = "in")
+ggsave("runtime_mins.pdf", p1_mins, width = 4, height = 4, units = "in")
 
 
-# time vs p ?
+# time vs d ?
 times = list(res_10$time, res_50$time, res_100$time)
 new_times = list();
 for(i in 1:lengths(times)[1]){
@@ -133,6 +145,10 @@ p4 = ggplot(df_p, aes(x = d, y = log_times, group = n, color = n))+
   ylab("log(Runtime)")+xlab("d")+
   theme(legend.position="top")
 ggsave("log_runtime_d.pdf", p4, width = 4, height = 4, units ="in")
+
+# add plot with time in minutes
+
+new_times_min = lapply(new_times, function(x) x/60)
 
 df = data.frame(log_times = c(log(times_10), log(times_50), log(times_100)), 
                 times = c((times_10), (times_50), (times_100)),
