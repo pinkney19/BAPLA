@@ -149,7 +149,15 @@ ggsave("log_runtime_d.pdf", p4, width = 4, height = 4, units ="in")
 # add plot with time in minutes
 
 new_times_min = lapply(new_times, function(x) x/60)
-
+df_p$times_min = c(new_times_min[[1]], new_times_min[[2]], new_times_min[[3]], new_times_min[[4]])
+p4_mins = ggplot(df_p, aes(x = d, y = times_min, group = n, color = n))+
+  geom_point()+
+  geom_line()+
+  theme_minimal()+
+  ylab("Runtime (mins)")+xlab("d")+
+  theme(legend.position="top")
+p4_mins
+ggsave("runtime_d_mins.pdf", p4_mins, width = 4, height = 4, units ="in")
 df = data.frame(log_times = c(log(times_10), log(times_50), log(times_100)), 
                 times = c((times_10), (times_50), (times_100)),
                 d = c(rep(10, length(times_10)), rep(50, length(times_50)), rep(100,length(times_100))), 
